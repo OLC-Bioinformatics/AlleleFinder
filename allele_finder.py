@@ -172,7 +172,7 @@ class AlleleFinder(object):
             printtime('Creating local {} BLAST database'.format(db_type), self.start, '\033[1;94m')
             # Create the databases
             # , stdout=self.devnull, stderr=self.devnull
-            subprocess.call(shlex.split('makeblastdb -in {} -parse_seqids -max_file_sz 200GB -dbtype nucl -out {}'
+            subprocess.call(shlex.split('makeblastdb -in {} -parse_seqids -max_file_sz 2GB -dbtype nucl -out {}'
                                         .format(output_file, db)))
 
     def local_blast(self):
@@ -370,7 +370,7 @@ class AlleleFinder(object):
         make_path(self.allelepath)
         self.cpus = multiprocessing.cpu_count()
         self.queue = Queue()
-        self.genera = ['Escherichia', 'Listeria', 'Salmonella']
+        self.genera = ['Escherichia', 'Listeria', 'Salmonella', 'Vibrio']
         self.gene_dict = {
             'IGS': 'Listeria',
             'hlyA': 'Listeria',
@@ -383,7 +383,8 @@ class AlleleFinder(object):
             'uidA': 'Escherichia',
             'eae': 'Escherichia',
             'hylA': 'Escherichia',
-            'aggR': 'Escherichia'
+            'aggR': 'Escherichia',
+            'tlh': 'Vibrio'
         }
         self.mismatches = {
             'IGS': 5,
@@ -398,11 +399,13 @@ class AlleleFinder(object):
             'eae': 7,
             'hylA': 7,
             'aggR': 7,
+            'tlh': 5
         }
         self.genus_alleles = {
             'Escherichia': list(),
             'Listeria': list(),
-            'Salmonella': list()
+            'Salmonella': list(),
+            'Vibrio': list()
         }
 
 

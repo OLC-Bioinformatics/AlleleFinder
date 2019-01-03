@@ -54,7 +54,7 @@ class Probes(object):
             # Initialise the set of alleles with the input sequence
             try:
                 sample.alleleset.add(str(sample.records))
-            except KeyError:
+            except AttributeError:
                 sample.alleleset = set()
                 sample.alleleset.add(str(sample.records))
             sample.blast_outputs = os.path.join(self.path, '{}_nr.xml'.format(sample.name))
@@ -108,7 +108,7 @@ class Probes(object):
             sample.allelefile = '{}_alleles.tfa'.format(os.path.join(self.allelepath, sample.name))
             try:
                 sample.allelefiles.append(sample.allelefile)
-            except KeyError:
+            except AttributeError:
                 sample.allelefiles = list()
                 sample.allelefiles.append(sample.allelefile)
             with open(sample.allelefile, 'w') as alleles:
