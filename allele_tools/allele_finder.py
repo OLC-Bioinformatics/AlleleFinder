@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-from accessoryFunctions.accessoryFunctions import combinetargets, make_path, SetupLogging
-from geneseekr.geneseekr import GeneSeekr
+from olctools.accessoryFunctions.accessoryFunctions import combinetargets, make_path, SetupLogging
+from genemethods.geneseekr.geneseekr import GeneSeekr
 from Bio.Blast.Applications import NcbiblastnCommandline
-from Bio.Blast import NCBIWWW, NCBIXML
+from Bio.Blast import NCBIWWW
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio import SeqIO
 from argparse import ArgumentParser
 from threading import Thread
+from csv import DictReader
 from queue import Queue
 import multiprocessing
 from glob import glob
@@ -27,7 +28,6 @@ class AlleleFinder(object):
         self.record_extraction()
         self.parameters()
         self.prep_targets()
-        # self.remote_blast()
         self.populate_local_dict()
         self.local_blast()
         self.parse()
@@ -38,6 +38,8 @@ class AlleleFinder(object):
         Parse the input FASTA file, and create a dictionary of header: sequence for each entry
         """
         for record in SeqIO.parse(self.file, 'fasta'):
+            # Replace and dashes in the record.id with underscores
+            record.id = record.id.replace('-', '_')
             self.records[record.id] = str(record.seq)
 
     def parameters(self):
@@ -86,7 +88,6 @@ class AlleleFinder(object):
         """
         while True:
             result_file, record, record_seq = self.queue.get()
-            print(record, record_seq)
             if not os.path.isfile(result_file):
                 # Create the BLAST request with the appropriate database
                 result = NCBIWWW.qblast(program='blastn',
@@ -114,15 +115,17 @@ class AlleleFinder(object):
                            targetpath=self.path)
         #
         for record in SeqIO.parse(combined_targets, 'fasta'):
+            # Replace and dashes in the record.id with underscores
+            record.id = record.id.replace('-', '_')
             self.genus_alleles['custom'] = list()
             self.gene_dict[record.id] = 'custom'
             self.mismatches[record.id] = int(0.25 * len(record.seq))
+
         GeneSeekr.makeblastdb(fasta=combined_targets)
 
     def populate_local_dict(self):
         """
         Populate self.local_dict with the
-        :return:
         """
         seq_files = sorted(glob(os.path.join(self.local_path, '*.tfa')))
         logging.debug('Query files: {seq_files}'.format(seq_files=','.join(seq_files)))
@@ -202,7 +205,7 @@ class AlleleFinder(object):
             if os.path.isfile(db_file):
                 for record, record_seq in self.records.items():
                     # Set the name of the BLAST output file
-                    local_output = os.path.join(self.reportpath, '{record}_{db_type}.xml'.format(record=record,
+                    local_output = os.path.join(self.reportpath, '{record}_{db_type}.csv'.format(record=record,
                                                                                                  db_type=db_type))
                     # Run BLAST with the appropriate parameters
                     self.run_local_blast(db_type=db_type,
@@ -234,12 +237,12 @@ class AlleleFinder(object):
                                        evalue=self.expect[record],
                                        num_threads=self.cpus,
                                        task='blastn',
-                                       outfmt=7,
+                                       outfmt=self.outfmt,
                                        perc_identity=75,
                                        word_size=self.word_size[record],
-                                       out=local_output.replace('.xml', '.csv')
+                                       out=local_output
                                        )
-        if not os.path.isfile(local_output.replace('.xml', '.csv')):
+        if not os.path.isfile(local_output):
             # Run BLAST - supply the record sequence as stdin, so BLAST doesn't look for an input file
             blastn(stdin=record_seq)
 
@@ -288,28 +291,27 @@ class AlleleFinder(object):
         """
         # Read in the BLAST results
         try:
-            with open(result_file, 'r') as result_handle:
-                logging.info('Parsing {gene_name} {db} report'.format(gene_name=gene_name,
-                                                                      db=db))
-                blast_record = NCBIXML.read(result_handle)
-                # Iterate through all the alignments
-                for alignment in blast_record.alignments:
-                    # Iterate through each HSP per alignment
-                    for hsp in alignment.hsps:
-                        # if '-' not in hsp.sbjct:
-                        deviation = int(0.05 * len(self.records[gene_name]))
-                        # Only retrieve sequences that are as long as the query sequence, and do not have gaps
-                        if len(self.records[gene_name]) - deviation <= len(hsp.sbjct) <= len(self.records[gene_name]) + deviation:
-                            # Try to use the gene-specific number of mismatches
-                            try:
-                                if hsp.identities >= len(self.records[gene_name]) - self.mismatches[gene_name]:
-                                    # Create a Seq object to add to the set
-                                    self.alleleset[gene_name].add(Seq(hsp.sbjct.replace('-', '')))
-                            # Do not allow for more than five mismatches
-                            except KeyError:
-                                if hsp.identities >= len(self.records[gene_name]) - 5:
-                                    # Create a Seq object to add to the set
-                                    self.alleleset[gene_name].add(Seq(hsp.sbjct))
+            # Open the sequence profile file as a dictionary
+            logging.info('Parsing {gene_name} {db} report'.format(gene_name=gene_name,
+                                                                  db=db))
+            blastdict = DictReader(open(result_file), fieldnames=self.fieldnames, dialect='excel-tab')
+            # Go through each BLAST result
+            for row in blastdict:
+                if '-' not in row['subject_sequence']:
+                    deviation = int(0.05 * len(self.records[gene_name]))
+                    # Only retrieve sequences that are as long as the query sequence, and do not have gaps
+                    if len(self.records[gene_name]) - deviation <= len(row['subject_sequence']) <= \
+                            len(self.records[gene_name]) + deviation:
+                        # Try to use the gene-specific number of mismatches
+                        try:
+                            if int(row['positives']) >= len(self.records[gene_name]) - self.mismatches[gene_name]:
+                                # Create a Seq object to add to the set
+                                self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
+                        # Do not allow for more than five mismatches
+                        except KeyError:
+                            if int(row['positives']) >= len(self.records[gene_name]) - 5:
+                                # Create a Seq object to add to the set
+                                self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
         except FileNotFoundError:
             pass
 
@@ -375,6 +377,13 @@ class AlleleFinder(object):
         make_path(self.allelepath)
         self.cpus = multiprocessing.cpu_count()
         self.queue = Queue()
+        # Fields used for custom outfmt 6 BLAST output:
+        self.fieldnames = ['query_id', 'subject_id', 'positives', 'mismatches', 'gaps',
+                           'evalue', 'bit_score', 'subject_length', 'alignment_length',
+                           'query_start', 'query_end', 'subject_start', 'subject_end',
+                           'query_sequence', 'subject_sequence']
+        self.outfmt = "'6 qseqid sseqid positive mismatch gaps evalue bitscore slen length qstart qend sstart send " \
+                      "qseq sseq'"
         self.genesippr = args.genesippr
         if self.genesippr:
             self.metadata_file = os.path.join(self.path, args.metadata)
@@ -447,13 +456,12 @@ class AlleleFinder(object):
             self.genus_alleles = dict()
 
 
-# If the script is called from the command line, then call the argument parser
-if __name__ == '__main__':
+def cli():
     # Parser for arguments
-    parser = ArgumentParser(description='Find all alleles in for a FASTA sequence in a database')
+    parser = ArgumentParser(add_help=False)
     parser.add_argument('-p', '--path',
                         required=True,
-                        help='Specify path. All files to rename must already be in the path')
+                        help='Specify path.')
     parser.add_argument('-f', '--filename',
                         required=True,
                         help='Name of file containing probe sequence to search. The file can be a multi-FASTA. The '
@@ -475,11 +483,18 @@ if __name__ == '__main__':
                         default=False,
                         action='store_true',
                         help='Enable verbose mode')
+    arg_parser = ArgumentParser(parents=[parser])
     # Get the arguments into an object
-    arguments = parser.parse_args()
+    arguments = arg_parser.parse_args()
     arguments.starttime = time()
     SetupLogging(debug=arguments.verbose)
     # Run the pipeline
     pipeline = AlleleFinder(arguments)
     pipeline.main()
     logging.info('Allele finding complete')
+    return parser
+
+
+# If the script is called from the command line, then call the argument parser
+if __name__ == '__main__':
+    cli()
