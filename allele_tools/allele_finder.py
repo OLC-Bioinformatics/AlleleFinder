@@ -3,6 +3,7 @@ from olctools.accessoryFunctions.accessoryFunctions import combinetargets, make_
 from genemethods.geneseekr.geneseekr import GeneSeekr
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast import NCBIWWW
+from Bio.Blast import NCBIXML
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio import SeqIO
@@ -12,7 +13,6 @@ from csv import DictReader
 from queue import Queue
 import multiprocessing
 from glob import glob
-from time import time
 import logging
 import os
 
@@ -25,13 +25,26 @@ class AlleleFinder(object):
         """
         Run the required methods in the appropriate order
         """
-        self.record_extraction()
-        self.parameters()
-        self.prep_targets()
-        self.populate_local_dict()
-        self.local_blast()
-        self.parse()
-        self.create_allele_file()
+        if self.gensippr:
+            pass
+        else:
+
+            self.record_extraction()
+            self.parameters()
+            self.prep_targets()
+            if self.analysistype == 'local':
+                self.populate_local_dict()
+                self.create_local_db()
+                self.local_blast()
+            elif self.analysistype == 'remote':
+                self.remote_blast()
+            else:
+                self.populate_local_dict()
+                self.create_local_db()
+                self.local_blast()
+                self.remote_blast()
+            self.parse()
+            self.create_allele_file()
 
     def record_extraction(self):
         """
@@ -127,12 +140,13 @@ class AlleleFinder(object):
         """
         Populate self.local_dict with the
         """
-        seq_files = sorted(glob(os.path.join(self.local_path, '*.tfa')))
+        logging.info('Creating combined targets file')
+        seq_files = sorted(glob(os.path.join(self.fasta_path, '*.tfa')))
         logging.debug('Query files: {seq_files}'.format(seq_files=','.join(seq_files)))
-        combined_sequences = os.path.join(self.local_path, 'combinedtargets.fasta')
+        combined_sequences = os.path.join(self.fasta_path, 'combinedtargets.fasta')
         if not os.path.isfile(combined_sequences):
             combinetargets(targets=seq_files,
-                           targetpath=self.local_path)
+                           targetpath=self.fasta_path)
         # Populate self.local_dict with the 'custom' genus and the name and path of the combined targets file
         self.local_dict['custom'] = combined_sequences
         # Create the BLAST database from the combined file
@@ -145,10 +159,10 @@ class AlleleFinder(object):
         for db_type, output_file in sorted(self.local_dict.items()):
             # Set the extension to look for with glob
             if 'assemblies' in output_file:
-                glob_command = os.path.join(self.local_path, '{db}*.fasta'.format(db=db_type.split('_')[0]))
+                glob_command = os.path.join(self.fasta_path, '{db}*.fasta'.format(db=db_type.split('_')[0]))
             else:
                 # glob_extension = 'fna'
-                glob_command = os.path.join(self.local_path, '*.fna')
+                glob_command = os.path.join(self.fasta_path, '*.fasta')
             # Get a list of files for the appropriate database
             db_files = glob(glob_command)
             if db_files:
@@ -294,24 +308,48 @@ class AlleleFinder(object):
             # Open the sequence profile file as a dictionary
             logging.info('Parsing {gene_name} {db} report'.format(gene_name=gene_name,
                                                                   db=db))
-            blastdict = DictReader(open(result_file), fieldnames=self.fieldnames, dialect='excel-tab')
-            # Go through each BLAST result
-            for row in blastdict:
-                if '-' not in row['subject_sequence']:
-                    deviation = int(0.05 * len(self.records[gene_name]))
-                    # Only retrieve sequences that are as long as the query sequence, and do not have gaps
-                    if len(self.records[gene_name]) - deviation <= len(row['subject_sequence']) <= \
-                            len(self.records[gene_name]) + deviation:
-                        # Try to use the gene-specific number of mismatches
-                        try:
-                            if int(row['positives']) >= len(self.records[gene_name]) - self.mismatches[gene_name]:
-                                # Create a Seq object to add to the set
-                                self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
-                        # Do not allow for more than five mismatches
-                        except KeyError:
-                            if int(row['positives']) >= len(self.records[gene_name]) - 5:
-                                # Create a Seq object to add to the set
-                                self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
+            # Allow a 5% deviation in gene length
+            deviation = int(0.05 * len(self.records[gene_name]))
+            # Use the appropriate parsing method depending on the output format
+            if result_file.endswith('.xml'):
+                with open(result_file, 'r') as xml_blast:
+                    # Use the Biopython XML BLAST parser
+                    records = NCBIXML.parse(xml_blast)
+                    # Iterate through the record, alignment, and hsp objects to get to results
+                    for record in records:
+                        for alignment in record.alignments:
+                            for hsp in alignment.hsps:
+                                # Only retrieve sequences that are as long as the query sequence, and do not have gaps
+                                if len(self.records[gene_name]) - deviation <= hsp.align_length <= \
+                                        len(self.records[gene_name]) + deviation:
+                                    # Try to use the gene-specific number of mismatches
+                                    try:
+                                        if hsp.positives >= len(self.records[gene_name]) - self.mismatches[gene_name]:
+                                            # Create a Seq object to add to the set
+                                            self.alleleset[gene_name].add(Seq(hsp.sbjct.replace('-', '')))
+                                    # Do not allow for more than five mismatches
+                                    except KeyError:
+                                        if hsp.positives >= len(self.records[gene_name]) - 5:
+                                            # Create a Seq object to add to the set
+                                            self.alleleset[gene_name].add(Seq(hsp.sbjct.replace('-', '')))
+            else:
+                blastdict = DictReader(open(result_file), fieldnames=self.fieldnames, dialect='excel-tab')
+                # Go through each BLAST result
+                for row in blastdict:
+                    if '-' not in row['subject_sequence']:
+                        # Only retrieve sequences that are as long as the query sequence, and do not have gaps
+                        if len(self.records[gene_name]) - deviation <= len(row['subject_sequence']) <= \
+                                len(self.records[gene_name]) + deviation:
+                            # Try to use the gene-specific number of mismatches
+                            try:
+                                if int(row['positives']) >= len(self.records[gene_name]) - self.mismatches[gene_name]:
+                                    # Create a Seq object to add to the set
+                                    self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
+                            # Do not allow for more than five mismatches
+                            except KeyError:
+                                if int(row['positives']) >= len(self.records[gene_name]) - 5:
+                                    # Create a Seq object to add to the set
+                                    self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
         except FileNotFoundError:
             pass
 
@@ -353,15 +391,92 @@ class AlleleFinder(object):
             with open(allele_file, 'w') as genus_file:
                 SeqIO.write(allele_list, genus_file, 'fasta')
 
-    def __init__(self, args):
+    def genesippr_methods(self):
+        self.analysistype = 'both'
+        self.local_dict = {
+            '20_assemblies': os.path.join(self.fasta_path, 'combined_assemblies.tfa'),
+            '2013_assemblies': os.path.join(self.fasta_path, 'combined_2013_assemblies.tfa'),
+            '2014_assemblies': os.path.join(self.fasta_path, 'combined_2014_assemblies.tfa'),
+            '2015_assemblies': os.path.join(self.fasta_path, 'combined_2015_assemblies.tfa'),
+            '2016_assemblies': os.path.join(self.fasta_path, 'combined_2016_assemblies.tfa'),
+            '2017_assemblies': os.path.join(self.fasta_path, 'combined_2017_assemblies.tfa'),
+            '2018_assemblies': os.path.join(self.fasta_path, 'combined_2018_assemblies.tfa'),
+            'refseq': os.path.join(self.fasta_path, 'combined_refseq.tfa')
+        }
+        self.genera = ['Bacillus', 'Campylobacter, ''Escherichia', 'Listeria', 'Salmonella', 'Staphylococcus',
+                       'Vibrio']
+        self.gene_dict = {
+            'IGS': 'Listeria',
+            'hlyA': 'Listeria',
+            'inlJ': 'Listeria',
+            'invA': 'Salmonella',
+            'stn': 'Salmonella',
+            'VT1': 'Escherichia',
+            'VT2': 'Escherichia',
+            'VT2f': 'Escherichia',
+            'uidA': 'Escherichia',
+            'eae': 'Escherichia',
+            'hylA': 'Escherichia',
+            'aggR': 'Escherichia',
+            'tlh': 'Vibrio'
+        }
+        self.mismatches = {
+            'IGS': 5,
+            'hlyA': 7,
+            'inlJ': 7,
+            'invA': 7,
+            'stn': 11,
+            'VT1': 7,
+            'VT2': 7,
+            'VT2f': 7,
+            'uidA': 7,
+            'eae': 7,
+            'hylA': 7,
+            'aggR': 7,
+            'tlh': 5
+        }
+        self.genus_alleles = {
+            'Bacillus': list(),
+            'Campylobacter': list(),
+            'Escherichia': list(),
+            'Listeria': list(),
+            'Salmonella': list(),
+            'Staphylococcus': list(),
+            'Vibrio': list()
+        }
+        self.record_extraction()
+        self.parameters()
+        self.remote_blast()
+        self.create_local_db()
+        self.local_blast()
+        self.load_genera()
+        self.parse()
+        self.create_allele_file()
+
+    def __init__(self, path, targetfile, analysis_type, fasta_path, genesippr, metadata_file):
         logging.info('Welcome to the CFIA Allele Finder (CAlF)')
-        self.path = os.path.join(args.path)
-        self.start = args.starttime
-        self.file = os.path.join(self.path, args.filename)
+        # Determine the path in which the sequence files are located. Allow for ~ expansion
+        if path.startswith('~'):
+            self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
+        else:
+            self.path = os.path.abspath(os.path.join(path))
+        self.file = os.path.join(self.path, targetfile)
         assert os.path.isfile(self.file), 'Cannot find the supplied FASTA file: {fn}'.format(fn=self.file)
         self.reportpath = os.path.join(self.path, 'reports')
         self.allelepath = os.path.join(self.path, 'alleles')
-        self.local_path = os.path.join(args.local_path)
+        make_path(self.reportpath)
+        make_path(self.allelepath)
+        self.analysistype = analysis_type
+        if self.analysistype != 'remote':
+            if fasta_path.startswith('~'):
+                self.fasta_path = os.path.abspath(os.path.expanduser(os.path.join(fasta_path)))
+            else:
+                self.fasta_path = os.path.abspath(os.path.join(fasta_path))
+        else:
+            self.fasta_path = None
+        self.gensippr = genesippr
+        if self.gensippr:
+            self.metadata_file = os.path.join(self.path, metadata_file)
         self.records = dict()
         self.record_parameters = dict()
         self.expect = dict()
@@ -373,8 +488,6 @@ class AlleleFinder(object):
         self.strain_genera = dict()
         self.all_alleles = list()
         self.devnull = open(os.devnull, 'wb')
-        make_path(self.reportpath)
-        make_path(self.allelepath)
         self.cpus = multiprocessing.cpu_count()
         self.queue = Queue()
         # Fields used for custom outfmt 6 BLAST output:
@@ -384,76 +497,13 @@ class AlleleFinder(object):
                            'query_sequence', 'subject_sequence']
         self.outfmt = "'6 qseqid sseqid positive mismatch gaps evalue bitscore slen length qstart qend sstart send " \
                       "qseq sseq'"
-        self.genesippr = args.genesippr
-        if self.genesippr:
-            self.metadata_file = os.path.join(self.path, args.metadata)
-            self.local_dict = {
-                '20_assemblies': os.path.join(self.local_path, 'combined_assemblies.tfa'),
-                '2013_assemblies': os.path.join(self.local_path, 'combined_2013_assemblies.tfa'),
-                '2014_assemblies': os.path.join(self.local_path, 'combined_2014_assemblies.tfa'),
-                '2015_assemblies': os.path.join(self.local_path, 'combined_2015_assemblies.tfa'),
-                '2016_assemblies': os.path.join(self.local_path, 'combined_2016_assemblies.tfa'),
-                '2017_assemblies': os.path.join(self.local_path, 'combined_2017_assemblies.tfa'),
-                '2018_assemblies': os.path.join(self.local_path, 'combined_2018_assemblies.tfa'),
-                'refseq': os.path.join(self.local_path, 'combined_refseq.tfa')
-            }
-            self.genera = ['Bacillus', 'Campylobacter, ''Escherichia', 'Listeria', 'Salmonella', 'Staphylococcus',
-                           'Vibrio']
-            self.gene_dict = {
-                'IGS': 'Listeria',
-                'hlyA': 'Listeria',
-                'inlJ': 'Listeria',
-                'invA': 'Salmonella',
-                'stn': 'Salmonella',
-                'VT1': 'Escherichia',
-                'VT2': 'Escherichia',
-                'VT2f': 'Escherichia',
-                'uidA': 'Escherichia',
-                'eae': 'Escherichia',
-                'hylA': 'Escherichia',
-                'aggR': 'Escherichia',
-                'tlh': 'Vibrio'
-            }
-            self.mismatches = {
-                'IGS': 5,
-                'hlyA': 7,
-                'inlJ': 7,
-                'invA': 7,
-                'stn': 11,
-                'VT1': 7,
-                'VT2': 7,
-                'VT2f': 7,
-                'uidA': 7,
-                'eae': 7,
-                'hylA': 7,
-                'aggR': 7,
-                'tlh': 5
-            }
-            self.genus_alleles = {
-                'Bacillus': list(),
-                'Campylobacter': list(),
-                'Escherichia': list(),
-                'Listeria': list(),
-                'Salmonella': list(),
-                'Staphylococcus': list(),
-                'Vibrio': list()
-            }
-            self.record_extraction()
-            self.parameters()
-            self.remote_blast()
-            self.create_local_db()
-            self.local_blast()
-            self.load_genera()
-            self.parse()
-            self.create_allele_file()
-        else:
-            # TODO self.strain_genera needs to be populated properly
-            self.metadata_file = str()
-            self.local_dict = dict()
-            self.genera = str()
-            self.gene_dict = dict()
-            self.mismatches = dict()
-            self.genus_alleles = dict()
+        # TODO self.strain_genera needs to be populated properly
+        self.metadata_file = str()
+        self.local_dict = dict()
+        self.genera = str()
+        self.gene_dict = dict()
+        self.mismatches = dict()
+        self.genus_alleles = dict()
 
 
 def cli():
@@ -462,34 +512,39 @@ def cli():
     parser.add_argument('-p', '--path',
                         required=True,
                         help='Specify path.')
-    parser.add_argument('-f', '--filename',
+    parser.add_argument('-t', '--targetfile',
                         required=True,
                         help='Name of file containing probe sequence to search. The file can be a multi-FASTA. The '
                              'header for each sequence must be unique, as it will be used as the name of the gene.'
                              'This file must be located in the supplied path folder.')
-    parser.add_argument('-l', '--local_path',
-                        required=True,
-                        help='Path to folder containing local files to BLAST. These files should have a .tfa extension')
+    parser.add_argument('-f', '--fasta_path',
+                        help='Path to folder containing local files to BLAST.')
     parser.add_argument('-g', '--genesippr',
-                        default=False,
                         action='store_true',
                         help='Enable mode to specifically create alleles for the defined set of genes used in '
                              'the GeneSippr analysis')
-    parser.add_argument('-m', '--metadata',
+    parser.add_argument('-m', '--metadatafile',
                         help='Name of combined metadata file used to parse the genus of each local assembly. This '
                              'file must be located in the supplied path folder. NOTE: This is only required if '
                              'performing the "GeneSippr-specific" analysis')
+    parser.add_argument('-b', '--blast',
+                        choices=['local', 'remote', 'both'],
+                        default='local',
+                        help='Choose whether to run either local or remote BLAST, or both. Default is local')
     parser.add_argument('-v', '--verbose',
-                        default=False,
                         action='store_true',
                         help='Enable verbose mode')
     arg_parser = ArgumentParser(parents=[parser])
     # Get the arguments into an object
     arguments = arg_parser.parse_args()
-    arguments.starttime = time()
     SetupLogging(debug=arguments.verbose)
     # Run the pipeline
-    pipeline = AlleleFinder(arguments)
+    pipeline = AlleleFinder(path=arguments.path,
+                            targetfile=arguments.targetfile,
+                            analysis_type=arguments.blast,
+                            fasta_path=arguments.fasta_path,
+                            genesippr=arguments.genesippr,
+                            metadata_file=arguments.metadatafile)
     pipeline.main()
     logging.info('Allele finding complete')
     return parser
