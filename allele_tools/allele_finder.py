@@ -53,6 +53,10 @@ class AlleleFinder(object):
         for record in SeqIO.parse(self.file, 'fasta'):
             # Replace and dashes in the record.id with underscores
             record.id = record.id.replace('-', '_')
+            # Initialise the set of alleles with the input sequence
+            self.alleleset[record.id] = list()
+            self.illegal_alleleset[record.id] = list()
+            self.alleleset[record.id].append(record.seq)
             self.records[record.id] = str(record.seq)
 
     def parameters(self):
@@ -61,10 +65,7 @@ class AlleleFinder(object):
         """
         logging.info('Optimising parameters for targets')
         for record, record_seq in self.records.items():
-            # Initialise the set of alleles with the input sequence
-            self.alleleset[record] = set()
-            self.illegal_alleleset[record] = set()
-            self.alleleset[record].add(Seq(record_seq))
+            # If the sequence is under 70 bp, use more permissive BLAST parameters
             if len(record_seq) < 70:
                 self.expect[record] = 0.001
                 self.word_size[record] = 4
@@ -82,7 +83,7 @@ class AlleleFinder(object):
         logging.info('Running remote nr BLAST')
         # Create and start threads for each fasta file in the list
         for i in range(self.cpus):
-            # Send the threads to makeblastdb
+            # Send the threads to the method
             threads = Thread(target=self.run_remote_blast, args=())
             # Set the daemon to true - something to do with thread management
             threads.setDaemon(True)
@@ -118,21 +119,19 @@ class AlleleFinder(object):
 
     def prep_targets(self):
         """
-
+        Create a 'combinedtargets.fasta' file
         """
-        target_files = sorted(glob(os.path.join(self.path, '*.tfa')))
-        logging.debug('Target files: {target_files}'.format(target_files=','.join(target_files)))
         combined_targets = os.path.join(self.path, 'combinedtargets.fasta')
         if not os.path.isfile(combined_targets):
-            combinetargets(targets=target_files,
+            combinetargets(targets=[self.file],
                            targetpath=self.path)
-        #
+        # Reformat the input FASTA to be consistent with downstream tools
         for record in SeqIO.parse(combined_targets, 'fasta'):
             # Replace and dashes in the record.id with underscores
             record.id = record.id.replace('-', '_')
             self.genus_alleles['custom'] = list()
             self.gene_dict[record.id] = 'custom'
-            self.mismatches[record.id] = int(0.25 * len(record.seq))
+            self.mismatches[record.id] = int((1 - self.cutoff / 100) * len(str(record.seq)))
 
         GeneSeekr.makeblastdb(fasta=combined_targets)
 
@@ -319,37 +318,41 @@ class AlleleFinder(object):
                     for record in records:
                         for alignment in record.alignments:
                             for hsp in alignment.hsps:
-                                # Only retrieve sequences that are as long as the query sequence, and do not have gaps
+                                # Only retrieve sequences that are approximately as long as the query sequence
                                 if len(self.records[gene_name]) - deviation <= hsp.align_length <= \
                                         len(self.records[gene_name]) + deviation:
                                     # Try to use the gene-specific number of mismatches
                                     try:
                                         if hsp.positives >= len(self.records[gene_name]) - self.mismatches[gene_name]:
-                                            # Create a Seq object to add to the set
-                                            self.alleleset[gene_name].add(Seq(hsp.sbjct.replace('-', '')))
-                                    # Do not allow for more than five mismatches
+                                            if Seq(hsp.sbjct.replace('-', '')) not in self.alleleset[gene_name]:
+                                                # Create a Seq object to add to the set
+                                                self.alleleset[gene_name].append(Seq(hsp.sbjct.replace('-', '')))
+                                    # Use the percent identity cutoff if there is no gene-specific mismatch key
                                     except KeyError:
-                                        if hsp.positives >= len(self.records[gene_name]) - 5:
+                                        if hsp.positives >= len(self.records[gene_name]) * (self.cutoff / 100):
                                             # Create a Seq object to add to the set
-                                            self.alleleset[gene_name].add(Seq(hsp.sbjct.replace('-', '')))
+                                            if Seq(hsp.sbjct.replace('-', '')) not in self.alleleset[gene_name]:
+                                                self.alleleset[gene_name].append(Seq(hsp.sbjct.replace('-', '')))
             else:
                 blastdict = DictReader(open(result_file), fieldnames=self.fieldnames, dialect='excel-tab')
                 # Go through each BLAST result
                 for row in blastdict:
                     if '-' not in row['subject_sequence']:
-                        # Only retrieve sequences that are as long as the query sequence, and do not have gaps
+                        # Only retrieve sequences that are approximately as long as the query sequence
                         if len(self.records[gene_name]) - deviation <= len(row['subject_sequence']) <= \
                                 len(self.records[gene_name]) + deviation:
                             # Try to use the gene-specific number of mismatches
                             try:
                                 if int(row['positives']) >= len(self.records[gene_name]) - self.mismatches[gene_name]:
                                     # Create a Seq object to add to the set
-                                    self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
-                            # Do not allow for more than five mismatches
+                                    if Seq(row['subject_sequence'].replace('-', '')) not in self.alleleset[gene_name]:
+                                        self.alleleset[gene_name].append(Seq(row['subject_sequence'].replace('-', '')))
+                            # Use the percent identity cutoff if there is no gene-specific mismatch key
                             except KeyError:
-                                if int(row['positives']) >= len(self.records[gene_name]) - 5:
+                                if int(row['positives']) >= len(self.records[gene_name]) * (self.cutoff / 100):
                                     # Create a Seq object to add to the set
-                                    self.alleleset[gene_name].add(Seq(row['subject_sequence'].replace('-', '')))
+                                    if Seq(row['subject_sequence'].replace('-', '')) not in self.alleleset[gene_name]:
+                                        self.alleleset[gene_name].append(Seq(row['subject_sequence'].replace('-', '')))
         except FileNotFoundError:
             pass
 
@@ -364,11 +367,10 @@ class AlleleFinder(object):
             with open(allelefile, 'w') as alleles:
                 fastalist = list()
                 # Iterate through the set of alleles
-                count = 0
-                for alleleseq in self.alleleset[record]:
+                for i, alleleseq in enumerate(self.alleleset[record]):
                     # Ensure that the allele in not in the set of alleles detected in the incorrect genera
                     header = '{record}_{count}'.format(record=str(record),
-                                                       count=count)
+                                                       count=i)
                     # Create a SeqRecord for each allele
                     fasta = SeqRecord(alleleseq,
                                       # Without this, the header will be improperly formatted
@@ -379,7 +381,6 @@ class AlleleFinder(object):
                     self.all_alleles.append(fasta)
                     # Add the fasta record to the appropriate genus
                     self.genus_alleles[self.gene_dict[record]].append(fasta)
-                    count += 1
                 # Write the alleles to file
                 SeqIO.write(fastalist, alleles, 'fasta')
         # Write all the alleles to the combined allele file
@@ -453,7 +454,7 @@ class AlleleFinder(object):
         self.parse()
         self.create_allele_file()
 
-    def __init__(self, path, targetfile, analysis_type, fasta_path, genesippr, metadata_file):
+    def __init__(self, path, targetfile, analysis_type, fasta_path, genesippr, metadata_file, cutoff):
         logging.info('Welcome to the CFIA Allele Finder (CAlF)')
         # Determine the path in which the sequence files are located. Allow for ~ expansion
         if path.startswith('~'):
@@ -477,6 +478,7 @@ class AlleleFinder(object):
         self.gensippr = genesippr
         if self.gensippr:
             self.metadata_file = os.path.join(self.path, metadata_file)
+        self.cutoff = cutoff
         self.records = dict()
         self.record_parameters = dict()
         self.expect = dict()
@@ -534,6 +536,10 @@ def cli():
     parser.add_argument('-v', '--verbose',
                         action='store_true',
                         help='Enable verbose mode')
+    parser.add_argument('-c', '--cutoff',
+                        default=80,
+                        type=int,
+                        help='Percent identity cutoff to use when parsing BLAST outputs')
     arg_parser = ArgumentParser(parents=[parser])
     # Get the arguments into an object
     arguments = arg_parser.parse_args()
@@ -544,7 +550,8 @@ def cli():
                             analysis_type=arguments.blast,
                             fasta_path=arguments.fasta_path,
                             genesippr=arguments.genesippr,
-                            metadata_file=arguments.metadatafile)
+                            metadata_file=arguments.metadatafile,
+                            cutoff=arguments.cutoff)
     pipeline.main()
     logging.info('Allele finding complete')
     return parser

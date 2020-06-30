@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from olctools.accessoryFunctions.accessoryFunctions import combinetargets, make_path, MetadataObject, SetupLogging
+from olctools.accessoryFunctions.accessoryFunctions import make_path, MetadataObject, SetupLogging
 from genemethods.geneseekr.blast import BLAST
 import allele_finder
 from argparse import ArgumentParser
@@ -11,6 +11,7 @@ import logging
 import shutil
 import json
 import os
+
 __author__ = 'adamkoziol'
 
 
@@ -169,7 +170,7 @@ class ProfileAlleles(object):
                     # Check if the sample name is in the list of samples names with the current sequence type
                     if sample.name in sample_names:
                         # Add the sample name, sequence type, and all the allele numbers to the report string
-                        data += '{sn},{st},{ac}\n'\
+                        data += '{sn},{st},{ac}\n' \
                             .format(sn=sample.name,
                                     st=sequence_type,
                                     ac=','.join(allele_num for gene, allele_num in
@@ -195,20 +196,19 @@ class ProfileAlleles(object):
             with open(self.profile_file, 'a+') as profile_file:
                 profile_file.write(data)
 
-    def __init__(self, args, records):
-        # Define variables from the arguments - there may be a more streamlined way to do this
-        self.args = args
-        if args.path.startswith('~'):
-            self.path = os.path.abspath(os.path.expanduser(os.path.join(args.path)))
+    def __init__(self, path, fasta_path, records):
+        if path.startswith('~'):
+            self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
         else:
-            self.path = os.path.abspath(os.path.join(args.path))
-        if args.local_path.startswith('~'):
-            self.local_path = os.path.abspath(os.path.expanduser(os.path.join(args.local_path)))
+            self.path = os.path.abspath(os.path.join(path))
+        if fasta_path.startswith('~'):
+            self.fasta_path = os.path.abspath(os.path.expanduser(os.path.join(fasta_path)))
         else:
-            self.local_path = os.path.abspath(os.path.join(args.local_path))
+            self.fasta_path = os.path.abspath(os.path.join(fasta_path))
         self.sequencepath = os.path.join(self.path, 'geneseekr')
         make_path(self.sequencepath)
-        target_files = sorted(glob(os.path.join(self.local_path, '*.tfa')))
+        target_files = [fasta for fasta in sorted(glob(os.path.join(self.fasta_path, '*.fasta')))
+                        if os.path.basename(fasta) != 'combinedtargets.fasta']
         # Create symlinks of the target files in the local path
         for target in target_files:
             try:
@@ -220,13 +220,12 @@ class ProfileAlleles(object):
         self.profilepath = os.path.join(self.path, 'profile')
         make_path(self.profilepath)
         self.profile_file = os.path.join(self.profilepath, 'profile.txt')
-        self.allelepath = os.path.join(self.path, 'alleles')
-        shutil.copyfile(src=os.path.join(self.allelepath, 'combinedtargets.fasta'),
+        shutil.copyfile(src=os.path.join(os.path.join(self.path, 'alleles'), 'combinedtargets.fasta'),
                         dst=os.path.join(self.targetpath, 'combinedtargets.fasta'))
         self.reportpath = os.path.join(self.sequencepath, 'reports')
         self.profile_report = os.path.join(self.reportpath, 'profiles.csv')
         self.cpus = multiprocessing.cpu_count() - 1
-        self.starttime = args.starttime
+        self.starttime = time()
         self.start = self.starttime
         self.runmetadata = MetadataObject()
         self.records = records
@@ -251,16 +250,22 @@ def cli():
     parser = ArgumentParser(parents=[parent_parser])
     # Get the arguments into an object
     arguments = parser.parse_args()
-    arguments.starttime = time()
     SetupLogging(debug=arguments.verbose)
     # Run the allele-finding pipeline
-    finder = allele_finder.AlleleFinder(arguments)
+    finder = allele_finder.AlleleFinder(path=arguments.path,
+                                        targetfile=arguments.targetfile,
+                                        analysis_type=arguments.blast,
+                                        fasta_path=arguments.fasta_path,
+                                        genesippr=arguments.genesippr,
+                                        metadata_file=arguments.metadatafile,
+                                        cutoff=arguments.cutoff)
     finder.main()
-    logging.info('Allele finding complete')
     # Extract the dictionary of records from the allele finding
     records = finder.records
+    logging.info('Allele finding complete')
     # Run the profiling pipeline
-    profiler = ProfileAlleles(args=arguments,
+    profiler = ProfileAlleles(path=arguments.path,
+                              fasta_path=arguments.fasta_path,
                               records=records)
     profiler.main()
     logging.info('Allele Profiling complete')
