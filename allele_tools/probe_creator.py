@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from accessoryFunctions.accessoryFunctions import GenObject, make_path, MetadataObject, printtime
+from olctools.accessoryFunctions.accessoryFunctions import GenObject, make_path, MetadataObject, SetupLogging
+import allele_finder
 from Bio.Align.Applications import ClustalOmegaCommandline
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.SeqRecord import SeqRecord
 from Bio.Align import AlignInfo
-from Bio.Alphabet import IUPAC
 from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio import SeqIO
@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 from threading import Thread
 from queue import Queue
 import multiprocessing
-from time import time
+import logging
 import shutil
 import numpy
 import os
@@ -26,8 +26,9 @@ class Probes(object):
 
         """
         self.record_extraction()
-        self.remote_blast()
-        self.parse()
+        if self.blast:
+        #     self.remote_blast()
+            self.parse()
         self.create_allele_file()
         self.allelealigner()
         self.probefinder()
@@ -49,7 +50,7 @@ class Probes(object):
         """
         Create threads for each BLAST database: output file combination. Run multi-threaded BLAST
         """
-        printtime('Running remote nr BLAST', self.start)
+        logging.info('Running remote nr BLAST')
         for sample in self.samples:
             # Initialise the set of alleles with the input sequence
             try:
@@ -57,7 +58,7 @@ class Probes(object):
             except AttributeError:
                 sample.alleleset = set()
                 sample.alleleset.add(str(sample.records))
-            sample.blast_outputs = os.path.join(self.path, '{}_nr.xml'.format(sample.name))
+            sample.blast_outputs = os.path.join(self.path, '{sn}_nr.xml'.format(sn=sample.name))
             if not os.path.isfile(sample.blast_outputs):
                 # Create the BLAST request with the appropriate database
                 result = NCBIWWW.qblast(program='blastn',
@@ -76,14 +77,14 @@ class Probes(object):
         """
         Call the report parsing method for all the BLAST output files
         """
-        printtime('Parsing outputs', self.start)
+        logging.info('Parsing outputs')
         # Call parse_report for every file
         for sample in self.samples:
             if os.path.isfile(sample.blast_outputs):
                 # Read in the BLAST results
                 try:
                     with open(sample.blast_outputs, 'r') as result_handle:
-                        printtime('Parsing {} {} report'.format(sample.name, 'nr'), self.start)
+                        logging.info('Parsing {sn} nr report'.format(sn=sample.name))
                         blast_record = NCBIXML.read(result_handle)
                         # Iterate through all the alignments
                         for alignment in blast_record.alignments:
@@ -103,9 +104,9 @@ class Probes(object):
         Create and populate the allele file with all alleles in the set
         """
         for sample in self.samples:
-            printtime('Creating {} allele FASTA file'.format(sample.name), self.start)
+            logging.info('Creating {sn} allele FASTA file'.format(sn=sample.name))
             # Set the name of the allele file
-            sample.allelefile = '{}_alleles.tfa'.format(os.path.join(self.allelepath, sample.name))
+            sample.allelefile = '{sn}_alleles.tfa'.format(sn=os.path.join(self.probepath, sample.name))
             try:
                 sample.allelefiles.append(sample.allelefile)
             except AttributeError:
@@ -116,7 +117,8 @@ class Probes(object):
                 # Iterate through the set of alleles
                 count = 0
                 for alleleseq in sample.alleleset:
-                    header = '{}_{}'.format(str(sample.name), count)
+                    header = '{sn}_{count}'.format(sn=str(sample.name),
+                                                   count=count)
                     # Create a SeqRecord for each allele
                     fasta = SeqRecord(Seq(alleleseq),
                                       # Without this, the header will be improperly formatted
@@ -132,7 +134,7 @@ class Probes(object):
         """
         Perform a multiple sequence alignment of the allele sequences
         """
-        printtime('Aligning alleles', self.start)
+        logging.info('Aligning alleles')
         # Create the threads for the analysis
         for i in range(self.cpus):
             threads = Thread(target=self.alignthreads, args=())
@@ -172,7 +174,7 @@ class Probes(object):
         """
         Find the longest probe sequences
         """
-        printtime('Finding and filtering probe sequences', self.start)
+        logging.info('Finding and filtering probe sequences')
         for sample in self.samples:
             # A list to store the metadata object for each alignment
             sample.gene = list()
@@ -187,7 +189,7 @@ class Probes(object):
                 except ValueError:
                     # If a ValueError: Sequences must all be the same length is raised, pad the shorter sequences
                     # to be the length of the longest sequence
-                    # https://stackoverflow.com/questions/32833230/biopython-alignio-valueerror-says-strings-must-be-same-length
+                    # https://stackoverflow.com/q/32833230
                     records = SeqIO.parse(align, 'fasta')
                     # Make a copy, otherwise our generator is exhausted after calculating maxlen
                     records = list(records)
@@ -276,21 +278,21 @@ class Probes(object):
         percent identity for that organism + gene pair. Extract the location of the probe, so that all the alleles
         in that location can be recovered
         """
-        printtime('Determining optimal probe sequences', self.start)
+        logging.info('Determining optimal probe sequences')
         for sample in self.samples:
             # Make a folder to store the probes
             for gene in sample.gene:
-                    for window in gene.windows:
-                        # Variable to record whether a probe has already been identified from this gene
-                        passed = False
-                        for sliding in window.sliding:
-                            # Only consider the sequence if the sliding object has data, if the probe in question
-                            # has a mean identity equal to the highest observed identity for that probe size, and
-                            # if the mean identity is greater or equal than the lowest observed identity
-                            if sliding.datastore and sliding.mean == window.max and sliding.mean >= window.min \
-                                    and not passed:
-                                sample.location = sliding.location
-                                passed = True
+                for window in gene.windows:
+                    # Variable to record whether a probe has already been identified from this gene
+                    passed = False
+                    for sliding in window.sliding:
+                        # Only consider the sequence if the sliding object has data, if the probe in question
+                        # has a mean identity equal to the highest observed identity for that probe size, and
+                        # if the mean identity is greater or equal than the lowest observed identity
+                        if sliding.datastore and sliding.mean == window.max and sliding.mean >= window.min \
+                                and not passed:
+                            sample.location = sliding.location
+                            passed = True
 
     def probes(self):
         """
@@ -301,13 +303,14 @@ class Probes(object):
             start, stop = sample.location.split(':')
             sample.probeallele = set()
             # Open the allele file
-            sample.probeoutputfile = os.path.join(self.probeoutputpath, '{}_probe_alleles.tfa'.format(sample.name))
+            sample.probeoutputfile = os.path.join(self.probepath, '{}_probe_alleles.tfa'.format(sample.name))
             for allele in sample.alleleset:
                 sample.probeallele.add(allele[int(start):int(stop)])
             alleles = list()
             with open(sample.probeoutputfile, 'w') as allelefile:
                 for count, probe_allele in enumerate(sample.probeallele):
-                    header = '{}_{}'.format(str(sample.name), count)
+                    header = '{sn}_{count}'.format(sn=str(sample.name),
+                                                   count=count)
                     # Create a SeqRecord for each allele
                     fasta = SeqRecord(Seq(probe_allele),
                                       # Without this, the header will be improperly formatted
@@ -335,48 +338,74 @@ class Probes(object):
             win = win[1:] + [e]
             yield win
 
-    def __init__(self, args):
-        # Initialise variables
-        self.start = args.start
-        # Define variables based on supplied arguments
-        self.path = os.path.join(args.path)
-        assert os.path.isdir(self.path), u'Supplied path is not a valid directory {0!r:s}'.format(self.path)
-        self.file = os.path.join(self.path, args.file)
-        self.min = args.min
-        self.max = args.max
-        self.cutoff = args.cutoff
-        self.allelepath = os.path.join(self.path, 'alleles')
-        self.probeoutputpath = os.path.join(self.path, 'probes')
+    def __init__(self, path, targetfile, min_length, max_length, cutoff, perc_gc, blast):
+        # Determine the path in which the sequence files are located. Allow for ~ expansion
+        if path.startswith('~'):
+            self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
+        else:
+            self.path = os.path.abspath(os.path.join(path))
+        self.file = os.path.join(self.path, targetfile)
+        assert os.path.isfile(self.file), 'Cannot find the supplied FASTA file: {fn}'.format(fn=self.file)
+        self.reportpath = os.path.join(self.path, 'reports')
+        self.probepath = os.path.join(self.path, 'probes')
+        make_path(self.reportpath)
+        self.min = min_length
+        self.max = max_length
+        self.cutoff = cutoff
+        self.perc_gc = perc_gc
+        self.blast = blast
         self.cpus = multiprocessing.cpu_count()
-        make_path(self.allelepath)
-        make_path(self.probeoutputpath)
         self.queue = Queue()
         self.samples = list()
 
 
-if __name__ == '__main__':
-    # Parser for arguments
-    parser = ArgumentParser(description='Find conserved probes of a specified length from an input FASTA'
-                                        'sequence')
-    parser.add_argument('-p', '--path',
-                        required=True,
-                        help='Path in which reports are to be created')
-    parser.add_argument('-f', '--file',
-                        required=True,
-                        help='Path and name of (multi-)FASTA file with sequences to probify')
-    parser.add_argument('-m', '--min',
+def cli():
+    # Import the argument parser from allele_finder.py
+    parent_parser = allele_finder.cli()
+    parser = ArgumentParser(parents=[parent_parser])
+    parser.add_argument('-min', '--min',
                         default=20,
+                        type=int,
                         help='Minimum size of probe to create')
-    parser.add_argument('-M', '--max',
+    parser.add_argument('-max', '--max',
                         default=50,
+                        type=int,
                         help='Maximum size of probe to create')
     parser.add_argument('-c', '--cutoff',
                         default=70,
                         help='Cutoff percent identity of a nucleotide location to use')
+    parser.add_argument('-gc', '--percentgc',
+                        default=50,
+                        type=int,
+                        help='Desired percent GC of the probe')
+    parser.add_argument('-r', '--runblast',
+                        action='store_true',
+                        help='Run BLAST analyses on the supplied target file. If not enabled, then the program assumes '
+                             'that the supplied file includes all the desired alleles to use to create the probe')
     # Get the arguments into an object
     arguments = parser.parse_args()
-    arguments.start = time()
+    SetupLogging(debug=arguments.verbose)
+    if arguments.runblast:
+        # Run the allele-finding pipeline
+        finder = allele_finder.AlleleFinder(path=arguments.path,
+                                            targetfile=arguments.targetfile,
+                                            analysis_type=arguments.blast,
+                                            fasta_path=arguments.fasta_path,
+                                            genesippr=arguments.genesippr,
+                                            metadata_file=arguments.metadatafile,
+                                            cutoff=arguments.cutoff)
+        finder.main()
     # Run the pipeline
-    probes = Probes(arguments)
+    probes = Probes(path=arguments.path,
+                    targetfile=arguments.targetfile,
+                    min=arguments.min,
+                    max=arguments.max,
+                    cutoff=arguments.cutoff,
+                    perc_gc=arguments.percentgc,
+                    blast=arguments.runblast)
     probes.main()
-    printtime('Probe finding complete', arguments.start)
+    logging.info('Probe finding complete')
+
+
+if __name__ == '__main__':
+    cli()
