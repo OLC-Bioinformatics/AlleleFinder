@@ -27,7 +27,6 @@ class Probes(object):
         """
         self.record_extraction()
         if self.blast:
-        #     self.remote_blast()
             self.parse()
         self.create_allele_file()
         self.allelealigner()
@@ -398,8 +397,8 @@ def cli():
     # Run the pipeline
     probes = Probes(path=arguments.path,
                     targetfile=arguments.targetfile,
-                    min=arguments.min,
-                    max=arguments.max,
+                    min_length=arguments.min,
+                    max_length=arguments.max,
                     cutoff=arguments.cutoff,
                     perc_gc=arguments.percentgc,
                     blast=arguments.runblast)
