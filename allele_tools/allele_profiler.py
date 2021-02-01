@@ -4,7 +4,6 @@ from olctools.accessoryFunctions.accessoryFunctions import GenObject, make_path,
 import allele_finder
 from Bio.Blast.Applications import NcbiblastnCommandline, NcbitblastnCommandline
 from Bio.Application import ApplicationError
-from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 from argparse import ArgumentParser
 from csv import DictReader
@@ -195,7 +194,7 @@ class ProfileAlleles(object):
                         # Determine if the orientation of the sequence is reversed compared to the reference
                         if int(row['query_end']) < int(row['query_start']) and not self.amino_acid:
                             # Create a sequence object using Biopython
-                            seq = Seq(row['query_sequence'], IUPAC.unambiguous_dna)
+                            seq = Seq(row['query_sequence'])
                             # Calculate the reverse complement of the sequence
                             querysequence = str(seq.reverse_complement())
                         # If the sequence is not reversed, use the sequence as it is in the output
