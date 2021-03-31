@@ -3,10 +3,11 @@ from setuptools import setup, find_packages
 import os
 setup(
     name="AlleleFinder",
-    version="0.0.1",
+    version="0.0.2",
     scripts=[
     	os.path.join('allele_tools', 'allele_finder.py'),
     	os.path.join('allele_tools', 'allele_profiler.py'),
+    	os.path.join('allele_tools', 'allele_updater.py'),
     	os.path.join('allele_tools', 'allele_translate_reduce.py'),
     	os.path.join('allele_tools', 'probe_creator.py'),
     	os.path.join('allele_tools', 'profile_reduce.py'),

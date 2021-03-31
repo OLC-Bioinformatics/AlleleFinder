@@ -557,8 +557,8 @@ class AlleleFinder(object):
                            'evalue', 'bit_score', 'subject_length', 'alignment_length',
                            'query_start', 'query_end', 'subject_start', 'subject_end',
                            'query_sequence', 'subject_sequence']
-        self.outfmt = "'6 qseqid sseqid positive mismatch gaps evalue bitscore slen length qstart qend sstart send " \
-                      "qseq sseq'"
+        self.outfmt = '6 qseqid sseqid positive mismatch gaps evalue bitscore slen length qstart qend sstart send ' \
+                      'qseq sseq'
         # TODO self.strain_genera needs to be populated properly
         self.metadata_file = str()
         self.local_dict = dict()
