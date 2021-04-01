@@ -402,7 +402,7 @@ class Updater(object):
         except FileNotFoundError:
             # Iterate through all the entries in the dictionary of gene name: nt allele: aa allele
             for gene, allele_dict in self.aa_nt_allele_link_dict.items():
-                for nt_allele, aa_allele in allele_dict:
+                for nt_allele, aa_allele in allele_dict.items():
                     # Split the entries on underscores
                     gene_name, nt_allele_number = nt_allele.split('_')
                     gene_name, aa_allele_number = aa_allele.split('_')

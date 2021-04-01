@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 import os
 setup(
     name="AlleleFinder",
-    version="0.0.2",
+    version="0.0.3",
     scripts=[
     	os.path.join('allele_tools', 'allele_finder.py'),
     	os.path.join('allele_tools', 'allele_profiler.py'),
