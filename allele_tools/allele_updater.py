@@ -1,9 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 from olctools.accessoryFunctions.accessoryFunctions import GenObject, make_path, MetadataObject, \
     relative_symlink, SetupLogging
 from allele_profiler import allele_prep, append_profiles, clear_alleles, create_profile, match_profile, parse_results, \
     parseable_blast_outputs, profile_alleles, read_profile, sequence_typer, update_allele_database
-from Bio.Blast.Applications import NcbiblastnCommandline
+from Bio.Blast.Applications import NcbiblastnCommandline, NcbiblastpCommandline
+from Bio.Data.CodonTable import TranslationError
 from Bio.Seq import Seq
 from Bio import SeqIO
 from argparse import ArgumentParser
@@ -19,18 +20,28 @@ class Updater(object):
     def main(self):
         # Create metadata objects for all files in the query folder
         self.query_prep()
-
         for sample in self.runmetadata.samples:
             logging.warning('Processing sample {sn}'.format(sn=sample.name))
-            records, gene_names, self.data = \
-                allele_prep(allele_path=self.allele_path,
-                            gene_names=self.gene_names,
-                            combined_targets=self.combined_targets,
-                            amino_acid=self.amino_acid)
-            self.amino_acid = None
+            if not self.amino_acid:
+                records, gene_names, self.data = \
+                    allele_prep(allele_path=self.allele_path,
+                                gene_names=self.gene_names,
+                                combined_targets=self.combined_targets,
+                                amino_acid=self.amino_acid)
+            else:
+                records, gene_names, self.data = \
+                    allele_prep(allele_path=self.aa_allele_path,
+                                gene_names=self.gene_names,
+                                combined_targets=self.combined_targets,
+                                amino_acid=self.amino_acid)
+
             logging.info('Loading profile')
-            profile_data = read_profile(profile_file=self.profile_file)
-            self.blast_alleles(runmetadata=sample)
+            if not self.amino_acid:
+                profile_data = read_profile(profile_file=self.profile_file)
+            else:
+                profile_data = read_profile(profile_file=self.aa_profile_file)
+            self.blast_alleles(runmetadata=sample,
+                               amino_acid=self.amino_acid)
             parseable_blast_outputs(runmetadata=sample,
                                     fieldnames=self.fieldnames,
                                     extended_fieldnames=self.extended_fieldnames,
@@ -40,14 +51,24 @@ class Updater(object):
                                    extended_fieldnames=self.extended_fieldnames,
                                    amino_acid=self.amino_acid,
                                    genome_query=True)
-            profile_dict, profile_set = profile_alleles(runmetadata=sample,
-                                                        profile_dict=dict(),
-                                                        profile_set=list(),
-                                                        records=self.gene_names,
-                                                        novel_alleles=True,
-                                                        genome_query=True,
-                                                        allele_path=self.allele_path,
-                                                        report_path=self.report_path)
+            if not self.amino_acid:
+                profile_dict, profile_set = profile_alleles(runmetadata=sample,
+                                                            profile_dict=dict(),
+                                                            profile_set=list(),
+                                                            records=self.gene_names,
+                                                            novel_alleles=True,
+                                                            genome_query=True,
+                                                            allele_path=self.allele_path,
+                                                            report_path=self.report_path)
+            else:
+                profile_dict, profile_set = profile_alleles(runmetadata=sample,
+                                                            profile_dict=dict(),
+                                                            profile_set=list(),
+                                                            records=self.gene_names,
+                                                            novel_alleles=True,
+                                                            genome_query=True,
+                                                            allele_path=self.aa_allele_path,
+                                                            report_path=self.aa_report_path)
             profile_matches = match_profile(profile_data=profile_data,
                                             profile_dict=profile_dict,
                                             profile_matches=dict())
@@ -57,52 +78,68 @@ class Updater(object):
                                new_profiles=list(),
                                profile_dict=profile_dict,
                                profile_matches=profile_matches)
-            sample = sequence_typer(profile_report=self.profile_report,
-                                    data=self.data,
-                                    runmetadata=sample,
-                                    profile_matches=profile_matches,
-                                    profile_data=profile_data,
-                                    update=True)
-            append_profiles(new_profiles=new_profiles,
-                            profile_file=self.profile_file,
-                            data=self.data,
-                            novel_profiles=True,
-                            profile_path=self.profile_path)
-            # AA
-            sample = self.translate(runmetadata=sample)
-            make_path(self.aa_report_path)
-            self.aa_allele_prep()
-            aa_profile_dict, aa_profile_set = self.aa_allele_match(runmetadata=sample,
-                                                                   profile_dict=dict(),
-                                                                   profile_set=list(),
-                                                                   gene_names=gene_names)
-            aa_profile_data = read_profile(profile_file=self.aa_profile_file)
-            aa_profile_matches = match_profile(profile_data=aa_profile_data,
-                                               profile_dict=aa_profile_dict,
-                                               profile_matches=dict())
-            aa_profile_matches, aa_profile_data, aa_new_profiles = \
-                create_profile(profile_data=aa_profile_data,
-                               profile_set=aa_profile_set,
-                               new_profiles=list(),
-                               profile_dict=aa_profile_dict,
-                               profile_matches=aa_profile_matches)
+            if not self.amino_acid:
+                sample = sequence_typer(profile_report=self.profile_report,
+                                        data=self.data,
+                                        runmetadata=sample,
+                                        profile_matches=profile_matches,
+                                        profile_data=profile_data,
+                                        update=True)
+                append_profiles(new_profiles=new_profiles,
+                                profile_file=self.profile_file,
+                                data=self.data,
+                                novel_profiles=True,
+                                profile_path=self.profile_path,
+                                gene_names=self.gene_names)
+            else:
+                sample = sequence_typer(profile_report=self.aa_profile_report,
+                                        data=self.data,
+                                        runmetadata=sample,
+                                        profile_matches=profile_matches,
+                                        profile_data=profile_data,
+                                        update=True)
+                append_profiles(new_profiles=new_profiles,
+                                profile_file=self.aa_profile_file,
+                                data=self.data,
+                                novel_profiles=True,
+                                profile_path=self.aa_profile_path,
+                                gene_names=self.gene_names)
+            if not self.amino_acid:
+                # AA
+                sample = self.translate(runmetadata=sample)
+                self.aa_allele_prep()
+                aa_profile_dict, aa_profile_set = self.aa_allele_match(runmetadata=sample,
+                                                                       profile_dict=dict(),
+                                                                       profile_set=list(),
+                                                                       gene_names=gene_names)
+                aa_profile_data = read_profile(profile_file=self.aa_profile_file)
+                aa_profile_matches = match_profile(profile_data=aa_profile_data,
+                                                   profile_dict=aa_profile_dict,
+                                                   profile_matches=dict())
+                aa_profile_matches, aa_profile_data, aa_new_profiles = \
+                    create_profile(profile_data=aa_profile_data,
+                                   profile_set=aa_profile_set,
+                                   new_profiles=list(),
+                                   profile_dict=aa_profile_dict,
+                                   profile_matches=aa_profile_matches)
 
-            sample = sequence_typer(profile_report=self.aa_profile_report,
-                                    data=self.data,
-                                    runmetadata=sample,
-                                    profile_matches=aa_profile_matches,
-                                    profile_data=aa_profile_data,
-                                    update=True,
-                                    amino_acid=True)
-            make_path(self.aa_profile_path)
-            append_profiles(new_profiles=aa_new_profiles,
-                            profile_file=self.aa_profile_file,
-                            data=self.data,
-                            novel_profiles=True,
-                            profile_path=self.aa_profile_path)
-            self.aa_notes(runmetadata=sample)
-            clear_alleles(combined_targets_db=glob(os.path.join(self.allele_path, 'combinedtargets*')),
-                          custom_targets=os.path.join(self.allele_path, 'custom.tfa'))
+                sample = sequence_typer(profile_report=self.aa_profile_report,
+                                        data=self.data,
+                                        runmetadata=sample,
+                                        profile_matches=aa_profile_matches,
+                                        profile_data=aa_profile_data,
+                                        update=True,
+                                        amino_acid=True)
+                make_path(self.aa_profile_path)
+                append_profiles(new_profiles=aa_new_profiles,
+                                profile_file=self.aa_profile_file,
+                                data=self.data,
+                                novel_profiles=True,
+                                profile_path=self.aa_profile_path,
+                                gene_names=self.gene_names)
+                self.aa_notes(runmetadata=sample)
+                clear_alleles(combined_targets_db=glob(os.path.join(self.allele_path, 'combinedtargets*')),
+                              custom_targets=os.path.join(self.allele_path, 'custom.tfa'))
 
     def query_prep(self):
         """
@@ -137,21 +174,31 @@ class Updater(object):
                 metadata.samples.append(metadata)
                 self.runmetadata.samples.append(metadata)
 
-    def blast_alleles(self, runmetadata):
+    def blast_alleles(self, runmetadata, amino_acid):
         """
         Run the BLAST analyses on the query
         :param runmetadata: List of metadata objects for each query
+        :param amino_acid: Boolean of whether the query sequence is amino acid or nucleotide
         """
         logging.info('Running BLAST analyses')
         for sample in runmetadata.samples:
-            blast = NcbiblastnCommandline(db=os.path.splitext(self.combined_targets)[0],
-                                          query=sample.general.bestassemblyfile,
-                                          num_alignments=100000000,
-                                          evalue=0.001,
-                                          num_threads=self.cpus,
-                                          task='blastn',
-                                          outfmt=self.outfmt,
-                                          out=sample.alleles.blast_report)
+            if not amino_acid:
+                blast = NcbiblastnCommandline(db=os.path.splitext(self.combined_targets)[0],
+                                              query=sample.general.bestassemblyfile,
+                                              num_alignments=100000000,
+                                              evalue=0.001,
+                                              num_threads=self.cpus,
+                                              task='blastn',
+                                              outfmt=self.outfmt,
+                                              out=sample.alleles.blast_report)
+            else:
+                blast = NcbiblastpCommandline(query=sample.general.bestassemblyfile,
+                                              db=os.path.splitext(self.combined_targets)[0],
+                                              evalue=0.001,
+                                              num_alignments=100000000,
+                                              num_threads=self.cpus,
+                                              outfmt=self.outfmt,
+                                              out=sample.alleles.blast_report)
             blast()
 
     @staticmethod
@@ -169,8 +216,13 @@ class Updater(object):
                 for allele_sequence in allele_sequence_list:
                     # Create a sequence object using Biopython
                     seq = Seq(allele_sequence)
-                    # Translate the sequence
-                    aa_seq = str(seq.translate())
+                    try:
+                        # Translate the sequence
+                        aa_seq = str(seq.translate())
+                    except TranslationError:
+                        allele_seq = allele_sequence.replace('-', '')
+                        seq = Seq(allele_seq)
+                        aa_seq = str(seq.translate())
                     # Ensure that the allele name exists (isn't an empty string) before adding allele name: translated
                     # sequence to the dictionary
                     if allele:
@@ -228,7 +280,7 @@ class Updater(object):
                 # Update the dictionary with gene: allele
                 if not self.aa_nt_allele_link_dict[gene]:
                     self.aa_nt_allele_link_dict[gene][record.id] = record.id
-                if allele_id == '0':
+                if allele_id == '1':
                     # Write the translated target sequence to file
                     with open(aa_allele_file, 'a+') as aa_targets:
                         SeqIO.write(record, aa_targets, 'fasta')
@@ -251,7 +303,7 @@ class Updater(object):
             allele_comprehension = dict()
             for allele, allele_seq in sorted(sample.alleles.nt_alleles_translated.items()):
                 present = False
-                # Strip off the allele number from the allele e.g. adk_0 yields 0
+                # Strip off the allele number from the allele e.g. adk_1 yields 1
                 try:
                     gene, allele_id = allele.split('_')
                 except ValueError:
@@ -271,10 +323,10 @@ class Updater(object):
                     if novel_allele:
                         allele_comprehension.update({gene: novel_allele.split('_')[-1]})
                     else:
-                        allele_comprehension.update({gene: 'ND'})
+                        allele_comprehension.update({gene: '0'})
             for gene_name in gene_names:
                 if gene_name not in allele_comprehension:
-                    allele_comprehension.update({gene_name: 'ND'})
+                    allele_comprehension.update({gene_name: '0'})
             # In order to hash the dictionary, use JSON, with sorted keys to freeze it
             frozen_allele_comprehension = json.dumps(allele_comprehension, sort_keys=True)
             # Update the dictionary of profiles with the hash of the frozen dictionary: list of samples with that hash
@@ -329,7 +381,7 @@ class Updater(object):
                     # Check to see if the amino acid allele has already been encountered
                     if aa_allele not in known_aa_alleles:
                         # Make sure that the allele isn't missing 'ND'
-                        if aa_allele != 'ND':
+                        if aa_allele != '0':
                             # Add the allele to the list
                             allele_notes_dict[int(allele)].append(aa_allele)
                             # Update the notes file with the
@@ -338,7 +390,7 @@ class Updater(object):
                 # If the nucleotide allele is novel, add it to the dictionary
                 except KeyError:
                     aa_allele = sample.alleles.aa_profile[gene]
-                    if aa_allele != 'ND':
+                    if aa_allele != '0':
                         allele_notes_dict[int(allele)] = [aa_allele]
                         self.update_aa_allele_notes(gene=gene,
                                                     allele_notes_dict=allele_notes_dict)
@@ -427,7 +479,7 @@ class Updater(object):
                             .format(nt_allele=str(nt_allele),
                                     aa_alleles=';'.join(str(allele) for allele in aa_alleles)))
 
-    def __init__(self, path):
+    def __init__(self, path, amino_acid):
         if path.startswith('~'):
             self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
         else:
@@ -443,14 +495,18 @@ class Updater(object):
         self.report_path = os.path.join(self.path, 'reports')
         self.aa_report_path = os.path.join(self.path, 'aa_reports')
         make_path(self.report_path)
+        make_path(self.aa_report_path)
         novel_alleles = glob(os.path.join(self.report_path, '*.fasta'))
         for novel_allele in novel_alleles:
             os.remove(novel_allele)
         self.aa_notes_path = os.path.join(self.path, 'aa_notes')
         make_path(self.aa_notes_path)
         self.aa_profile_notes = os.path.join(self.aa_notes_path, 'aa_profile_notes.tsv')
-        self.amino_acid = None
-        self.combined_targets = os.path.join(self.allele_path, 'combinedtargets.fasta')
+        self.amino_acid = amino_acid
+        if not self.amino_acid:
+            self.combined_targets = os.path.join(self.allele_path, 'combinedtargets.fasta')
+        else:
+            self.combined_targets = os.path.join(self.aa_allele_path, 'combinedtargets.fasta')
         self.gene_names = list()
         self.runmetadata = MetadataObject()
         self.runmetadata.samples = list()
@@ -485,11 +541,15 @@ def cli():
                         required=True,
                         help='Specify path. Note that due to code reuse, the query sequence files must be in the '
                              '"query" sub-folder, the alleles must be in the "alleles" sub-folder')
+    parser.add_argument('-aa', '--amino_acid',
+                        action='store_true',
+                        help='The query sequences are protein.')
     # Get the arguments into an object
     arguments = parser.parse_args()
     SetupLogging(debug=True)
     # Run the profiling pipeline
-    updater = Updater(path=arguments.path)
+    updater = Updater(path=arguments.path,
+                      amino_acid=arguments.amino_acid)
     updater.main()
     logging.info('Allele Updating complete')
 

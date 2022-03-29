@@ -308,6 +308,9 @@ class Probes(object):
             alleles = list()
             with open(sample.probeoutputfile, 'w') as allelefile:
                 for count, probe_allele in enumerate(sample.probeallele):
+                    # Use 1-based indexing if requested
+                    if self.one_based:
+                        count += 1
                     header = '{sn}_{count}'.format(sn=str(sample.name),
                                                    count=count)
                     # Create a SeqRecord for each allele
@@ -317,7 +320,6 @@ class Probes(object):
                                       # Use the gene name_iteration as the allele name
                                       id=header)
                     alleles.append(fasta)
-                    count += 1
                     # Write the alleles to file
                 SeqIO.write(alleles, allelefile, 'fasta')
 
@@ -337,7 +339,7 @@ class Probes(object):
             win = win[1:] + [e]
             yield win
 
-    def __init__(self, path, targetfile, min_length, max_length, cutoff, perc_gc, blast):
+    def __init__(self, path, targetfile, min_length, max_length, cutoff, perc_gc, blast, one_based):
         # Determine the path in which the sequence files are located. Allow for ~ expansion
         if path.startswith('~'):
             self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
@@ -353,6 +355,7 @@ class Probes(object):
         self.cutoff = cutoff
         self.perc_gc = perc_gc
         self.blast = blast
+        self.one_based = one_based
         self.cpus = multiprocessing.cpu_count()
         self.queue = Queue()
         self.samples = list()
@@ -381,6 +384,13 @@ def cli():
                         action='store_true',
                         help='Run BLAST analyses on the supplied target file. If not enabled, then the program assumes '
                              'that the supplied file includes all the desired alleles to use to create the probe')
+    parser.add_argument('-aa', '--amino_acid',
+                        choices=['targets_nt', 'targets_aa'],
+                        help='Find the amino acid sequence of alleles. The target alleles supplied can either be '
+                             'nucleotide or amino acid. Default is nucleotide')
+    parser.add_argument('-o', '--one_based',
+                        action='store_true',
+                        help='Use 1-based indexing rather than the default 0-based')
     # Get the arguments into an object
     arguments = parser.parse_args()
     SetupLogging(debug=arguments.verbose)
@@ -392,7 +402,9 @@ def cli():
                                             fasta_path=arguments.fasta_path,
                                             genesippr=arguments.genesippr,
                                             metadata_file=arguments.metadatafile,
-                                            cutoff=arguments.cutoff)
+                                            cutoff=arguments.cutoff,
+                                            amino_acid=arguments.amino_acid,
+                                            one_based=arguments.one_based)
         finder.main()
     # Run the pipeline
     probes = Probes(path=arguments.path,
@@ -401,7 +413,8 @@ def cli():
                     max_length=arguments.max,
                     cutoff=arguments.cutoff,
                     perc_gc=arguments.percentgc,
-                    blast=arguments.runblast)
+                    blast=arguments.runblast,
+                    one_based=arguments.one_based)
     probes.main()
     logging.info('Probe finding complete')
 

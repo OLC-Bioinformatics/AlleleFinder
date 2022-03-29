@@ -51,7 +51,7 @@ def allele_prep(allele_path, gene_names, combined_targets, amino_acid):
                            targetpath=allele_path)
     # Create BLAST databases
     GeneSeekr.makeblastdb(fasta=combined_targets,
-                          program='blastn' if not amino_acid else 'blastx')
+                          program='blastn' if not amino_acid else 'blastp')
     # Load all the FASTA records from the combinedtargets file
     for allele_file in alleles:
         for record in SeqIO.parse(allele_file, 'fasta'):
@@ -178,7 +178,6 @@ def parse_results(runmetadata, fieldnames, extended_fieldnames, amino_acid, geno
         resultdict = dict()
         # Go through each BLAST result
         for row in blastdict:
-
             # Ignore the headers
             if row['query_id'].startswith(fieldnames[0]):
                 pass
@@ -247,10 +246,10 @@ def profile_alleles(runmetadata, profile_dict, profile_set, records, amino_acid=
             present = False
             # Iterate through all the BLAST outputs for the sample
             for allele in sample.alleles.blastresults:
-                # If the gene name is present as a substring of the allele e.g. adk in adk_0, then the gene is
+                # If the gene name is present as a substring of the allele e.g. adk in adk_1, then the gene is
                 # present in the BLAST outputs
                 if gene in allele:
-                    # Strip off the allele number from the allele e.g. adk_0 yields 0
+                    # Strip off the allele number from the allele e.g. adk_1 yields 1
                     allele_id = allele.split('_')[-1]
                     # Update the dictionary with the new gene: allele number for the sample
                     allele_comprehension.update({gene: allele_id})
@@ -273,10 +272,10 @@ def profile_alleles(runmetadata, profile_dict, profile_set, records, amino_acid=
                     if novel_allele:
                         allele_comprehension.update({gene: novel_allele.split('_')[-1]})
                     else:
-                        allele_comprehension.update({gene: 'ND'})
+                        allele_comprehension.update({gene: '0'})
                 else:
                     # Set missing alleles to 'ND'
-                    allele_comprehension.update({gene: 'ND'})
+                    allele_comprehension.update({gene: '0'})
         # In order to hash the dictionary, use JSON, with sorted keys to freeze it
         frozen_allele_comprehension = json.dumps(allele_comprehension, sort_keys=True)
         # Update the dictionary of profiles with the hash of the frozen dictionary: list of samples with that hash
@@ -369,12 +368,12 @@ def update_allele_database(gene, query_sequence, allele_path, report_path):
         records.append(record)
         # Update the last_id variable
         last_id = record.id
-    # Try to separate the gene name from the allele e.g. MutS_0
+    # Try to separate the gene name from the allele e.g. MutS_1
     try:
         gene_name, allele = last_id.split('_')
-    # If there is no allele, set the allele to 0
+    # If there is no allele, set the allele to 1
     except ValueError:
-        allele = 0
+        allele = 1
     # Name the novel allele as the gene name _ allele number + 1
     novel_allele = f'{gene}_{int(allele) + 1}'
     # Create a SeqRecord of the allele using the novel allele name and sequence
@@ -424,11 +423,12 @@ def create_profile(profile_data, profile_set, new_profiles, profile_dict, profil
     Create new profiles for novel profiles as required
     """
     # Initialise the sequence type to be 1
-    st = 1
-    # If the profile_data dictionary exists, set the sequence type to be the number of entries in the dictionary
+    seq_type = 1
+    # If the profile_data dictionary exists, set the sequence type to be the last of the entries in the dictionary
     # plus one, as that corresponds to the next sequence type
     if profile_data:
-        st = len(profile_data) + 1
+        # seq_type = len(profile_data) + 1
+        seq_type = sorted(int(st) for st in profile_data.keys())[-1] + 1
     # Initialise a list to store the matched samples
     matched = list()
     # Iterate through all the profiles in the analysis
@@ -436,22 +436,22 @@ def create_profile(profile_data, profile_set, new_profiles, profile_dict, profil
         # Ensure that the allele comprehension (profile) is not already in the profile file
         if allele_comprehension not in [profiled_alleles for st, profiled_alleles in profile_data.items()]:
             # Add the new profile to the list of new profiles
+            alleles = '\t'.join(allele_num.split('_')[-1] for gene, allele_num in sorted(allele_comprehension.items()))
             new_profiles.append('{profile_num}\t{alleles}'
-                                .format(profile_num=st,
-                                        alleles='\t'.join(allele_num.split('_')[-1] for gene, allele_num in
-                                                          sorted(allele_comprehension.items()))))
+                                .format(profile_num=seq_type,
+                                        alleles=alleles.rstrip()))
             # Freeze the comprehension in order to be used as the key in the profile dictionary
             frozen_allele_comprehension = json.dumps(allele_comprehension, sort_keys=True)
             matches = profile_dict[hash(frozen_allele_comprehension)]
             # Check to see if this sequence type hasn't already been found in the current analysis
             if matches not in matched:
                 # Update the dictionary with the new sequence type: list of samples
-                profile_matches[st] = matches
-                profile_data[st] = allele_comprehension
+                profile_matches[seq_type] = matches
+                profile_data[seq_type] = allele_comprehension
                 # Add the matches to the list of matches
                 matched.append(matches)
             # Increment the sequence type number of the next entry
-            st += 1
+            seq_type += 1
     return profile_matches, profile_data, new_profiles
 
 
@@ -478,11 +478,11 @@ def sequence_typer(profile_report, data, runmetadata, profile_matches, profile_d
                 # Check if the sample name is in the list of samples names with the current sequence type
                 if sample.name in sample_names:
                     # Add the sample name, sequence type, and all the allele numbers to the report string
+                    ac = '\t'.join(allele_num.split('_')[-1] for gene, allele_num in sorted(profile_data[st].items()))
                     data += '{sn}\t{st}\t{ac}\n' \
                         .format(sn=sample.name,
                                 st=st,
-                                ac='\t'.join(allele_num.split('_')[-1] for gene, allele_num in
-                                             sorted(profile_data[st].items())))
+                                ac=ac.rstrip())
                     # Update the appropriate GenObject based on the current molecule (DNA or amino acid)
                     if not amino_acid:
                         sample.alleles.nt_st = st
@@ -495,7 +495,7 @@ def sequence_typer(profile_report, data, runmetadata, profile_matches, profile_d
     return runmetadata
 
 
-def append_profiles(new_profiles, profile_file, data, novel_profiles=False, profile_path=None):
+def append_profiles(new_profiles, profile_file, data, novel_profiles=False, profile_path=None, gene_names=None):
     """
     Add new profiles to the profile file
     """
@@ -514,6 +514,9 @@ def append_profiles(new_profiles, profile_file, data, novel_profiles=False, prof
             profile_file.write(new_data)
         if novel_profiles:
             novel_profile_file = os.path.join(profile_path, 'novel_profiles.txt')
+            if not os.path.isfile(novel_profile_file):
+                with open(novel_profile_file, 'w') as novel:
+                    novel.write('ST\t{names}\n'.format(names='\t'.join(gene_names)))
             with open(novel_profile_file, 'a+') as novel:
                 novel.write(new_data)
 
@@ -543,7 +546,8 @@ class ProfileAlleles(object):
                                           profile_data=self.profile_data)
         append_profiles(new_profiles=self.new_profiles,
                         profile_file=self.profile_file,
-                        data=self.data)
+                        data=self.data,
+                        gene_names=self.gene_names)
 
     def blast(self):
         """
@@ -704,7 +708,8 @@ class ProfileAlleles(object):
         self.profile_matches = dict()
         self.new_profiles = list()
         # A string of the header to use for formatting the profile file, and the report headers
-        self.data = 'ST\t{genes}\n'.format(genes='\t'.join(sorted(self.records)))
+        genes = '\t'.join(sorted(self.records))
+        self.data = 'ST\t{genes}\n'.format(genes=genes.rstrip())
         self.gene_names = list()
 
 
@@ -725,7 +730,8 @@ def cli():
                                         cutoff=arguments.cutoff,
                                         target_alleles=arguments.no_target_alleles,
                                         allele_hashing=arguments.allele_hashing,
-                                        amino_acid=arguments.amino_acid)
+                                        amino_acid=arguments.amino_acid,
+                                        one_based=arguments.one_based)
     finder.main()
     # Extract the dictionary of records from the allele finding
     records = finder.records

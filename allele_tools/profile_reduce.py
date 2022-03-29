@@ -54,9 +54,10 @@ class ProfileReduce(object):
                         if allele_str not in profile_st:
                             # Update the dictionary with the string of alleles: sequence type
                             profile_st[allele_str] = allele_dict[gene]
+                            alleles = '\t'.join(allele_list)
                             # Add the sequence type allele numbers for this sequence to the string
                             reduced_data += '{st}\t{alleles}\n'.format(st=seq_type,
-                                                                       alleles='\t'.join(allele_list))
+                                                                       alleles=alleles.rstrip())
                             # Updated the notes with the sequence type linking information
                             notes.write(f'{seq_type}\t{seq_type}\n')
                         # Reduced profile already exists
@@ -78,7 +79,7 @@ class ProfileReduce(object):
         assert os.path.isfile(self.profile), f'Cannot find the supplied profile {self.profile}'
         self.report_path = os.path.join(os.path.dirname(self.profile), 'reports')
         make_path(self.report_path)
-        self.reduced_profile = os.path.join(self.report_path, 'reduced_profile.list')
+        self.reduced_profile = os.path.join(self.report_path, 'profile.txt')
         self.notes_file = os.path.join(self.report_path, 'reducing_notes.txt')
         if names.startswith('~'):
             self.name_file = os.path.abspath(os.path.expanduser(os.path.join(names)))

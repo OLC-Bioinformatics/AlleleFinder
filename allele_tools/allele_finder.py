@@ -411,6 +411,9 @@ class AlleleFinder(object):
                     # hashing of the UTF-8 encoded string of the allele sequence. Extract only the first 10 characters
                     if self.allele_hashing:
                         i = hashlib.md5(str(alleleseq).encode('utf-8')).hexdigest()[:10]
+                    # Use 1-based indexing if requested
+                    if self.one_based:
+                        i += 1
                     # Ensure that the allele in not in the set of alleles detected in the incorrect genera
                     header = '{record}_{count}'.format(record=str(record),
                                                        count=i)
@@ -498,7 +501,7 @@ class AlleleFinder(object):
         self.create_allele_file()
 
     def __init__(self, path, targetfile, analysis_type, fasta_path, genesippr, metadata_file, cutoff, amino_acid,
-                 target_alleles=True, allele_hashing=False):
+                 one_based, target_alleles=True, allele_hashing=False):
         logging.info('Welcome to the CFIA Allele Finder (CAlF)')
         # Determine the path in which the sequence files are located. Allow for ~ expansion
         if path.startswith('~'):
@@ -539,6 +542,10 @@ class AlleleFinder(object):
             self.amino_acid = amino_acid
         else:
             self.amino_acid = None
+        self.one_based = one_based
+        if self.one_based and self.allele_hashing:
+            logging.error('Only one of allele_hashing (-a), and 1-based (-o) may be specified')
+            raise SystemExit
         self.records = dict()
         self.record_parameters = dict()
         self.expect = dict()
@@ -613,6 +620,9 @@ def cli():
                         choices=['targets_nt', 'targets_aa'],
                         help='Find the amino acid sequence of alleles. The target alleles supplied can either be '
                              'nucleotide or amino acid. Default is nucleotide')
+    parser.add_argument('-o', '--one_based',
+                        action='store_true',
+                        help='Use 1-based indexing rather than the default 0-based')
     arg_parser = ArgumentParser(parents=[parser])
     # Get the arguments into an object
     arguments = arg_parser.parse_args()
@@ -627,7 +637,8 @@ def cli():
                             cutoff=arguments.cutoff,
                             target_alleles=arguments.no_target_alleles,
                             allele_hashing=arguments.allele_hashing,
-                            amino_acid=arguments.amino_acid)
+                            amino_acid=arguments.amino_acid,
+                            one_based=arguments.one_based)
     pipeline.main()
     logging.info('Allele finding complete')
     return parser
