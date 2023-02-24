@@ -113,37 +113,44 @@ class Attribute(object):
             self.reportpath = os.path.abspath(os.path.join(reportpath, 'reports'))
         make_path(self.reportpath)
         self.gene = gene
-        self.unaligned_alleles = os.path.join(self.reportpath, '{gene}_unaligned_alleles.fasta'.format(gene=self.gene))
-        self.aligned_alleles = os.path.join(self.reportpath, '{gene}_aligned_alleles.fasta'.format(gene=self.gene))
+        self.unaligned_alleles = os.path.join(self.reportpath, f'{self.gene}_unaligned_alleles.fasta')
+        self.aligned_alleles = os.path.join(self.reportpath, f'{self.gene}_aligned_alleles.fasta')
         self.attributedalleles = list()
         self.complete = set()
 
 
 def cli():
     # Parser for arguments
-    parser = ArgumentParser(description='Finds the target sequences in allele files. Useful if you have an allele '
-                                        'database, and want to attribute subtypes e.g. STEC subtyping to your newly '
-                                        'expanded alleles')
-    parser.add_argument('-a', '--allelepath',
-                        required=True,
-                        help='Name and path of folder containing generated allele files')
-    parser.add_argument('-t', '--targetpath',
-                        required=True,
-                        help='Name and path of folder containing sequencing target sequences')
-    parser.add_argument('-r', '--reportpath',
-                        required=True,
-                        help='Name and path of folder in which reports are to be created')
-    parser.add_argument('-g', '--gene',
-                        required=True,
-                        choices=['stx1A', 'stx1B', 'stx2A', 'stx2B'],
-                        help='Name of gene being profiled')
+    parser = ArgumentParser(
+        description='Finds the target sequences in allele files. Useful if you have an allele '
+                    'database, and want to attribute subtypes e.g. STEC subtyping to your newly '
+                    'expanded alleles')
+    parser.add_argument(
+        '-a', '--allelepath',
+        required=True,
+        help='Name and path of folder containing generated allele files')
+    parser.add_argument(
+        '-t', '--targetpath',
+        required=True,
+        help='Name and path of folder containing sequencing target sequences')
+    parser.add_argument(
+        '-r', '--reportpath',
+        required=True,
+        help='Name and path of folder in which reports are to be created')
+    parser.add_argument(
+        '-g', '--gene',
+        required=True,
+        choices=['stx1A', 'stx1B', 'stx2A', 'stx2B'],
+        help='Name of gene being profiled')
     SetupLogging()
     arguments = parser.parse_args()
     # Run the pipeline
-    attributer = Attribute(allelepath=arguments.allelepath,
-                           targetpath=arguments.targetpath,
-                           reportpath=arguments.reportpath,
-                           gene=arguments.gene)
+    attributer = Attribute(
+        allelepath=arguments.allelepath,
+        targetpath=arguments.targetpath,
+        reportpath=arguments.reportpath,
+        gene=arguments.gene
+        )
     attributer.main()
     logging.info('Allele Attribution complete!')
 

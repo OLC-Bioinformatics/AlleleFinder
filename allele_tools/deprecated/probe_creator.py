@@ -47,7 +47,7 @@ class Probes(object):
 
     def remote_blast(self):
         """
-        Create threads for each BLAST database: output file combination. Run multi-threaded BLAST
+        Create threads for each BLAST database: output file combination. Run multithreaded BLAST
         """
         logging.info('Running remote nr BLAST')
         for sample in self.samples:

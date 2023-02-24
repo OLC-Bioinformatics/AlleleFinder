@@ -1,0 +1,793 @@
+OriginalSequenceType	ReducedSequenceType	Notes
+1	1
+10	10
+20	20
+22	22
+40	1	duplicate
+62	62
+68	68
+83	83
+94	94
+97	97
+98	5	duplicate
+103	103
+113	113
+115	115
+116	116
+124	11	duplicate
+125	0	duplicate
+130	130
+135	9	duplicate
+141	141
+143	1	duplicate
+172	172
+175	175
+187	0	duplicate
+188	188
+192	192
+200	11	duplicate
+205	1	duplicate
+229	7	duplicate
+230	230
+233	6	duplicate
+237	237
+241	6	duplicate
+244	7	duplicate
+246	6	duplicate
+247	247
+249	249
+253	6	duplicate
+256	256
+322	322
+325	9	duplicate
+345	345
+349	349
+351	351
+352	1	duplicate
+354	354
+371	371
+437	437
+572	572
+586	0	duplicate
+1309	1	duplicate
+1321	1321
+1325	1325
+1327	1	duplicate
+1714	1714
+2264	1	duplicate
+2403	2403
+2458	6	duplicate
+2460	2460
+2462	6	duplicate
+2487	11	duplicate
+2495	9	duplicate
+2497	6	duplicate
+2502	9	duplicate
+2606	21	duplicate
+2676	34	duplicate
+2685	0	duplicate
+2686	36	duplicate
+2817	36	duplicate
+2859	1	duplicate
+2869	2869
+3006	9	duplicate
+3042	1	duplicate
+3074	5	duplicate
+3081	1	duplicate
+3094	21	duplicate
+3095	41	duplicate
+3096	1	duplicate
+3116	3116
+3126	3126
+3202	3202
+3207	3207
+3247	36	duplicate
+4129	4129
+4209	1	duplicate
+5163	1	duplicate
+5190	5190
+5198	7	duplicate
+5233	6	duplicate
+5247	21	duplicate
+5275	5275
+5285	5285
+5314	5314
+5531	5531
+5701	5701
+6321	1	duplicate
+7043	40	duplicate
+7190	1	duplicate
+7924	11	duplicate
+8107	36	duplicate
+8170	1	duplicate
+8253	1	duplicate
+8294	41	duplicate
+8313	5	duplicate
+8495	8495
+8574	40	duplicate
+8889	8889
+9272	11	duplicate
+9625	9625
+11530	61	duplicate
+12727	1	duplicate
+14152	14152
+14445	1	duplicate
+15822	15822
+16209	16209
+16252	16252
+16607	6	duplicate
+16609	6	duplicate
+16661	57	duplicate
+16688	8	duplicate
+16705	36	duplicate
+16754	1	duplicate
+16765	11	duplicate
+16766	11	duplicate
+16809	1	duplicate
+16911	11	duplicate
+17135	17135
+17170	11	duplicate
+17350	1	duplicate
+17500	17500
+17546	11	duplicate
+17816	1	duplicate
+18024	1	duplicate
+18537	18537
+18593	18593
+18800	18800
+19018	1	duplicate
+19044	19044
+19320	9	duplicate
+19886	9	duplicate
+19955	36	duplicate
+19975	96	duplicate
+21322	21322
+21489	6	duplicate
+22026	11	duplicate
+22129	1	duplicate
+22620	22620
+22697	36	duplicate
+22850	22850
+22858	22858
+22860	1	duplicate
+22863	1	duplicate
+22866	1	duplicate
+22869	9	duplicate
+22878	1	duplicate
+22886	11	duplicate
+22888	11	duplicate
+23180	1	duplicate
+23813	1	duplicate
+23956	16	duplicate
+24902	24902
+24994	1	duplicate
+25907	25907
+25915	25915
+27248	27248
+27519	41	duplicate
+27566	1	duplicate
+27639	36	duplicate
+27664	6	duplicate
+27871	1	duplicate
+28025	1	duplicate
+28464	9	duplicate
+29028	29028
+29058	6	duplicate
+29067	9	duplicate
+29085	11	duplicate
+29091	41	duplicate
+29139	29139
+29164	29164
+29166	1	duplicate
+29168	41	duplicate
+29173	120	duplicate
+29730	5	duplicate
+29955	1	duplicate
+30011	30011
+30059	11	duplicate
+30203	30203
+30225	30225
+30230	1	duplicate
+30419	30419
+30778	16	duplicate
+30834	6	duplicate
+32637	32637
+32639	7	duplicate
+32701	32701
+32714	7	duplicate
+32727	32727
+32750	208	duplicate
+35206	9	duplicate
+35248	11	duplicate
+35268	1	duplicate
+35278	35278
+35308	9	duplicate
+35318	11	duplicate
+35340	35340
+35362	9	duplicate
+35403	1	duplicate
+35468	9	duplicate
+35500	1	duplicate
+35507	170	duplicate
+35510	11	duplicate
+35520	9	duplicate
+35529	11	duplicate
+35683	41	duplicate
+35687	5	duplicate
+35821	11	duplicate
+35860	35860
+35910	11	duplicate
+35917	9	duplicate
+35955	11	duplicate
+36074	9	duplicate
+36127	170	duplicate
+36137	1	duplicate
+36142	1	duplicate
+36154	36154
+36283	9	duplicate
+36357	7	duplicate
+36529	9	duplicate
+36573	170	duplicate
+36790	11	duplicate
+36794	9	duplicate
+36807	9	duplicate
+36865	36865
+37042	36	duplicate
+37117	37117
+37137	11	duplicate
+37172	1	duplicate
+37248	101	duplicate
+37251	11	duplicate
+37259	37259
+37319	36	duplicate
+37362	37362
+37388	37388
+37424	37424
+37431	170	duplicate
+37450	170	duplicate
+37460	1	duplicate
+37505	37505
+37616	37616
+37706	1	duplicate
+37724	1	duplicate
+37843	37843
+38380	38380
+38623	38623
+38627	6	duplicate
+39281	9	duplicate
+39779	39779
+39887	11	duplicate
+39973	0	duplicate
+41877	36	duplicate
+41972	6	duplicate
+42742	42742
+42835	14	duplicate
+42998	9	duplicate
+43360	43360
+43438	1	duplicate
+43739	6	duplicate
+43747	43747
+43750	1	duplicate
+43764	9	duplicate
+44175	1	duplicate
+44543	6	duplicate
+44562	44562
+45228	45228
+45311	45311
+46118	9	duplicate
+46127	6	duplicate
+46298	1	duplicate
+46348	46348
+46614	11	duplicate
+49345	40	duplicate
+49863	6	duplicate
+50590	34	duplicate
+50728	1	duplicate
+50883	50883
+51545	1	duplicate
+53190	61	duplicate
+53810	1	duplicate
+53842	61	duplicate
+54011	41	duplicate
+54018	54018
+54087	145	duplicate
+54160	51	duplicate
+54273	54273
+54284	1	duplicate
+54570	11	duplicate
+54571	1	duplicate
+54582	11	duplicate
+54584	54584
+54591	9	duplicate
+54610	170	duplicate
+54640	9	duplicate
+54710	9	duplicate
+54777	170	duplicate
+54960	11	duplicate
+54971	170	duplicate
+55029	9	duplicate
+55084	1	duplicate
+55128	1	duplicate
+55380	55380
+55399	3	duplicate
+55685	170	duplicate
+55725	51	duplicate
+58406	9	duplicate
+58831	58831
+58839	40	duplicate
+58845	58845
+58850	7	duplicate
+59106	59106
+59339	59339
+60445	6	duplicate
+60932	60932
+61002	101	duplicate
+61026	9	duplicate
+61065	61065
+61076	61076
+61085	1	duplicate
+61089	61089
+61109	1	duplicate
+61171	9	duplicate
+61172	1	duplicate
+61192	61192
+61200	40	duplicate
+61280	41	duplicate
+61312	6	duplicate
+62010	9	duplicate
+62265	62265
+62473	9	duplicate
+62482	6	duplicate
+62618	62618
+63482	11	duplicate
+63897	63897
+63900	63900
+63902	40	duplicate
+63922	1	duplicate
+63943	63943
+64081	64081
+64769	5	duplicate
+64801	11	duplicate
+64943	64943
+65278	14	duplicate
+65298	5	duplicate
+65636	65636
+65672	1	duplicate
+66286	43	duplicate
+66298	66298
+66304	1	duplicate
+66314	66314
+66319	29	duplicate
+66323	66323
+66328	66328
+66404	29	duplicate
+66443	9	duplicate
+66509	66509
+66749	66749
+66812	7	duplicate
+66828	9	duplicate
+67166	9	duplicate
+67167	6	duplicate
+67515	1	duplicate
+67711	67711
+67733	9	duplicate
+67735	67735
+68245	68245
+68508	11	duplicate
+69030	69030
+69059	14	duplicate
+69295	69295
+69472	1	duplicate
+69768	36	duplicate
+70149	11	duplicate
+70175	6	duplicate
+70179	7	duplicate
+70453	21	duplicate
+70458	246	duplicate
+70459	7	duplicate
+70480	11	duplicate
+70529	70529
+70569	269	duplicate
+70823	7	duplicate
+70841	269	duplicate
+70934	70934
+71032	1	duplicate
+71043	1	duplicate
+71129	71129
+71318	1	duplicate
+71332	96	duplicate
+71429	41	duplicate
+71431	14	duplicate
+71684	374	duplicate
+71739	357	duplicate
+71892	6	duplicate
+72135	72135
+72185	72185
+72578	34	duplicate
+72706	34	duplicate
+72709	72709
+72724	11	duplicate
+72728	1	duplicate
+72862	72862
+72864	1	duplicate
+72882	170	duplicate
+72974	1	duplicate
+73457	34	duplicate
+73465	7	duplicate
+73495	73495
+73509	7	duplicate
+73528	170	duplicate
+73543	101	duplicate
+73785	34	duplicate
+73788	73788
+73793	73793
+74087	406	duplicate
+74144	36	duplicate
+74328	14	duplicate
+74335	1	duplicate
+74570	11	duplicate
+74716	1	duplicate
+75064	1	duplicate
+75662	75662
+75663	11	duplicate
+75979	11	duplicate
+76177	1	duplicate
+76342	9	duplicate
+76350	76350
+76556	7	duplicate
+76790	40	duplicate
+77618	6	duplicate
+77648	1	duplicate
+80415	1	duplicate
+80769	14	duplicate
+80812	11	duplicate
+81401	11	duplicate
+81866	1	duplicate
+82024	11	duplicate
+82112	9	duplicate
+82593	82593
+82619	1	duplicate
+82665	170	duplicate
+82722	170	duplicate
+82830	41	duplicate
+82965	82965
+83696	6	duplicate
+83882	7	duplicate
+84154	6	duplicate
+84210	101	duplicate
+84212	228	duplicate
+86962	9	duplicate
+88815	88815
+90876	11	duplicate
+92239	92239
+92286	0	duplicate
+92454	92454
+92552	92552
+92557	92557
+92819	92819
+92968	92968
+93773	11	duplicate
+98092	98092
+98269	98269
+98301	98301
+98329	120	duplicate
+98334	9	duplicate
+98388	98388
+98488	98488
+98519	6	duplicate
+98543	145	duplicate
+98544	5	duplicate
+98545	11	duplicate
+99333	99333
+99350	11	duplicate
+99475	99475
+99476	1	duplicate
+99513	41	duplicate
+99536	6	duplicate
+99537	99537
+99578	6	duplicate
+99596	99596
+99610	99610
+99727	99727
+100923	100923
+101459	1	duplicate
+102161	26	duplicate
+103075	3	duplicate
+103193	6	duplicate
+103204	40	duplicate
+105370	105370
+105469	41	duplicate
+106206	106206
+107268	107268
+107452	9	duplicate
+108276	61	duplicate
+108466	1	duplicate
+108811	1	duplicate
+108814	21	duplicate
+108815	9	duplicate
+108816	6	duplicate
+108827	1	duplicate
+108831	1	duplicate
+109271	5	duplicate
+109323	11	duplicate
+109483	109483
+109626	109626
+109764	9	duplicate
+111515	111515
+112613	6	duplicate
+112810	11	duplicate
+112816	112816
+112910	6	duplicate
+112931	235	duplicate
+113682	3	duplicate
+114612	1	duplicate
+114629	1	duplicate
+114660	9	duplicate
+114690	1	duplicate
+114909	21	duplicate
+116245	1	duplicate
+116623	116623
+116628	41	duplicate
+117681	321	duplicate
+119303	9	duplicate
+119306	120	duplicate
+119411	119411
+119519	119519
+119580	11	duplicate
+123255	1	duplicate
+131504	1	duplicate
+132316	132316
+132377	55	duplicate
+132478	1	duplicate
+134132	6	duplicate
+136356	29	duplicate
+136357	136357
+136372	1	duplicate
+136375	136375
+136378	3	duplicate
+136384	120	duplicate
+136425	136425
+136434	5	duplicate
+136438	136438
+136448	11	duplicate
+136454	11	duplicate
+136473	273	duplicate
+136474	136474
+136486	136486
+136502	136502
+136503	6	duplicate
+136515	557	duplicate
+136518	6	duplicate
+136550	29	duplicate
+136557	1	duplicate
+136565	1	duplicate
+136838	136838
+137251	11	duplicate
+137445	1	duplicate
+137489	137489
+137534	61	duplicate
+137536	9	duplicate
+137576	1	duplicate
+139957	14	duplicate
+140040	36	duplicate
+146187	9	duplicate
+146189	170	duplicate
+147415	170	duplicate
+147937	1	duplicate
+147949	9	duplicate
+149710	149710
+150723	9	duplicate
+151695	11	duplicate
+151696	11	duplicate
+151699	41	duplicate
+151706	1	duplicate
+153049	1	duplicate
+153091	391	duplicate
+153306	1	duplicate
+154872	9	duplicate
+155817	9	duplicate
+156789	156789
+156798	6	duplicate
+156915	1	duplicate
+157061	1	duplicate
+158012	158012
+159144	159144
+159204	159204
+159397	159397
+159398	9	duplicate
+159683	11	duplicate
+159693	1	duplicate
+159743	6	duplicate
+159814	29	duplicate
+159818	6	duplicate
+159819	159819
+159828	6	duplicate
+159860	321	duplicate
+159969	11	duplicate
+159973	1	duplicate
+161544	161544
+161589	1	duplicate
+161594	161594
+161620	120	duplicate
+161678	6	duplicate
+161858	5	duplicate
+161861	161861
+161871	5	duplicate
+161887	11	duplicate
+161993	9	duplicate
+162423	162423
+164203	164203
+164207	1	duplicate
+164327	57	duplicate
+164333	3	duplicate
+164545	164545
+166356	6	duplicate
+168459	168459
+168486	168486
+168593	101	duplicate
+169306	9	duplicate
+169328	169328
+170409	5	duplicate
+170421	40	duplicate
+171292	11	duplicate
+172419	172419
+172500	172500
+172753	269	duplicate
+172763	9	duplicate
+172765	1	duplicate
+172771	172771
+172774	57	duplicate
+172777	1	duplicate
+172779	9	duplicate
+172781	61	duplicate
+172805	1	duplicate
+172947	41	duplicate
+173072	9	duplicate
+174309	9	duplicate
+177233	17	duplicate
+177673	9	duplicate
+178142	3	duplicate
+178149	1	duplicate
+178196	9	duplicate
+178508	178508
+178538	11	duplicate
+179410	1	duplicate
+182610	182610
+182657	6	duplicate
+184139	184139
+190267	6	duplicate
+193214	40	duplicate
+193349	297	duplicate
+193424	11	duplicate
+193574	9	duplicate
+194979	194979
+194984	314	duplicate
+195085	9	duplicate
+195253	120	duplicate
+195254	9	duplicate
+195309	195309
+195822	11	duplicate
+195823	195823
+195826	1	duplicate
+195905	1	duplicate
+198227	41	duplicate
+198273	6	duplicate
+198277	5	duplicate
+198278	6	duplicate
+198282	1	duplicate
+198335	1	duplicate
+198356	718	duplicate
+198529	321	duplicate
+199037	41	duplicate
+199050	6	duplicate
+199950	61	duplicate
+199954	11	duplicate
+201308	9	duplicate
+201979	11	duplicate
+202105	9	duplicate
+202135	9	duplicate
+204257	1	duplicate
+204517	6	duplicate
+205006	205006
+205097	51	duplicate
+206083	321	duplicate
+206295	9	duplicate
+208246	208246
+208362	208362
+208481	208481
+212081	6	duplicate
+212376	212376
+212773	61	duplicate
+213022	213022
+215085	170	duplicate
+217527	1	duplicate
+217533	6	duplicate
+217958	217958
+218016	218016
+218044	1	duplicate
+218315	11	duplicate
+219222	6	duplicate
+221692	221692
+221718	9	duplicate
+222321	9	duplicate
+222397	222397
+223763	9	duplicate
+223827	17	duplicate
+224670	1	duplicate
+224866	9	duplicate
+225146	225146
+228269	1	duplicate
+228279	228279
+229267	11	duplicate
+230411	9	duplicate
+230470	250	duplicate
+232769	9	duplicate
+233004	233004
+233013	233013
+233628	1	duplicate
+233754	3	duplicate
+234622	9	duplicate
+234667	234667
+234751	11	duplicate
+234902	234902
+235372	120	duplicate
+236628	297	duplicate
+237533	1	duplicate
+237536	41	duplicate
+239033	9	duplicate
+239034	239034
+239486	239486
+241223	1	duplicate
+241453	170	duplicate
+241722	1	duplicate
+241919	9	duplicate
+242206	9	duplicate
+242240	41	duplicate
+243425	243425
+244231	6	duplicate
+244259	1	duplicate
+244260	1	duplicate
+244263	6	duplicate
+244309	11	duplicate
+245191	245191
+245267	245267
+245290	1	duplicate
+245345	1	duplicate
+246973	246973
+249826	9	duplicate
+249829	9	duplicate
+250972	11	duplicate
+251129	18	duplicate
+251962	251962
+251987	6	duplicate
+251997	5	duplicate
+252005	5	duplicate
+252011	1	duplicate
+252019	9	duplicate
+252037	5	duplicate
+252070	1	duplicate
+252073	252073
+253784	11	duplicate
+254024	40	duplicate
+254208	9	duplicate
+254392	321	duplicate
+254400	254400
+254403	254403
+254509	41	duplicate
+254630	321	duplicate
+254666	6	duplicate
+254683	5	duplicate
+254891	61	duplicate
+255733	1	duplicate
+257536	6	duplicate
+258440	1	duplicate
+259016	259016
+259058	6	duplicate
+259076	1	duplicate
+259091	1	duplicate
+259094	6	duplicate
+259107	120	duplicate
+259136	86	duplicate
+259153	41	duplicate
+259154	259154
+259155	259155

@@ -1,0 +1,29 @@
+# Compiled Python Files #
+#########################
+*.pyc
+
+# Edited text files #
+#####################
+*~
+
+# Log files #
+#############
+*.log
+
+# Package files #
+#################
+build/
+dist/
+*.egg-info/
+
+# pycache files #
+#################
+__pycache__/
+allele_tools/__pycache__/*
+
+# coverage files #
+##################
+coverage_reports/
+.coverage
+.coveragec
+codecov

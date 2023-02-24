@@ -1,29 +1,64 @@
 #!/usr/bin/env python
-from olctools.accessoryFunctions.accessoryFunctions import make_path, SetupLogging
-from profile_reduce import ProfileReduce
-from allele_profiler import read_profile
-from Bio.SeqRecord import SeqRecord
-from Bio import SeqIO
+
+"""
+Translate nucleotide alleles to amino acid, and remove duplicates
+"""
+
+# Standard imports
 from argparse import ArgumentParser
 from glob import glob
 import logging
+import shutil
+import sys
 import os
 
+# Third-party imports
+from olctools.accessoryFunctions.accessoryFunctions import make_path, SetupLogging
+from Bio.SeqRecord import SeqRecord
+from Bio import SeqIO
 
-class Translate(object):
+# Local imports
+from allele_tools.allele_profiler import read_profile
+from allele_tools.profile_reduce import ProfileReduce
+from allele_tools.methods import \
+    evaluate_translated_length, \
+    remove_combined_db_files
+
+
+class Translate:
+
+    """
+    Translate and reduce alleles
+    """
 
     def main(self):
+        """
+        Run the appropriate methods in the correct order
+        """
+        # Read in all the allele files
         self.load_alleles()
-        self.parse_alleles()
+        # Parse the alleles
+        self.parse_alleles(length_dict=self.length_dict)
+        # If a profile file has been provided, run the profiling methods
         if self.profile_file:
+            # Extract seq_type:allele comprehensions from the nucleotide profile file
             self.profile_data = read_profile(profile_file=self.profile_file)
+            # Create the amino acid profiles
             self.aa_profile()
-            reduce = ProfileReduce(profile=self.aa_profile_file,
-                                   names=self.gene_name_file)
+            # Remove duplicate profiles
+            reduce = ProfileReduce(
+                profile=self.aa_profile_file,
+                names=self.gene_name_file
+            )
             reduce.main()
+            # Read in the profile data again now that the profile file has been updated
             self.aa_profile_data = read_profile(profile_file=self.aa_profile_file)
+            # Find linkages between nucleotide and amino acid profiles
             self.profile_link()
+            # Write profile links to file
             self.link_file()
+            # Copy and rename the reduced profile file
+            self.copy_profile()
 
     def load_alleles(self):
         """
@@ -31,175 +66,624 @@ class Translate(object):
         """
         for allele_file in self.sequence_files:
             gene_name = os.path.splitext(os.path.basename(allele_file))[0]
+            # Add the gene name to the set of names
+            self.gene_names.add(gene_name)
             self.allele_dict[gene_name] = SeqIO.to_dict(SeqIO.parse(allele_file, 'fasta'))
 
-    def parse_alleles(self):
+    def parse_alleles(self, length_dict=None):
         """
-        Parse the allele files to translate the amino acid sequence using BioPython. Write the amino acid sequence to
-        file. Store the allele name in the notes. Find duplicates, and link the nucleotide allele name to the amino
-        acid allele name
+        Parse the allele files to translate the amino acid sequence using BioPython. Write the
+        amino acid sequence to file. Store the allele name in the notes. Find duplicates, and link
+        the nucleotide allele name to the amino acid allele name
+        :param length_dict: Dictionary of gene name: minimum acceptable length of translated sequence
         """
         logging.info('Translating and parsing alleles')
         for gene_name, allele_dict in self.allele_dict.items():
-            # Initialise the dictionary to store the links between the nt alleles and the aa alleles with the name of
-            # the gene
-            self.allele_links[gene_name] = dict()
-            logging.info(f'Processing {gene_name}')
+            # Initialise the dictionary to store the links between the nt alleles and the aa
+            # alleles with the name of the gene
+            self.allele_links[gene_name] = {}
+            #  Initialise a set of allele that do not pass the required filters, and
+            # must be removed from the database
+            remove_list = set()
+            logging.info('Processing %s', gene_name)
             # Initialise a dictionary to store the translated allele sequence: allele name
-            seq_allele = dict()
+            seq_allele = {}
+            # Set the name and path of the allele and notes files
+            allele_file = os.path.join(self.translated_path, f'{gene_name}.fasta')
+            notes_file = os.path.join(self.notes_path, f'{gene_name}_notes.txt')
             # Open the file to store the translated alleles
-            with open(os.path.join(self.translated_path, '{gn}.fasta'.format(gn=gene_name)), 'w') as aa_alleles:
+            with open(allele_file, 'w', encoding='utf-8') as aa_alleles:
                 # Open the notes file
-                with open(os.path.join(self.notes_path, '{gn}_notes.txt'.format(gn=gene_name)), 'w') as notes:
+                with open(notes_file, 'w', encoding='utf-8') as notes:
                     # Create the header for the notes file
                     notes.write('nt_allele\taa_allele\tnote\n')
                     # Iterate through all the alleles in the dictionary
                     for allele, details in allele_dict.items():
+                        # Create a list to store notes
+                        note = []
+                        # Create a boolean to track whether the sequence is filtered
+                        filtered = False
                         # Calculate the translated sequence
                         translated_allele = details.seq.translate()
-                        # Determine if this amino acid allele is new
-                        if str(translated_allele) not in seq_allele:
-                            # Add the string of the amino acid sequence to the dictionary
-                            seq_allele[str(translated_allele)] = allele
-                            # Create a SeqRecord of the translated allele
-                            seq_record = SeqRecord(seq=translated_allele,
-                                                   id=allele,
-                                                   name=str(),
-                                                   description=str())
-                            # Write the SeqRecord to file
-                            SeqIO.write(sequences=seq_record,
-                                        handle=aa_alleles,
-                                        format='fasta')
-                            # Update the notes with the allele naming information
-                            notes.write('{nt}\t{aa}\n'.format(nt=allele,
-                                                              aa=allele))
-                            # Populate the linking dictionary with the nt allele: aa allele
-                            self.allele_links[gene_name][allele.split('_')[-1]] = allele.split('_')[-1]
-                        # Amino acid allele already exists
-                        else:
-                            # Extract the allele name corresponding to the translated sequence
-                            aa_allele = seq_allele[str(translated_allele)]
-                            # Update the notes, including that this allele is a duplicate, and a pointer to the original
-                            notes.write('{nt}\t{aa}\tduplicate\n'.format(nt=allele,
-                                                                         aa=aa_allele))
-                            # Populate the linking dictionary with the nt allele: aa allele
-                            self.allele_links[gene_name][allele.split('_')[-1]] = aa_allele.split('_')[-1]
-                            if self.one_based:
-                                self.allele_links[gene_name]['0'] = '0'
+                        # Remove all sequence after a stop codon (*)
+                        split_allele = translated_allele.split('*')
+                        # Create a string to hold the trimmed sequence
+                        trimmed_seq = str()
+                        # If there are multiple stop codons in the sequence, trim to the first one
+                        if len(split_allele) > 2:
+                            if split_allele[1]:
+                                for trimmed in split_allele[1:]:
+                                    trimmed_seq += f'*{trimmed}'
                             else:
+                                for trimmed in split_allele[2:]:
+                                    trimmed_seq += f'*{trimmed}'
+                            note.append(f'Trimmed {trimmed_seq} from end')
+                        elif len(split_allele) == 1:
+                            pass
+                        else:
+                            if split_allele[-1] and not str(translated_allele).endswith('*'):
+                                trimmed_seq += split_allele[-1]
+                                note.append(f'Trimmed {trimmed_seq} from end')
+                        # Create a dictionary to store the allele nt sequences to check to see if
+                        # any are duplicates following trimming
+                        nt_sequences = {}
+                        if length_dict:
+                            filtered, note, nt_sequences, translated_allele = Translate.trim_alleles(
+                                note=note,
+                                allele=allele,
+                                sequence=details,
+                                gene_name=gene_name,
+                                nt_allele_path=self.path,
+                                trim_length=len(trimmed_seq),
+                                length_dict=length_dict,
+                                filtered=filtered,
+                                nt_sequences=nt_sequences
+                            )
+                        # If the allele has not been filtered through the trim_alleles
+                        if not filtered:
+                            # Determine if this amino acid allele is new
+                            if str(translated_allele) not in seq_allele:
+                                # Add the string of the amino acid sequence to the dictionary
+                                seq_allele[str(translated_allele)] = allele
+                                # Create a SeqRecord of the translated allele
+                                seq_record = SeqRecord(
+                                    seq=translated_allele,
+                                    id=allele,
+                                    name=str(),
+                                    description=str()
+                                )
+                                # Write the SeqRecord to file
+                                SeqIO.write(
+                                    sequences=seq_record,
+                                    handle=aa_alleles,
+                                    format='fasta'
+                                )
+                                # Update the notes with the allele naming information
+                                notes.write(f'{allele}\t{allele}\t{";".join(note)}\n')
+                                # Populate the linking dictionary with the nt allele: aa allele
+                                self.allele_links[gene_name][allele.split('_')[-1]] = \
+                                    allele.split('_')[-1]
+                            # Amino acid allele already exists
+                            else:
+                                # Extract the allele name corresponding to the translated sequence
+                                aa_allele = seq_allele[str(translated_allele)]
+                                # Update the notes, including that this allele is a duplicate, and a
+                                # pointer to the original
+                                notes.write(
+                                    f'{allele}\t{aa_allele}\tDuplicate'
+                                )
+                                if not note:
+                                    notes.write('\n')
+                                else:
+                                    notes.write(f'; {";".join(note)}\n')
+                                # Populate the linking dictionary with the nt allele: aa allele
+                                self.allele_links[gene_name][allele.split('_')[-1]] = \
+                                    aa_allele.split('_')[-1]
                                 self.allele_links[gene_name]['0'] = '0'
+                        # Filtered alleles must be removed from the database
+                        else:
+                            Translate.write_filtered_allele_notes(
+                                notes=notes,
+                                allele=allele,
+                                note=note,
+                            )
+                            remove_list.add(allele)
+                            # Create a SeqRecord of the translated allele
+                            seq_record = SeqRecord(
+                                seq=translated_allele,
+                                id=allele,
+                                name=str(),
+                                description=str()
+                            )
+                            # Write the filtered alleles to the filtered alleles file
+                            Translate.create_or_update_filtered_files(
+                                gene=gene_name,
+                                allele_path=self.translated_path,
+                                records_filter=[seq_record]
+                            )
+            # Remove the filtered sequences from the database
+            Translate.remove_filtered_alleles_from_db(
+                gene_name=gene_name,
+                allele_list=remove_list,
+                nt_allele_path=self.path,
+            )
+            self.load_alleles()
+
+    @staticmethod
+    def trim_alleles(note, allele, sequence, gene_name, nt_allele_path, trim_length, length_dict, filtered,
+                     nt_sequences):
+        """
+        Trim the alleles based on location of stop codons and whether the sequence is a multiple of three nucleotides.
+        Evaluate the trimmed sequence based on length and contents.
+        :param note: List of sequence-specific notes
+        :param allele: String of the allele identifier
+        :param sequence: SeqIO sequence object of nucleotide sequence
+        :param gene_name: String of the gene name to which the allele corresponds
+        :param nt_allele_path: String of the absolute path to the folder in which the nucleotide alleles are located
+        :param trim_length: Integer of the number of nucleotides to be trimmed (due to internal stop codons)
+        :param length_dict: Dictionary of minimum acceptable length for each gene in the analysis
+        :param filtered: Boolean to track whether the sequence fails the quality/length checks
+        :param nt_sequences: Dictionary of allele: sequence
+        :return: filtered: Updated boolean of whether the sequence fails quality/length checks
+        :return: note: Update list of sequence-specific notes
+        :return: nt_sequences: Updated dictionary of allele: sequence
+        :return: translated_allele: SeqIO sequence object of trimmed, translated allele
+        """
+        # Determine the length of sequence to trim from the end of the sequence
+        # Multiply the number of amino acid residues to trim by three to get the number of nucleotides
+        # Add the modulo three of the sequence to yield a final length divisible by three
+        nt_to_trim = 3 * trim_length + len(sequence) % 3
+        # Check if trimming is required
+        if nt_to_trim:
+            # Slice the string by the number of required bases at the end
+            sequence = sequence[:-nt_to_trim]
+            # Update the nucleotide sequence in the database with the trimmed version
+            Translate.update_allele_db(
+                nt_allele_path=nt_allele_path,
+                gene=gene_name,
+                allele=allele,
+                nt_sequence=sequence
+            )
+        # Translate the sequence to amino acid
+        translated_allele = sequence.seq.translate()
+        # Perform content and length checks of the protein sequence
+        filtered, note = evaluate_translated_length(
+            aa_seq=str(translated_allele),
+            length_dict=length_dict,
+            gene=gene_name,
+            notes=note,
+            filtered=filtered
+        )
+        # Search the amino acid database for matches
+        filtered, note, nt_sequences = Translate.find_duplicates(
+            nt_sequences=nt_sequences,
+            nt_sequence=sequence,
+            allele=allele,
+            filtered=filtered,
+            note=note
+        )
+        # Update the notes if the sequence does not end with a stop codon
+        if not str(translated_allele).endswith('*'):
+            note.append('Trimmed sequence did not end with a stop codon')
+        return filtered, note, nt_sequences, translated_allele
+    
+    @staticmethod
+    def update_allele_db(nt_allele_path, gene, allele, nt_sequence):
+        """
+        Update nucleotide allele files with newly trimmed sequences
+        :param nt_allele_path: String of the absolute path to the folder containing the nucleotide allele database
+        :param gene: String of the name of the current gene
+        :param allele: String of the allele header (geneName_alleleID)
+        :param nt_sequence: SeqIO object of the nucleotide sequence
+        """
+        # Set the name of the allele database file to update by joining the allele path and the gene name
+        nt_allele_file = os.path.join(nt_allele_path, f'{gene}.fasta')
+        # Create a list to store all database records (including modified ones)
+        updated_records = []
+        # Iterate over all the sequences in the nucleotide allele file
+        for record in SeqIO.parse(handle=nt_allele_file, format='fasta'):
+            # Check if the header of the database sequence matches the header of the query sequence
+            if record.id == allele:
+                # Update the record to be the query allele sequence object
+                record = nt_sequence
+            # Append the record to the list of records
+            updated_records.append(record)
+        # Overwrite the allele file with the records
+        SeqIO.write(updated_records, handle=nt_allele_file, format='fasta')
+    
+    @staticmethod
+    def find_duplicates(nt_sequences, nt_sequence, allele, filtered, note):
+        """
+        Match a query amino acid sequence against the protein allele database file
+        :param nt_sequences: Dictionary of allele: sequence
+        :param nt_sequence: SeqIO sequence object of the trimmed nucleotide sequence
+        :param allele: String of the allele header (geneName_alleleID)
+        :param filtered: Boolean of whether the sequence passes content/length filters
+        :param note: List of sequence-specific notes
+        :return: filtered: Updated boolean of sequence-specific content/length filtering results
+        :return: note: Updated list of sequence-specific notes
+        :return: nt_sequences: Updated list of allele: sequence
+        """
+        # Initialise a list to store any matches
+        matches = []
+        # Iterate over allele header, sequence in the dictionary
+        for prev_allele, nt_seq in nt_sequences.items():
+            # Check if the current nucleotide sequence matches a previous entry
+            if nt_sequence == nt_seq:
+                # Append matches to the list
+                matches.append(prev_allele)
+        # Check if the list has been populated with matches
+        if not matches:
+            # If no matches, update the dictionary with the novel sequence
+            nt_sequences[allele] = nt_sequences
+            return filtered, note, nt_sequences
+        # If there are matches
+        for match in matches:
+            # Set the filtering boolean to True (this is not a novel sequence, so do not update the database)
+            filtered = True
+            # Update the note
+            note.append(f'Trimmed nt sequence matches previous allele sequence: {match}')
+        return filtered, note, nt_sequences
+
+    @staticmethod
+    def write_filtered_allele_notes(notes, allele, note):
+        """
+        Write notes for filtered sequences to file
+        :param notes: Filehandle for notes file
+        :param allele: String of the allele header (geneName_alleleID)
+        :param note: List of sequence-specific notes
+        """
+        # Write the allele \t ND (because the sequence is filtered,there is no amino acid allele) \t
+        notes.write(f'{allele}\tND\tFiltered: {"; ".join(note)}\n')
+
+    @staticmethod
+    def remove_filtered_alleles_from_db(gene_name, allele_list, nt_allele_path):
+        """
+        Remove filtered sequences from the allele database file
+        :param gene_name: String of the gene name currently being analysed
+        :param allele_list: List of alleles to be removed from the database
+        :param nt_allele_path: String of the absolute path to the folder containing the nucleotide allele database
+        """
+        # Remove the combinedtargets.fasta and BLAST database files from the folder
+        remove_combined_db_files(
+            allele_path=nt_allele_path
+        )
+        # Set the name and path of the allele file
+        nt_allele_file = os.path.join(nt_allele_path, f'{gene_name}.fasta')
+        # Create a list of all the records in the database file using SeqIO
+        records = SeqIO.parse(nt_allele_file, 'fasta')
+        # Initialise a list to store unfiltered records
+        records_keep = []
+        # Initialise a list to store filtered records
+        records_filter = []
+        # Iterate over all the records in the database
+        for record in records:
+            # Check if the allele header matches any of the headers of alleles to be filtered
+            if record.id not in allele_list:
+                # If the record is not to be filtered, add it to the keep list
+                records_keep.append(record)
+            # If the record header matches any of the alleles to be filtered, add it to the filtered list
+            else:
+                records_filter.append(record)
+        # Overwrite the nucleotide allele database file with all the unfiltered records
+        with open(nt_allele_file, 'w', encoding='utf-8') as allele_file:
+            for record in records_keep:
+                SeqIO.write(
+                    sequences=record,
+                    handle=allele_file,
+                    format='fasta'
+                )
+        # Write the filtered records to the filtered records file
+        if records_filter:
+            Translate.create_or_update_filtered_files(
+                gene=gene_name,
+                allele_path=nt_allele_path,
+                records_filter=records_filter
+            )
+
+    @staticmethod
+    def create_or_update_filtered_files(gene, allele_path, records_filter):
+        """
+        Write the filtered alleles to the filtered alleles file
+        :param gene: String of the gene name currently being analysed
+        :param allele_path: String of the absolute path to the folder containing the allele database
+        :param records_filter: List of SeqIO sequence objects for alleles to be added to the filtered alleles file
+        """
+        # Set the name and path of the filtered alleles file
+        filtered_allele_file = os.path.join(allele_path, f'{gene}_filtered.txt')
+        # Append the filtered alleles to the file
+        with open(filtered_allele_file, 'a+', encoding='utf-8') as filtered_alleles:
+            for record in records_filter:
+                SeqIO.write(
+                    sequences=record,
+                    handle=filtered_alleles,
+                    format='fasta'
+                )
 
     def aa_profile(self):
         """
-
+        Create the amino acid profile
         """
-        profile_str = str()
-        for seq_type in sorted(int(st) for st in self.profile_data.keys()):
-            profile_str += str(seq_type) + '\t'
+        # Create a list to store profiles containing alleles that have been quality filtered
+        filtered_list = set()
+        # Initialise a dictionary to store sequenceType:geneName_alleleID
+        filtered_dict = {}
+        # Initialise a string to hold the profile
+        profile_str = ''
+        # Iterate through all the sequence types in the profile_data dictionary
+        for seq_type in sorted(int(st) for st in self.profile_data):
+            # Create a string to store the allele information
+            allele_string = str()
+            # Iterate through all the gene: allele entries in the nested dictionary
             for gene_name, allele in self.profile_data[str(seq_type)].items():
-                self.gene_names.add(gene_name)
-                profile_str += self.allele_links[gene_name][str(allele)] + '\t'
-            profile_str = profile_str.rstrip()
-            profile_str += '\n'
-        with open(self.aa_profile_file, 'w') as aa_profile:
+                try:
+                    # Extract the linked amino acid allele from the dictionary
+                    allele_string += self.allele_links[gene_name][str(allele)] + '\t'
+                except KeyError:
+                    filtered_list.add(seq_type)
+                    if seq_type not in filtered_dict:
+                        filtered_dict[seq_type] = []
+                    filtered_dict[seq_type].append(f'{gene_name}_{allele}')
+            if allele_string:
+                # Add the sequence type to the profile string
+                profile_str += f'{str(seq_type)}\t{allele_string}'
+                # Remove trailing whitespace and add a newline for proper formatting
+                profile_str = profile_str.rstrip()
+                profile_str += '\n'
+        # Create the amino acid profile file
+        with open(self.aa_profile_file, 'w', encoding='utf-8') as aa_profile:
+            # Create a string of tab-delimited gene names to be used in the header
             names = '\t'.join(sorted(list(self.gene_names)))
-            aa_profile.write('ST\t{names}\n'.format(names=names.rstrip()))
+            # Write the header string
+            aa_profile.write(f'ST\t{names.rstrip()}\n')
+            # Write the tab-delimited profile string
             aa_profile.write(profile_str)
-
-        with open(self.gene_name_file, 'w') as gene_file:
+        # Create the names file
+        with open(self.gene_name_file, 'w', encoding='utf-8') as gene_file:
+            # Write the names to file
             gene_file.write('\n'.join(sorted(list(self.gene_names))))
+        if filtered_list:
+            filtered_list = sorted(list(filtered_list))
+            # Remove the filtered profiles from the profile files
+            Translate.filter_profiles(
+                filtered_list=filtered_list,
+                profile_file=self.profile_file,
+            )
+            # Write the notes to file
+            Translate.filter_notes(
+                filtered_list=filtered_list,
+                filtered_dict=filtered_dict,
+                profile_path=os.path.dirname(self.profile_file)
+            )
+            self.profile_data = read_profile(profile_file=self.profile_file)
 
+    @staticmethod
+    def filter_profiles(filtered_list, profile_file):
+        """
+        Remove filtered profiles from the profile file. Write them to the filtered profile file
+        :param filtered_list: Set of filtered sequence types
+        :param profile_file: String of the absolute path to the profile file
+        """
+        # Initialise a list to store the filtered sequence types
+        filtered_rows = []
+        # Initialise a list to store the unfiltered sequence types
+        keep_rows = []
+        # Read in the profile files
+        with open(profile_file, 'r', encoding='utf-8') as profiles:
+            # Iterate over all the profiles in the profile files
+            for row in profiles:
+                # Extract the sequence type from the row
+                seq_type = row.split('\t')[0]
+                # Check if it is the header, which starts with 'ST'
+                if seq_type == 'ST':
+                    # Filter the header
+                    filtered_rows.append(row)
+                # Check to see if the sequence type of the row is present in the list of filtered sequence types
+                if str(seq_type) in [str(filtered) for filtered in filtered_list]:
+                    # Add the row to the list of filtered rows
+                    filtered_rows.append(row)
+                # Unfiltered rows are added to the list of unfiltered rows
+                else:
+                    keep_rows.append(row)
+        # Extract the absolute path of the folder in which the profile file is located
+        profile_path = os.path.dirname(profile_file)
+        # Overwrite the profile file with the unfiltered profiles
+        with open(os.path.join(profile_path, 'profile.txt'), 'w', encoding='utf-8') as updated_profile:
+            updated_profile.write(''.join(keep_rows))
+        # Overwrite the filtered profile file with the filtered profiles
+        with open(os.path.join(profile_path, 'filtered_profiles.txt'), 'w', encoding='utf-8') as filtered_profiles:
+            filtered_profiles.write(''.join(filtered_rows))
+
+    @staticmethod
+    def filter_notes(filtered_list, filtered_dict, profile_path):
+        """
+        Write the notes regarding profile filtering to file
+        :param filtered_list: Set of filtered sequence types
+        :param filtered_dict: Dictionary of sequenceType:geneName_alleleID
+        :param profile_path: String of the absolute path to the folder containing the profile file
+        :return:
+        """
+        # Set the absolute path of the file containing the profile filtering notes
+        filtered_notes = os.path.join(profile_path, 'filtering_notes.txt')
+        # Write the notes to file
+        with open(filtered_notes, 'w', encoding='utf-8') as notes:
+            # Create the header
+            notes.write('SequenceType\tFilteringNote\n')
+            # Create a new line for each filtered profile
+            for seq_type in filtered_list:
+                # Create a sting of the list of filtered alleles present in this profile
+                gene_allele = ';'.join(filtered_dict[seq_type])
+                # Write the sequence type and all the missing alleles to the note
+                notes.write(f'{seq_type}\t{gene_allele} missing\n')
+    
     def profile_link(self):
         """
-
+        Link nucleotide and amino profiles
         """
-        match_score = dict()
-        for st in self.profile_data:
-            self.profile_matches[st] = set()
-            match_score[st] = dict()
-            for gene, allele in self.profile_data[st].items():
-
-                for aa_st in self.aa_profile_data:
-                    # print('\t' + aa_st, self.aa_profile_data[aa_st][gene])
-                    # if allele == self.allele_links[gene][self.aa_profile_data[aa_st][gene]]:
-                    if self.aa_profile_data[aa_st][gene] == self.allele_links[gene][allele]:
-                        if aa_st not in match_score[st]:
-                            match_score[st][aa_st] = 0
-                        match_score[st][aa_st] += 1
-        for st, aa_st_dict in match_score.items():
+        # Initialise a dictionary to store to number of matches between a query profile and the profiles in the database
+        match_score = {}
+        # Iterate over all the profiles in the profile file
+        for seq_type, gene_dict in self.profile_data.items():
+            # Initialise the seq_type key in the dictionary
+            self.profile_matches[seq_type] = set()
+            match_score[seq_type] = {}
+            # Iterate over all the gene name, allele ID combinations in the profile dictionary
+            for gene, allele in gene_dict.items():
+                # Iterate over all the profiles in the amino acid profile file
+                for aa_st, aa_gene_dict in self.aa_profile_data.items():
+                    # Use the gene name to extract the amino acid allele ID from the profile file.
+                    # Also extract the amino acid allele ID from the linking dictionary with the gene name and
+                    # nucleotide allele ID. Check if they match
+                    if aa_gene_dict[gene] == self.allele_links[gene][allele]:
+                        # Initialise the amino acid sequence type in the dictionary
+                        if aa_st not in match_score[seq_type]:
+                            match_score[seq_type][aa_st] = 0
+                        # Increment the number of matches to the profile
+                        match_score[seq_type][aa_st] += 1
+        # Iterate over all the matches to the profiles in the profile file
+        for seq_type, aa_st_dict in match_score.items():
+            # Iterate over the amino acid sequence type matches
             for aa_st, matches, in aa_st_dict.items():
+                # Check if the number of matches observed is equal to the required number of matches (one for each gene)
                 if matches == len(self.gene_names):
-                    self.profile_matches[st].add(aa_st)
+                    # Update the dictionary of matches with the amino acid sequence type: nucleotide sequence type
+                    self.profile_matches[aa_st].add(seq_type)
 
     def link_file(self):
         """
-
-        :return:
+        Write linking details between nucleotide and amino acid profiles to file
         """
-        with open(self.aa_nt_profile_link_file, 'w') as link:
-            for st, match_set in self.profile_matches.items():
+        #
+        with open(self.aa_nt_profile_link_file, 'w', encoding='utf-8') as link:
+            # Write the header information
+            link.write('aa_seq_type\tnt_seq_types\n')
+            # Iterate over all the profile matches in the dictionary
+            for seq_type, match_set in self.profile_matches.items():
+                # Check the length of the match
                 if len(match_set) == 1:
-                    link.write('{nt_st}\t{aa_st}\n'.format(nt_st=st,
-                                                           aa_st=''.join(match_set)))
+                    # With a single match, convert the set to a string
+                    nt_st = ''.join(match_set)
+                    link.write(f'{seq_type}\t{nt_st}\n')
+                # Multiple profile matches
                 else:
-                    link.write('{nt_st}\t{aa_st}\n'.format(
-                        nt_st=st,
-                        aa_st=';'.join(str(aa_st) for aa_st in sorted(int(aa_st) for aa_st in match_set))))
+                    # Semicolon-join the set of matches. Since they are strings, first typecase to int for proper
+                    # sorting before converting back to strings
+                    nt_st = ';'.join(str(nt_st) for nt_st in sorted(int(nt_st) for nt_st in match_set))
+                    link.write(f'{seq_type}\t{nt_st}\n')
 
-    def __init__(self, path, profile, one_based):
+    def copy_profile(self):
+        """
+        Copy the reduced profile file from the profile folder to the base aa_profile folder
+        """
+        # Use shutil to copy and rename the profile file to the root of the report path
+        shutil.copyfile(
+            src=os.path.join(self.report_path, 'profile', 'profile.txt'),
+            dst=os.path.join(self.report_path, 'profile.txt')
+        )
+
+    def __init__(self, path, profile, report_path='aa_profile', translated_path='aa_alleles', length_dict=None):
+
         logging.info('Welcome to the allele translator!')
         if path.startswith('~'):
             self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
         else:
             self.path = os.path.abspath(os.path.join(path))
         if profile:
-            self.profile_file = os.path.join(self.path, 'profile', 'profile.txt')
-            assert os.path.isfile(self.profile_file), 'Cannot locate the required profile file: {profile}. Please ' \
-                                                      'ensure that the file name and path of your file is correct'\
-                .format(profile=self.profile_file)
+            if not os.path.isfile(profile):
+                self.profile_file = os.path.join(self.path, 'nt_profile', 'profile.txt')
+            else:
+                self.profile_file = profile
+            try:
+                assert os.path.isfile(self.profile_file)
+            except AssertionError as exc:
+                logging.error(
+                    'Cannot locate the required profile file: %s. Please ensure that '
+                    'the file name and path of your file is correct', self.profile_file
+                )
+                raise SystemExit from exc
         else:
             self.profile_file = None
-        self.one_based = one_based
         self.sequence_files = glob(os.path.join(self.path, '*.fasta'))
-        self.translated_path = os.path.join(self.path, 'aa_alleles')
-        self.notes_path = os.path.join(self.path, 'notes')
+        try:
+            assert self.sequence_files
+        except AssertionError as exc:
+            logging.error('Could not locate alleles in provided allele path: %s', self.path)
+            raise SystemExit from exc
+        if report_path.startswith('~'):
+            self.report_path = os.path.abspath(os.path.expanduser(os.path.join(report_path)))
+        else:
+            self.report_path = os.path.abspath(os.path.join(report_path))
+        make_path(inpath=self.report_path)
+        if translated_path.startswith('~'):
+            self.translated_path = os.path.abspath(
+                os.path.expanduser(os.path.join(translated_path))
+            )
+        else:
+            self.translated_path = os.path.abspath(os.path.join(translated_path))
         make_path(inpath=self.translated_path)
+        self.notes_path = os.path.join(self.translated_path, 'notes')
         make_path(inpath=self.notes_path)
-        self.allele_dict = dict()
-        self.profile_data = dict()
-        self.allele_links = dict()
-        self.aa_profile_path = os.path.join(self.path, 'aa_profile')
-        make_path(self.aa_profile_path)
-        self.aa_profile_file = os.path.join(self.aa_profile_path, 'aa_profile.txt')
+        self.length_dict = length_dict
+        self.allele_dict = {}
+        self.profile_data = {}
+        self.allele_links = {}
+        self.aa_profile_file = os.path.join(self.report_path, 'aa_full_profile.txt')
         self.gene_names = set()
-        self.gene_name_file = os.path.join(self.aa_profile_path, 'gene_names.txt')
-        self.aa_profile_data = dict()
-        self.profile_matches = dict()
-        self.aa_nt_profile_link_file = os.path.join(self.aa_profile_path, 'reports', 'aa_nt_profile_links.tsv')
+        self.gene_name_file = os.path.join(self.report_path, 'gene_names.txt')
+        self.aa_profile_data = {}
+        self.profile_matches = {}
+        self.aa_nt_profile_link_file = os.path.join(
+            self.report_path,
+            'aa_nt_profile_links.tsv'
+        )
 
 
 def cli():
+    """
+    Collect the arguments, create an object, and run the script
+    """
     # Parser for arguments
-    parser = ArgumentParser(description='Translate allele files in nucleotide format to amino acid. '
-                                        'Remove duplicates. Keep notes.')
-    parser.add_argument('-p', '--path',
-                        required=True,
-                        help='Specify path containing allele files.')
-    parser.add_argument('--profile',
-                        action='store_true',
-                        help='Optionally parse the nucleic acid profile, and create the corresponding reduced amino '
-                             'acid profile')
-    parser.add_argument('-o', '--one_based',
-                        action='store_true',
-                        help='Use 1-based indexing rather than the default 0-based')
+    parser = ArgumentParser(
+        description='Translate allele files in nucleotide format to amino acid. '
+                    'Remove duplicates. Keep notes.'
+    )
+    parser.add_argument(
+        '-p', '--path',
+        required=True,
+        help='Specify path containing allele files.'
+    )
+    parser.add_argument(
+        '--profile',
+        action='store_true',
+        help='Optionally parse the nucleic acid profile, and create the corresponding reduced '
+             'amino acid profile. The profile must be named profile.txt and be located in nt_profile folder in the path'
+    )
+    parser.add_argument(
+        '--report_path',
+        default=os.path.join(os.getcwd(), 'aa_profile'),
+        help='Optionally provide the name (and path, if desired) of the folder into which the amino acid profile '
+             'and related files are to be written. Default folder is "aa_profile" in your current working directory'
+    )
+    parser.add_argument(
+        '--translated_path',
+        default=os.path.join(os.getcwd(), 'aa_alleles'),
+        help='Optionally provide the name (and path, if desired) of the folder into which the amino acid alleles '
+             'and notes are to be written. Default folder is "aa_alleles" in your current working directory'
+    )
     # Get the arguments into an object
     arguments = parser.parse_args()
     SetupLogging(debug=True)
-    translate = Translate(path=arguments.path,
-                          profile=arguments.profile,
-                          one_based=arguments.one_based)
+    translate = Translate(
+        path=arguments.path,
+        profile=arguments.profile,
+        report_path=arguments.report_path,
+        translated_path=arguments.translated_path
+    )
     translate.main()
     logging.info('Allele translation complete!')
+    # Prevent the arguments being printed to the console (they are returned in order for the tests to work)
+    sys.stderr = open(os.devnull, 'w', encoding='utf-8')
+    return arguments
 
 
 if __name__ == '__main__':

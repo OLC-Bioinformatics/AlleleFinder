@@ -1,21 +1,40 @@
 #!/usr/bin/env python3
-from setuptools import setup, find_packages
+"""
+Set up the package
+"""
+
+# Standard inputs
+from distutils.util import convert_path
 import os
+
+# Third party inputs
+from setuptools import setup, find_packages
+
+# Find the version
+version = {}
+with open(convert_path(os.path.join('allele_tools', 'version.py')), 'r',
+          encoding='utf8') as version_file:
+    for line in version_file:
+        if line.startswith('__'):
+            string, version_string = line.rstrip().split(' = ')
+            version[string] = version_string
+
 setup(
     name="AlleleFinder",
-    version="0.0.3",
+    version=version['__version__'],
     scripts=[
-    	os.path.join('allele_tools', 'allele_finder.py'),
-    	os.path.join('allele_tools', 'allele_profiler.py'),
-    	os.path.join('allele_tools', 'allele_updater.py'),
-    	os.path.join('allele_tools', 'allele_translate_reduce.py'),
-    	os.path.join('allele_tools', 'probe_creator.py'),
-    	os.path.join('allele_tools', 'profile_reduce.py'),
-    	os.path.join('allele_tools', 'stec_attributer.py'),
+        os.path.join('allele_tools', 'allele_finder.py'),
+        os.path.join('allele_tools', 'allele_profiler.py'),
+        os.path.join('allele_tools', 'allele_updater.py'),
+        os.path.join('allele_tools', 'allele_translate_reduce.py'),
+        os.path.join('allele_tools', 'probe_creator.py'),
+        os.path.join('allele_tools', 'profile_reduce.py'),
+        os.path.join('allele_tools', 'stec_attributer.py'),
+        os.path.join('allele_tools', 'stec.py')
     ],
     packages=find_packages(),
     include_package_data=True,
     author="Adam Koziol",
-    author_email="adam.koziol@canada.ca",
+    author_email="adam.koziol@inspection.gc.ca",
     url="https://github.com/OLC-Bioinformatics/AlleleFinder",
 )
