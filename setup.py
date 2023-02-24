@@ -23,13 +23,13 @@ setup(
     name="AlleleFinder",
     version=version['__version__'],
     scripts=[
-        os.path.join('allele_tools', 'allele_finder.py'),
+        # os.path.join('allele_tools', 'allele_finder.py'),
         os.path.join('allele_tools', 'allele_profiler.py'),
         os.path.join('allele_tools', 'allele_updater.py'),
         os.path.join('allele_tools', 'allele_translate_reduce.py'),
-        os.path.join('allele_tools', 'probe_creator.py'),
+        # os.path.join('allele_tools', 'probe_creator.py'),
         os.path.join('allele_tools', 'profile_reduce.py'),
-        os.path.join('allele_tools', 'stec_attributer.py'),
+        # os.path.join('allele_tools', 'stec_attributer.py'),
         os.path.join('allele_tools', 'stec.py')
     ],
     packages=find_packages(),
