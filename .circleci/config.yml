@@ -9,11 +9,11 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  azure-storage:
+  allelefinder:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
-      - image: ubuntu:20.04
+      - image: ubuntu:22.04
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
@@ -23,15 +23,14 @@ jobs:
           command: |
             apt update
             apt install -y wget coreutils curl gnupg
-            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $HOME/miniconda.sh;
-            bash $HOME/miniconda.sh -b -p $HOME/miniconda
-            export PATH="$HOME/miniconda/bin:$PATH"
-            conda config --set always_yes yes --set changeps1 no
-            conda update -y conda
-            conda config --add channels conda-forge
-            conda create -n allelefinder -c olcbioinformatics allelefinder=0.0.5
+            wget -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+            bash Mambaforge.sh -b -p "${HOME}/conda"
+            source "${HOME}/conda/etc/profile.d/conda.sh"
+            source "${HOME}/conda/etc/profile.d/mamba.sh"
+            conda activate
+            mamba create -n allelefinder -c olcbioinformatics allelefinder=0.0.5
             source activate allelefinder
-            python -m pytest tests/ --cov=allele_tools --cov-config=.coveragec --cov-report=xml:test_reports/allele_finder.xml
+            python -m pytest tests/ --cov=allele_tools/ --cov-config=.coveragec --cov-report=xml:test_reports/allele_finder.xml
       - store_artifacts:
           path: test_reports/
           destination: circleci-docs
@@ -41,7 +40,7 @@ jobs:
 workflows:
     build_and_test:
         jobs:
-          - azure-storage:
+          - allelefinder:
               filters:
                 branches:
                   ignore: gh-pages
