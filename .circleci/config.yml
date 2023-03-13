@@ -32,7 +32,7 @@ jobs:
             conda activate
             mamba create -n allelefinder -c olcbioinformatics allelefinder=0.0.5
             source activate allelefinder
-            python -m pytest tests/ --cov=allele_tools/ --cov-config=.coveragec --cov-report=xml:test_reports/allele_finder.xml
+            python -m pytest tests/ --cov=allele_tools/ --cov-config=.coveragec --cov-report=xml:test_reports/allele_finder.xml -s
       - store_artifacts:
           path: test_reports/
           destination: circleci-docs
