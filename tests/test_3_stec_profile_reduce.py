@@ -3,11 +3,13 @@
 """
 Unit and integration tests for allele_tools/stec.py Only testing the profile_reduce functionality
 """
-
+import shutil
 # Standard imports
 from unittest.mock import patch
 import argparse
 import os
+
+import pytest
 
 # Local imports
 from allele_tools.stec import \
@@ -70,8 +72,67 @@ def test_notes_length(variables):
     test_output_notes_length(variables=variables)
 
 
+@patch('argparse.ArgumentParser.parse_args')
+def test_stec_profile_reduce_integration_no_genes(mock_args, variables):
+    with pytest.raises(SystemExit):
+        mock_args.return_value = argparse.Namespace(
+            profile_file=variables.profile,
+            gene_names=variables.names + '.fake',
+            output_folder=variables.output_path
+        )
+        arguments = cli()
+        profile_reduce(args=arguments)
+
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_stec_profile_reduce_integration_no_folder(mock_args, variables):
+    variables.fake_dir = os.path.join(variables.file_path, 'fake')
+    fake_names = os.path.join(variables.fake_dir, variables.names)
+    os.makedirs(variables.fake_dir)
+    mock_args.return_value = argparse.Namespace(
+        profile_file=variables.profile,
+        gene_names=fake_names,
+        output_folder=variables.output_path
+    )
+    arguments = cli()
+    profile_reduce(args=arguments)
+    assert os.path.isdir(variables.fake_dir)
+
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_stec_profile_reduce_integration_no_file_or_folder(mock_args, variables):
+    with pytest.raises(SystemExit):
+        variables.fake_dir_fake = os.path.join(variables.file_path, 'fake_fake')
+        fake_names = os.path.join(variables.fake_dir_fake, 'fake.txt')
+        mock_args.return_value = argparse.Namespace(
+            profile_file=variables.profile,
+            gene_names=fake_names,
+            output_folder=variables.output_path
+        )
+        arguments = cli()
+        profile_reduce(args=arguments)
+
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_stec_profile_reduce_integration_empty_file(mock_args, variables):
+    with pytest.raises(SystemExit):
+        variables.fake_dir_two = os.path.join(variables.file_path, 'fake_path')
+        os.makedirs(variables.fake_dir_two)
+        fake_names = os.path.join(variables.fake_dir_two, 'fake.txt')
+        with open(fake_names, 'w', encoding='utf-8') as fake:
+            fake.write('')
+        mock_args.return_value = argparse.Namespace(
+            profile_file=variables.profile,
+            gene_names=fake_names,
+            output_folder=variables.output_path
+        )
+        arguments = cli()
+        profile_reduce(args=arguments)
+
+
 def test_clean_up(variables):
     from .test_0_profile_reduce import test_output_clean_up
     test_output_clean_up(variables=variables)
-
-
+    shutil.rmtree(variables.fake_dir)
+    shutil.rmtree(variables.fake_dir_two)
+    os.remove(variables.names + '.fake')
