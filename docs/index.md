@@ -1,19 +1,21 @@
 ## STEC AlleleFinder
 
-A suite of tools, written in Python, designed for the discovery, sequence typing, and profiling of Shiga toxin-producing _E. coli_  
+A suite of tools, written in Python, designed for the discovery, sequence typing, and profiling the _stx_ alleles of Shiga toxin-producing _E. coli_  
+
+## Installation
+
+Detailed installation instructions are provided [here](https://olc-bioinformatics.github.io/AlleleFinder/installation)
 
 ## Scripts
 
 There is a single STEC script with five separate functionalities:
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+1. [`profile_reduce`](profile_reduce.md)
+2. [`allele_translate_reduce`](allele_translate_reduce.md)
+3. [`allele_find`](allele_find.md)
+4. [`aa_allele_find`](aa_allele_find.md)
+5. [`allele_split`](allele_split.md)
 
-## Project layout
+## Feedback
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+If you encounter any issues installing or running AlleleFinder, have feature requests, or need assistance, please [open an issue on GitHub](https://github.com/OLC-Bioinformatics/AlleleFinder/issues/new/choose)

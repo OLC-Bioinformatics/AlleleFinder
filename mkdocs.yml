@@ -1,1 +1,16 @@
-site_name: AlleleFinder
+site_name: OLC Bioinformatics AlleleFinder
+site_url:  https://OLC-Bioinformatics.github.io/AlleleFinder/
+site_description: Tools designed for discovery, sequence typing, and profiling the _stx_ alleles in Shiga toxin-producing _E. coli_
+repo_url:  https://github.com/OLC-Bioinformatics/AlleleFinder/
+edit_uri: edit/main/docs/
+theme: readthedocs
+
+nav:
+  - Home: 'index.md'
+  - Installation: 'installation.md'
+  - Downloads: 'downloads.md'
+  - Profile Reduction: 'profile_reduce.md'
+  - Allele Translation/Reduction: 'allele_translate_reduce.md'
+  - Allele Finding: 'allele_find.md'
+  - Amino Acid Allele Finding: 'aa_allele_find.md'
+  - Allele Splitting: 'allele_split.md'
