@@ -12,12 +12,8 @@ from setuptools import setup, find_packages
 
 # Find the version
 version = {}
-with open(convert_path(os.path.join('allele_tools', 'version.py')), 'r',
-          encoding='utf8') as version_file:
-    for line in version_file:
-        if line.startswith('__'):
-            string, version_string = line.rstrip().split(' = ')
-            version[string] = version_string
+with open(convert_path(os.path.join('allele_tools', 'version.py')), 'r') as version_file:
+    exec(version_file.read(), version)
 
 setup(
     name="AlleleFinder",
