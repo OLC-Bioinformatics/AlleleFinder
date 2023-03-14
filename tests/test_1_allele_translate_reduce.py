@@ -188,3 +188,4 @@ def test_allele_translate_reduce_missing_alleles(variables):
             translated_path=variables.aa_allele_path,
             length_dict=variables.length_dict
         )
+    clean_outputs(variables=variables)
