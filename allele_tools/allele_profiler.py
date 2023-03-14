@@ -5,18 +5,13 @@ Perform allele profiling
 """
 
 # Standard imports
-from argparse import ArgumentParser
 from csv import DictReader
-import multiprocessing
 from glob import glob
 import logging
-import shutil
 import json
 import os
 
 # Third party imports
-from Bio.Blast.Applications import NcbiblastnCommandline, NcbitblastnCommandline
-from Bio.Application import ApplicationError
 from Bio.Seq import Seq
 from Bio import SeqIO
 
@@ -24,12 +19,7 @@ from Bio import SeqIO
 # Local imports
 from allele_tools.methods import \
      extract_novel_alleles
-from olctools.accessoryFunctions.accessoryFunctions import combinetargets, \
-    GenObject, \
-    make_path, \
-    MetadataObject, \
-    run_subprocess, \
-    SetupLogging
+from olctools.accessoryFunctions.accessoryFunctions import combinetargets
 from genemethods.geneseekr.geneseekr import GeneSeekr
 
 
