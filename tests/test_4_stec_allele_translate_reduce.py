@@ -10,6 +10,8 @@ import argparse
 import shutil
 import os
 
+import pytest
+
 # Local imports
 from allele_tools.stec import \
     translate_reduce, \
@@ -68,3 +70,29 @@ def test_stec_profile_end(variables):
 
 def test_stec_clean_outputs(variables):
     clean_outputs(variables=variables)
+
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_allele_translate_reduce_integration_no_gene_path(mock_args, variables):
+    with pytest.raises(SystemExit):
+        mock_args.return_value = argparse.Namespace(
+            allele_path=variables.nt_allele_path,
+            profile_file=variables.nt_profile,
+            report_path=variables.aa_profile_path,
+            translated_path=variables.aa_allele_path
+        )
+        arguments = cli()
+        translate_reduce(args=arguments)
+
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_allele_translate_reduce_integration_no_gene_file(mock_args, variables):
+    with pytest.raises(SystemExit):
+        mock_args.return_value = argparse.Namespace(
+            allele_path=variables.nt_allele_path,
+            profile_file=variables.nt_profile,
+            report_path=variables.aa_profile_path,
+            translated_path=variables.aa_allele_path
+        )
+        arguments = cli()
+        translate_reduce(args=arguments)
