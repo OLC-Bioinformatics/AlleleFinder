@@ -22,7 +22,8 @@ from allele_tools.allele_profiler import read_profile
 from allele_tools.profile_reduce import ProfileReduce
 from allele_tools.methods import \
     evaluate_translated_length, \
-    remove_combined_db_files
+    remove_combined_db_files, \
+    pathfinder
 
 
 class Translate:
@@ -419,10 +420,13 @@ class Translate:
                 try:
                     # Extract the linked amino acid allele from the dictionary
                     allele_string += self.allele_links[gene_name][str(allele)] + '\t'
+                # If the gene name + allele ID is not in the allele link dictionary, add the sequence type to the set
                 except KeyError:
                     filtered_list.add(seq_type)
+                    # Initialise the sequence type key in the filtered dictionary as required
                     if seq_type not in filtered_dict:
                         filtered_dict[seq_type] = []
+                    # Update the dictionary with the filtered geneName_alleleIdentifier
                     filtered_dict[seq_type].append(f'{gene_name}_{allele}')
             if allele_string:
                 # Add the sequence type to the profile string
@@ -584,10 +588,7 @@ class Translate:
     def __init__(self, path, profile, report_path='aa_profile', translated_path='aa_alleles', length_dict=None):
 
         logging.info('Welcome to the allele translator!')
-        if path.startswith('~'):
-            self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
-        else:
-            self.path = os.path.abspath(os.path.join(path))
+        self.path = pathfinder(path=path)
         if profile:
             if not os.path.isfile(profile):
                 self.profile_file = os.path.join(self.path, 'nt_profile', 'profile.txt')
@@ -609,17 +610,9 @@ class Translate:
         except AssertionError as exc:
             logging.error('Could not locate alleles in provided allele path: %s', self.path)
             raise SystemExit from exc
-        if report_path.startswith('~'):
-            self.report_path = os.path.abspath(os.path.expanduser(os.path.join(report_path)))
-        else:
-            self.report_path = os.path.abspath(os.path.join(report_path))
+        self.report_path = pathfinder(path=report_path)
         make_path(inpath=self.report_path)
-        if translated_path.startswith('~'):
-            self.translated_path = os.path.abspath(
-                os.path.expanduser(os.path.join(translated_path))
-            )
-        else:
-            self.translated_path = os.path.abspath(os.path.join(translated_path))
+        self.translated_path = pathfinder(path=translated_path)
         make_path(inpath=self.translated_path)
         self.notes_path = os.path.join(self.translated_path, 'notes')
         make_path(inpath=self.notes_path)
