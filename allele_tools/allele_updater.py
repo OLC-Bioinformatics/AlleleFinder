@@ -36,7 +36,8 @@ from allele_tools.methods import \
     update_allele_database, \
     translate, \
     query_prep, \
-    blast_alleles
+    blast_alleles, \
+    pathfinder
 
 __author__ = 'adamkoziol'
 
@@ -189,7 +190,8 @@ class Updater:
                     runmetadata=sample,
                     profile_dict={},
                     profile_set=[],
-                    gene_names=gene_names
+                    gene_names=gene_names,
+                    amino_acid=False
                 )
                 aa_profile_data = read_profile(profile_file=self.aa_profile_file)
                 aa_profile_matches = match_profile(
@@ -291,13 +293,15 @@ class Updater:
                     self.aa_nt_allele_link_dict[gene][record.id] = allele_dict[str(record.seq)]
         return aa_allele_file
 
-    def aa_allele_match(self, runmetadata, profile_dict, profile_set, gene_names):
+    def aa_allele_match(self, runmetadata, profile_dict, profile_set, gene_names, amino_acid):
         """
         Find match the alleles in the current sample to alleles in the database
         :param runmetadata: List of metadata objects for the current sample
         :param profile_dict: Dictionary to store gene:allele profile for each sample
         :param profile_set: List of all unique profiles
         :param gene_names: List of all gene names in the analysis
+        :param amino_acid: Variable indicating whether the current analyses are on DNA or
+        amino acid sequences
         :return: profile_dict and profile_set updated with the results from the current sample
         """
         for sample in runmetadata.samples:
@@ -323,7 +327,8 @@ class Updater:
                         gene=gene,
                         query_sequence=allele_seq,
                         allele_path=self.aa_allele_path,
-                        report_path=self.aa_report_path
+                        report_path=self.aa_report_path,
+                        amino_acid=amino_acid
                     )
                     if novel_allele:
                         allele_comprehension.update({gene: novel_allele.split('_')[-1]})
@@ -514,10 +519,7 @@ class Updater:
                 notes.write(f'{str(nt_allele)}\t{aa_alleles}\n')
 
     def __init__(self, path, amino_acid):
-        if path.startswith('~'):
-            self.path = os.path.abspath(os.path.expanduser(os.path.join(path)))
-        else:
-            self.path = os.path.abspath(os.path.join(path))
+        self.path = pathfinder(path=path)
         self.allele_path = os.path.join(self.path, 'nt_alleles')
         self.aa_allele_path = os.path.join(self.path, 'aa_alleles')
         self.profile_path = os.path.join(self.path, 'nt_profile')
