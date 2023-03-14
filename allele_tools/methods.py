@@ -610,12 +610,14 @@ def update_allele_databases(query_sequence, header, filtered, gene, report_path,
                            id=header,
                            name='',
                            description='')
+    # Create a string to prepend to allele file names
+    molecule_str = 'nt' if molecule == 'Nucleotide' else 'aa'
     # Set the correct files depending on the filtering status
     if not filtered:
-        new_alleles = os.path.join(report_path, f'{gene}_novel_alleles.fasta')
+        new_alleles = os.path.join(report_path, f'{molecule_str}_{gene}_novel_alleles.fasta')
         allele_file = os.path.join(allele_path, f'{gene}.fasta')
     else:
-        new_alleles = os.path.join(report_path, f'{gene}_filtered_alleles.fasta')
+        new_alleles = os.path.join(report_path, f'{molecule_str}_{gene}_filtered_alleles.fasta')
         allele_file = os.path.join(allele_path, f'{gene}_filtered.txt')
     records = []
     # Iterate through all the records in the allele database
@@ -1084,30 +1086,36 @@ def extract_novel_alleles(sample, gene, genome_query, amino_acid, allele_path, r
                 else:
                     query_sequence = target_seq
                 best_hit = perc_id
+
     # If a query sequence was extracted, use it to update the allele database
     if query_sequence:
         novel_allele = update_allele_database(
             gene=gene,
             query_sequence=query_sequence,
             allele_path=allele_path,
-            report_path=report_path
+            report_path=report_path,
+            amino_acid=amino_acid,
         )
     return sample, novel_allele, query_sequence
 
 
-def update_allele_database(gene, query_sequence, allele_path, report_path):
+def update_allele_database(gene, query_sequence, allele_path, report_path, amino_acid):
     """
     Update the allele database with the novel allele extracted above
     :param gene: Name of the current gene being examined
     :param query_sequence: Sequence of the novel allele
     :param allele_path: Name and absolute path to folder containing allele files
     :param report_path: Name and absolute path to folder in which reports are to be created
+    :param amino_acid: Variable indicating whether the current analyses are on DNA or
+    amino acid sequences
     :return: novel_allele: Name of the novel allele entered into the database
     """
     # Find the allele database file
     allele_file = glob(os.path.join(allele_path, f'{gene}*.*fa*'))[0]
+    # Set the appropriate molecule type based on the current analysis
+    molecule = 'nt' if not amino_acid else 'aa'
     # Set the name of the novel allele file in the report path
-    new_alleles = os.path.join(report_path, f'{gene}_novel_alleles.fasta')
+    new_alleles = os.path.join(report_path, f'{molecule}_{gene}_novel_alleles.fasta')
     # Initialise a variable to store the name of the last allele in the database file
     last_id = str()
     # Create a list to store all the allele records in the database
