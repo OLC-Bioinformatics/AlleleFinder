@@ -155,34 +155,14 @@ class STEC:
     def __init__(self, allele_path, aa_allele_path, profile_file, aa_profile_file, query_path, report_path,
                  amino_acid=False):
 
-        if allele_path.startswith('~'):
-            self.nt_allele_path = os.path.abspath(os.path.expanduser(os.path.join(allele_path)))
-        else:
-            self.nt_allele_path = os.path.abspath(os.path.join(allele_path))
-        if aa_allele_path.startswith('~'):
-            self.aa_allele_path = os.path.abspath(os.path.expanduser(os.path.join(aa_allele_path)))
-        else:
-            self.aa_allele_path = os.path.abspath(os.path.join(aa_allele_path))
-        if profile_file.startswith('~'):
-            self.nt_profile_file = os.path.abspath(os.path.expanduser(os.path.join(profile_file)))
-        else:
-            self.nt_profile_file = os.path.abspath(os.path.join(profile_file))
-        if aa_profile_file.startswith('~'):
-            self.aa_profile_file = os.path.abspath(
-                os.path.expanduser(os.path.join(aa_profile_file))
-            )
-        else:
-            self.aa_profile_file = os.path.abspath(os.path.join(aa_profile_file))
+        self.nt_allele_path = pathfinder(path=allele_path)
+        self.aa_allele_path = pathfinder(path=aa_allele_path)
+        self.nt_profile_file = pathfinder(path=profile_file)
+        self.aa_profile_file = pathfinder(path=aa_profile_file)
         self.profile_path = os.path.dirname(self.nt_profile_file)
         self.aa_profile_path = os.path.dirname(self.aa_profile_file)
-        if query_path.startswith('~'):
-            self.query_path = os.path.abspath(os.path.expanduser(os.path.join(query_path)))
-        else:
-            self.query_path = os.path.abspath(os.path.join(query_path))
-        if report_path.startswith('~'):
-            self.report_path = os.path.abspath(os.path.expanduser(os.path.join(report_path)))
-        else:
-            self.report_path = os.path.abspath(os.path.join(report_path))
+        self.query_path = pathfinder(path=query_path)
+        self.report_path = pathfinder(path=report_path)
         self.aa_report_path = self.report_path
         make_path(inpath=self.report_path)
         novel_alleles = glob(os.path.join(self.report_path, '*.fasta'))
@@ -360,6 +340,8 @@ def profile_reduce(args):
     # Create the gene names file if it doesn't exist or is empty
     genes_path = os.path.dirname(args.gene_names)
     genes_file = os.path.basename(args.gene_names)
+    logging.info(genes_path)
+    logging.info(genes_file)
     if not os.path.isfile(args.gene_names):
         # Ensure that the path exists
         if not os.path.isdir(genes_path):
