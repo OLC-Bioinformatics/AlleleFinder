@@ -27,3 +27,7 @@ coverage_reports/
 .coverage
 .coveragec
 codecov
+
+# mkdocs files #
+################
+site/
