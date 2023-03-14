@@ -12,6 +12,7 @@ import shutil
 import os
 
 # Third-party imports
+from Bio import SeqIO
 import pytest
 
 # Local imports
@@ -142,7 +143,7 @@ def test_report_contents(variables):
 
 
 def test_novel_alleles(variables):
-    novel_allele_file = os.path.join(variables.report_path, 'ECs1205_novel_alleles.fasta')
+    novel_allele_file = os.path.join(variables.report_path, 'nt_ECs1205_novel_alleles.fasta')
     novel_alleles = open(novel_allele_file, 'r', encoding='utf-8').readlines()
     assert novel_alleles[0] == '>ECs1205_875\n'
     clean_outputs(variables=variables)
@@ -175,4 +176,24 @@ def test_allele_updater_integration_aa_query(mock_args, variables):
 def test_aa_report_contents(variables):
     aa_report_contents = open(variables.aa_report_file, 'r', encoding='utf-8').readlines()
     assert aa_report_contents[2] == 'ECs1205_11	2	11	0\n'
+    clean_outputs(variables=variables)
+
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_allele_updater_integration_new_aa_files(mock_args, variables):
+    prepare_files(variables=variables)
+    shutil.rmtree(variables.aa_allele_path)
+    mock_args.return_value = argparse.Namespace(
+        path=variables.file_path,
+        amino_acid=False,
+    )
+    cli()
+    assert os.path.isfile(variables.report_file)
+
+
+def test_novel_aa_alleles(variables):
+    novel_aa_allele_file = os.path.join(variables.aa_allele_path, 'ECs1206_alleles.fasta')
+    records = list(SeqIO.parse(novel_aa_allele_file, 'fasta'))
+    assert records[0].seq == \
+           'MKKMFMAVLFALASVNAMAADCAKGKIEFSKYNEDDTFTVKVDGKEYWTSRWNLQPLLQSAQLTGMTVTIKSSTCESGSGFAEVQFNND*'
     clean_outputs(variables=variables)
