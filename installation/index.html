@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/installation/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Installation - OLC Bioinformatics AlleleFinder</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Installation";
+        var mkdocs_page_input_path = "installation.md";
+        var mkdocs_page_url = "/AlleleFinder/installation/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> OLC Bioinformatics AlleleFinder
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Installation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#conda">Conda</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#allelefinder">AlleleFinder</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../downloads/">Downloads</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../profile_reduce/">Profile Reduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_translate_reduce/">Allele Translation/Reduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_find/">Allele Finding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../aa_allele_find/">Amino Acid Allele Finding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_split/">Allele Splitting</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">OLC Bioinformatics AlleleFinder</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Installation</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/installation.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="installation">Installation</h2>
+<p>AlleleFinder is available as a conda package, so conda must be installed on your system.</p>
+<h3 id="conda">Conda</h3>
+<p>Skip this step if you have already installed conda</p>
+<pre><code>wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+bash miniconda.sh -b -p $HOME/miniconda
+conda update -q conda
+</code></pre>
+
+<h3 id="allelefinder">AlleleFinder</h3>
+<p>You can now install the AlleleFinder package:</p>
+<p>I prefer to create a new conda environment and install the AlleleFinder in a single step:</p>
+<p><code>conda create -n allelefinder -c olc-bioinformatics allelefinder=0.1.0=py_0</code></p>
+<p>If you wish to create an environment separately:</p>
+<p><code>conda create -n allelefinder python=3.9</code></p>
+<p>You can now install AlleleFinder into this environment:</p>
+<pre><code>conda activate allelefinder
+conda install -c olcbioinformatics allelefinder=0.1.0
+</code></pre>
+
+<p>Theoretically, if you don't have the ability to install conda for whatever reason, you can install the software with pip</p>
+<p>You'll need a virtual environment with Python 3.9 (start at the appropriate place in these directions depending on your setup):</p>
+<p>(if you don't have Python)</p>
+<p><code>sudo apt install python3</code></p>
+<p>(if you don't have pip)</p>
+<p><code>sudo apt install python3-pip</code></p>
+<p>(if you don't have virtualenv)</p>
+<p><code>pip install virtualenv</code></p>
+<p>Create a Python 3.9 virtual environment:</p>
+<p><code>python3.9 -m venv allelefinder</code></p>
+<p>Activate the environment:</p>
+<p><code>source allelefinder/bin/activate</code></p>
+<p>Install AlleleFinder</p>
+<p><code>pip install allelefinder==0.1.0</code></p>
+<p>You'll also need to install the dependencies</p>
+<pre><code>pip install coloredlogs==15.0.1
+pip install geneseekr==0.5.0
+</code></pre>
+
+<p>If you want to run tests, you'll also need to install the testing packages:</p>
+<pre><code>pip install pytest==7.2.1
+pip install pytest-cov==4.0.0
+</code></pre>
+
+<h2 id="tests">Tests</h2>
+<p>If you encounter issues with the AlleleFinder package, tests are available to ensure that the installation was successful and the basic functionality is present.</p>
+<p>You will need to clone this repository and run the tests with pytest. Note: for whatever reason, you need to include the <code>-s</code> flag, or you will get an <code>INTERNALERROR&gt; OSError: [Errno 9] Bad file descriptor</code> error </p>
+<pre><code>git clone https://github.com/OLC-Bioinformatics/AlleleFinder.git
+cd AlleleFinder
+python -m pytest tests/ -s
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../downloads/" class="btn btn-neutral float-right" title="Downloads">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../downloads/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

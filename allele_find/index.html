@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/allele_find/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Allele Finding - OLC Bioinformatics AlleleFinder</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Allele Finding";
+        var mkdocs_page_input_path = "allele_find.md";
+        var mkdocs_page_url = "/AlleleFinder/allele_find/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> OLC Bioinformatics AlleleFinder
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../downloads/">Downloads</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../profile_reduce/">Profile Reduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_translate_reduce/">Allele Translation/Reduction</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Allele Finding</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-the-script">Running the script</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../aa_allele_find/">Amino Acid Allele Finding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_split/">Allele Splitting</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">OLC Bioinformatics AlleleFinder</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Allele Finding</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/allele_find.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="find-alleles">Find alleles</h2>
+<p>This script performs BLAST analyses on a nucleotide allele database prepared by <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce"><code>allele_translate_reduce</code></a> against nucleotide query sequences to discover their sequence types. Updates nucleotide and amino acid profiles and allele databases</p>
+<h4 id="inputs">Inputs</h4>
+<ol>
+<li>nucleotide query files in FASTA format</li>
+<li>all outputs from <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce"><code>allele_translate_reduce</code></a></li>
+</ol>
+<h4 id="running-the-script">Running the script</h4>
+<pre><code>stec.py allele_find --nt_profile /path/to/nt_profile_file --aa_profile /path/to_aa_profile_file --nt_alleles /path/to/nt_allele_folder --aa_alleles /path/to/aa_allele_folder -r /path/to/output_folder -q /path/to/query_folder
+</code></pre>
+
+<p>An example with the nucleotide profile file <code>profile.txt</code> in the <code>nt_profile</code> folder, the amino acid profile file <code>profile.txt</code> in the <code>aa_profile</code> folder, nucleotide alleles in the <code>nt_alleles</code> folder, the amino acid alleles in the <code>nt_alleles</code> folder, the query files in the <code>query</code> folder, and the desired output path for reports in the <code>reports</code> folder (all in the current working directory):</p>
+<pre><code>stec.py allele_find --nt_profile nt_profile/profile.txt --aa_profile aa_profile/profile.txt --nt_alleles nt_alleles --aa_alleles aa_alleles -q query -r reports
+</code></pre>
+
+<p>Please note that all those files and folders are the default values, so you can obtain the same command as follows:</p>
+<pre><code>stec.py allele_find
+</code></pre>
+
+<h4 id="usage">Usage</h4>
+<pre><code>usage: stec.py allele_find [-h] [-version] [-v verbosity]
+                           [--nt_profile nt_profile] [--aa_profile aa_profile]
+                           [--nt_alleles nt_alleles] [--aa_alleles aa_alleles]
+                           [-r report_path] [-q query_path]
+
+Analyse sequences to determine allele complement. Update profiles and databases. Keep notes
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -version, --version   show program's version number and exit
+  -v verbosity, --verbosity verbosity
+                        Set the logging level. Options are debug, info, warning, error, and critical. Default is info.
+  --nt_profile nt_profile
+                        Specify name and path of nucleotide profile file. If not provided, profile.txt in the nt_profile folder in the current working directory will be used by default
+  --aa_profile aa_profile
+                        Specify name and path of amino acid profile file. If not provided, profile.txt in the aa_profile folder in the current working directory will be used by default
+  --nt_alleles nt_alleles
+                        Specify name and path of folder containing nucleotide alleles. If not provided, the nt_allele folder in the current working directory will be used by default
+  --aa_alleles aa_alleles
+                        Specify name and path of folder containing amino acid alleles. If not provided, the aa_allele folder in the current working directory will be used by default
+  -r report_path, --report_path report_path
+                        Specify name and path of folder into which reports are to be placed. If not provided, the reports folder in the current working directory will be used
+  -q query_path, --query_path query_path
+                        Specify name and path of folder containing query files in FASTA format. If not provided, the query folder in the current working directory will be used
+</code></pre>
+
+<h4 id="outputs">Outputs</h4>
+<p>All outputs from <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce"><code>allele_translate_reduce</code></a> will be updated</p>
+<ul>
+<li><code>reports</code><ul>
+<li><code>aa_novel_profiles.txt</code>: text file containing all novel amino acid profiles generated from query sequences</li>
+<li><code>aa_gene_name_novel_alleles.fasta</code>: FASTA-formatted text file containing all novel amino acid alleles from query sequences</li>
+<li><code>nt_novel_profiles.txt</code>: text file containing all novel nucleotide profiles generated from query sequences</li>
+<li><code>nt_gene_name_novel_alleles.fasta</code>: FASTA-formatted text file containing all novel nucleotide alleles from query sequences</li>
+<li><code>stec_report.tsv</code>: TSV file containing results for each query. Includes sample name, nucleotide allele identifiers, nucleotide sequence type, amino acid allele identifiers, amino acid sequence type, and notes</li>
+</ul>
+</li>
+</ul>
+<p>Additional information regarding this functionality is available in the <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_find"><code>allele_find</code></a> documentation</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../allele_translate_reduce/" class="btn btn-neutral float-left" title="Allele Translation/Reduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../aa_allele_find/" class="btn btn-neutral float-right" title="Amino Acid Allele Finding">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../allele_translate_reduce/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../aa_allele_find/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

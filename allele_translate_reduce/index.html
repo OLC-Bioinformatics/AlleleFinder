@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/allele_translate_reduce/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Allele Translation/Reduction - OLC Bioinformatics AlleleFinder</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Allele Translation/Reduction";
+        var mkdocs_page_input_path = "allele_translate_reduce.md";
+        var mkdocs_page_url = "/AlleleFinder/allele_translate_reduce/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> OLC Bioinformatics AlleleFinder
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../downloads/">Downloads</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../profile_reduce/">Profile Reduction</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Allele Translation/Reduction</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running-the-script">Running the script</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_find/">Allele Finding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../aa_allele_find/">Amino Acid Allele Finding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_split/">Allele Splitting</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">OLC Bioinformatics AlleleFinder</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Allele Translation/Reduction</li>
+    <li class="wy-breadcrumbs-aside">
+        <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/allele_translate_reduce.md"
+          class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="translate-and-reduce-alleles">Translate and reduce alleles</h2>
+<p>This script translates allele files from Enterobase in nucleotide format to amino acid, performs content and length checks, and removes duplicates.</p>
+<p>In order for a translated allele to pass content and length checks, it must:</p>
+<ol>
+<li>Start with a <code>Methionine</code> residue</li>
+<li>Pass a minimum length threshold after trimming:<ul>
+<li>The length thresholds are:<ul>
+<li>ECs2973: 90 amino acid residues</li>
+<li>ECs2974: 316 amino acid residues</li>
+<li>ECs1205: 320 amino acid residues</li>
+<li>ECs1206: 88 amino acid residues</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Not be a duplicate of an allele already in the reduced database</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ol>
+<li>nucleotide allele files from Enterobase in FASTA format. <a href="../downloads/#download-alleles">Download instructions.</a></li>
+<li>reduced profile file prepared by <a href="https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce"><code>profile_reduce</code></a>. Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:<ul>
+<li>ECs2973</li>
+<li>ECs2974</li>
+</ul>
+</li>
+</ol>
+<h4 id="running-the-script">Running the script</h4>
+<pre><code>stec.py allele_translate_reduce -a /path/to/allele_folder -p /path/to/profile_file -r /path/to/output/folder/aa_profile -t /path/to/output/folder/aa_alleles
+</code></pre>
+
+<p>An example with the nucleotide allele folder <code>nt_alleles</code>, the profile file <code>profiles.txt</code> in the <code>nt_profile</code> folder, the desired amino acid profile output folder <code>aa_profile</code>, and the desired amino acid allele output folder <code>aa_alleles</code> all in the current working directory: </p>
+<pre><code>stec.py allele_translate_reduce -a nt_alleles -p nt_profile/profile.txt -r aa_profile -t aa_alleles
+</code></pre>
+
+<h4 id="usage">Usage</h4>
+<pre><code>usage: stec.py allele_translate_reduce [-h] [-version] [-v verbosity]
+                                       [-a allele_path] [-p profile_file]
+                                       [-r report_path] [-t translated_path]
+
+Translate allele files in nucleotide format to amino acid. Remove duplicates. Keep notes
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -version, --version   show program's version number and exit
+  -v verbosity, --verbosity verbosity
+                        Set the logging level. Options are debug, info, warning, error, and critical. Default is info.
+  -a allele_path, --allele_path allele_path
+                        Specify name and path of folder containing allele files. If not provided, the nt_alleles folder in the current working directory will be used by default
+  -p profile_file, --profile_file profile_file
+                        Optionally specify name and path of profile file. Parse the nucleic acid profile, and create the corresponding reduced amino acid profile
+  -r report_path, --report_path report_path
+                        Specify the name and path of the folder into which outputs are to be placed. If not provided, the aa_profile folder in the current working directory will be used
+  -t translated_path, --translated_path translated_path
+                        Specify the name and path of the folder into which alleles are to be placed. If not provided, the aa_alleles folder in the current working directory will be used
+</code></pre>
+
+<h4 id="outputs">Outputs</h4>
+<p>These represent the folder structure of the directory containing the outputs</p>
+<ul>
+<li><code>aa_alleles</code><ul>
+<li><code>notes</code><ul>
+<li><code>gene_name_notes.txt</code>: text file containing the nucleotide allele, the corresponding amino acid allele, and any notes (whether it is a duplicate, trimmed, or filtered)</li>
+</ul>
+</li>
+<li><code>gene_name.fasta</code>: FASTA-formatted text file containing sequences of all amino acid alleles that passed quality/content filters</li>
+<li><code>gene_name_filtered.txt</code>: FASTA-formatted text file containing sequences of all amino acid alleles that failed quality/content filters</li>
+</ul>
+</li>
+<li><code>aa_profile</code><ul>
+<li><code>profile</code><ul>
+<li><code>profile.txt</code>: text file containing all unique amino acid profiles</li>
+<li><code>reducing_notes.txt</code>: text file containing all amino acid sequence types, the sequence type following duplicate reduction, and any notes</li>
+</ul>
+</li>
+<li><code>aa_full_profile.txt</code>: text file containing all amino acid profiles before duplicate removal</li>
+<li><code>aa_nt_profile_links.tsv</code>: TSV file containing every amino acid sequence type and the corresponding nucleotide sequence type(s)</li>
+<li><code>gene_names.txt</code>: text file containing the extracted gene names from the analysis</li>
+<li><code>profile.txt</code>: copy of <code>profile.txt</code> from the <code>profile</code> folder. Allows for allele discovery without manually moving the file</li>
+</ul>
+</li>
+<li><code>nt_alleles</code><ul>
+<li><code>gene_name.fasta</code>: FASTA-formatted text file containing sequences of all nucleotide alleles that passed quality/content filters</li>
+<li><code>gene_name_filtered.txt</code>: FASTA-formatted text file containing sequences of all nucleotide alleles that failed quality/content filters</li>
+</ul>
+</li>
+<li><code>nt_profile</code><ul>
+<li><code>profile.txt</code>: text file containing all unique nucleotide profiles</li>
+</ul>
+</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../profile_reduce/" class="btn btn-neutral float-left" title="Profile Reduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../allele_find/" class="btn btn-neutral float-right" title="Allele Finding">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../profile_reduce/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../allele_find/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
