@@ -12,7 +12,10 @@ import sys
 import os
 
 # Third-party imports
-from olctools.accessoryFunctions.accessoryFunctions import make_path, SetupLogging
+from olctools.accessoryFunctions.accessoryFunctions import \
+    make_path, \
+    SetupLogging
+from allele_tools.methods import pathfinder
 
 
 class ProfileReduce:
@@ -89,10 +92,7 @@ class ProfileReduce:
 
     def __init__(self, profile, names, output='profile'):
         logging.info('Welcome to profile reducer!')
-        if profile.startswith('~'):
-            self.profile = os.path.abspath(os.path.expanduser(os.path.join(profile)))
-        else:
-            self.profile = os.path.abspath(os.path.join(profile))
+        self.profile = pathfinder(path=profile)
         try:
             assert os.path.isfile(self.profile)
         except AssertionError as exc:
@@ -103,10 +103,7 @@ class ProfileReduce:
         make_path(self.report_path)
         self.reduced_profile = os.path.join(self.report_path, 'profile.txt')
         self.notes_file = os.path.join(self.report_path, 'reducing_notes.txt')
-        if names.startswith('~'):
-            self.name_file = os.path.abspath(os.path.expanduser(os.path.join(names)))
-        else:
-            self.name_file = os.path.abspath(os.path.join(names))
+        self.name_file = pathfinder(path=names)
         try:
             assert os.path.isfile(self.name_file)
         except AssertionError as exc:
