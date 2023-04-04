@@ -126,10 +126,11 @@ class Updater:
                     profile_dict={},
                     profile_set=[],
                     records=self.gene_names,
+                    amino_acid=True,
                     novel_alleles=True,
                     genome_query=True,
                     allele_path=self.aa_allele_path,
-                    report_path=self.aa_report_path
+                    report_path=self.report_path
                 )
             # Match the query profile against the profile database
             profile_matches = match_profile(
@@ -191,7 +192,7 @@ class Updater:
                     profile_dict={},
                     profile_set=[],
                     gene_names=gene_names,
-                    amino_acid=False
+                    amino_acid=True
                 )
                 aa_profile_data = read_profile(profile_file=self.aa_profile_file)
                 aa_profile_matches = match_profile(
@@ -273,7 +274,7 @@ class Updater:
             record.id = record_id
             record.description = str()
             # Extract the gene name from the allele number
-            gene, allele_id = record.id.split('_')
+            gene, allele_id = record.id.rsplit('_', 1)
             # Initialise the gene key in the dictionary as required
             if gene not in self.aa_nt_allele_link_dict:
                 self.aa_nt_allele_link_dict[gene] = dict()
@@ -309,9 +310,10 @@ class Updater:
             allele_comprehension = {}
             for allele, allele_seq in sorted(sample.alleles.nt_alleles_translated.items()):
                 present = False
-                # Strip off the allele number from the allele e.g. adk_1 yields 1
+                # Strip off the allele number from the allele e.g. adk_1 yields adk, while EC042_RS26480_2 yields
+                # EC042_RS26480
                 try:
-                    gene, _ = allele.split('_')
+                    gene, _ = allele.rsplit('_', 1)
                 except ValueError:
                     gene = str()
                 for record_id, record_seq in sorted(self.aa_allele_dict.items()):
@@ -319,15 +321,14 @@ class Updater:
                         # Update the dictionary with the new gene: allele number for the sample
                         allele_comprehension.update({gene: record_id.split('_')[-1]})
                         present = True
-                # If, after iterating through all the BLAST outputs, the gene is not
-                # present in the sample, update the
-                # gene: allele to reflect this absence
+                # If, after iterating through all the BLAST outputs, the gene is not present in the sample, update
+                # the gene: allele to reflect this absence
                 if not present:
                     novel_allele = update_allele_database(
                         gene=gene,
                         query_sequence=allele_seq,
                         allele_path=self.aa_allele_path,
-                        report_path=self.aa_report_path,
+                        report_path=self.report_path,
                         amino_acid=amino_acid
                     )
                     if novel_allele:
@@ -495,8 +496,8 @@ class Updater:
             for _, allele_dict in self.aa_nt_allele_link_dict.items():
                 for nt_allele, aa_allele in allele_dict.items():
                     # Split the entries on underscores
-                    _, nt_allele_number = nt_allele.split('_')
-                    _, aa_allele_number = aa_allele.split('_')
+                    _, nt_allele_number = nt_allele.rsplit('_', 1)
+                    _, aa_allele_number = aa_allele.rsplit('_', 1)
                     # Update the notes dictionary with int(nt allele): list(aa allele)
                     allele_notes_dict[int(nt_allele_number)] = [aa_allele_number]
         return allele_notes_dict
@@ -526,12 +527,10 @@ class Updater:
         self.aa_profile_path = os.path.join(self.path, 'aa_profile')
         make_path(self.profile_path)
         self.profile_file = os.path.join(self.profile_path, 'profile.txt')
-        self.aa_profile_file = os.path.join(self.aa_profile_path, 'aa_profile.txt')
+        self.aa_profile_file = os.path.join(self.aa_profile_path, 'profile.txt')
         self.query_path = os.path.join(self.path, 'query')
         self.report_path = os.path.join(self.path, 'reports')
-        self.aa_report_path = os.path.join(self.path, 'aa_reports')
         make_path(self.report_path)
-        make_path(self.aa_report_path)
         novel_alleles = glob(os.path.join(self.report_path, '*.fasta'))
         for novel_allele in novel_alleles:
             os.remove(novel_allele)
@@ -547,8 +546,8 @@ class Updater:
         self.runmetadata = MetadataObject()
         self.runmetadata.samples = []
         self.cpus = multiprocessing.cpu_count() - 1
-        self.profile_report = os.path.join(self.report_path, 'profiles.tsv')
-        self.aa_profile_report = os.path.join(self.aa_report_path, 'aa_profiles.tsv')
+        self.profile_report = os.path.join(self.report_path, 'nt_profiles.tsv')
+        self.aa_profile_report = os.path.join(self.report_path, 'aa_profiles.tsv')
         try:
             os.remove(self.profile_report)
         except FileNotFoundError:
