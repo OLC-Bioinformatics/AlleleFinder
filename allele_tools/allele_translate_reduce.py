@@ -22,6 +22,7 @@ from allele_tools.allele_profiler import read_profile
 from allele_tools.profile_reduce import ProfileReduce
 from allele_tools.methods import \
     evaluate_translated_length, \
+    generic_evaluate_translated_length, \
     remove_combined_db_files, \
     pathfinder
 
@@ -104,6 +105,8 @@ class Translate:
                         note = []
                         # Create a boolean to track whether the sequence is filtered
                         filtered = False
+                        # Create a string to store the untrimmed nucleotide sequence
+                        original_nt_sequence = str(details.seq)
                         # Calculate the translated sequence
                         translated_allele = details.seq.translate()
                         # Remove all sequence after a stop codon (*)
@@ -128,18 +131,18 @@ class Translate:
                         # Create a dictionary to store the allele nt sequences to check to see if
                         # any are duplicates following trimming
                         nt_sequences = {}
-                        if length_dict:
-                            filtered, note, nt_sequences, translated_allele = Translate.trim_alleles(
-                                note=note,
-                                allele=allele,
-                                sequence=details,
-                                gene_name=gene_name,
-                                nt_allele_path=self.path,
-                                trim_length=len(trimmed_seq),
-                                length_dict=length_dict,
-                                filtered=filtered,
-                                nt_sequences=nt_sequences
-                            )
+                        filtered, note, nt_sequences, translated_allele = Translate.trim_alleles(
+                            note=note,
+                            allele=allele,
+                            sequence=details,
+                            gene_name=gene_name,
+                            nt_allele_path=self.path,
+                            trim_length=len(trimmed_seq),
+                            length_dict=length_dict,
+                            filtered=filtered,
+                            nt_sequences=nt_sequences,
+                            original_nt_sequence=original_nt_sequence
+                        )
                         # If the allele has not been filtered through the trim_alleles
                         if not filtered:
                             # Determine if this amino acid allele is new
@@ -212,7 +215,7 @@ class Translate:
 
     @staticmethod
     def trim_alleles(note, allele, sequence, gene_name, nt_allele_path, trim_length, length_dict, filtered,
-                     nt_sequences):
+                     nt_sequences, original_nt_sequence):
         """
         Trim the alleles based on location of stop codons and whether the sequence is a multiple of three nucleotides.
         Evaluate the trimmed sequence based on length and contents.
@@ -225,6 +228,7 @@ class Translate:
         :param length_dict: Dictionary of minimum acceptable length for each gene in the analysis
         :param filtered: Boolean to track whether the sequence fails the quality/length checks
         :param nt_sequences: Dictionary of allele: sequence
+        :param original_nt_sequence: String of the untrimmed nucleotide sequence of the allele
         :return: filtered: Updated boolean of whether the sequence fails quality/length checks
         :return: note: Update list of sequence-specific notes
         :return: nt_sequences: Updated dictionary of allele: sequence
@@ -248,13 +252,23 @@ class Translate:
         # Translate the sequence to amino acid
         translated_allele = sequence.seq.translate()
         # Perform content and length checks of the protein sequence
-        filtered, note = evaluate_translated_length(
-            aa_seq=str(translated_allele),
-            length_dict=length_dict,
-            gene=gene_name,
-            notes=note,
-            filtered=filtered
-        )
+        if length_dict:
+            filtered, note = evaluate_translated_length(
+                aa_seq=str(translated_allele),
+                length_dict=length_dict,
+                gene=gene_name,
+                notes=note,
+                filtered=filtered
+            )
+        else:
+            filtered, note = generic_evaluate_translated_length(
+                aa_seq=str(translated_allele),
+                sequence=original_nt_sequence,
+                gene=gene_name,
+                notes=note,
+                filtered=filtered,
+                cutoff=0.95
+            )
         # Search the amino acid database for matches
         filtered, note, nt_sequences = Translate.find_duplicates(
             nt_sequences=nt_sequences,
@@ -585,7 +599,8 @@ class Translate:
             dst=os.path.join(self.report_path, 'profile.txt')
         )
 
-    def __init__(self, path, profile, report_path='aa_profile', translated_path='aa_alleles', length_dict=None):
+    def __init__(self, path, profile, report_path=os.path.join(os.getcwd(), 'aa_profile'),
+                 translated_path=os.path.join(os.getcwd(), 'aa_alleles'), length_dict=None):
 
         logging.info('Welcome to the allele translator!')
         self.path = pathfinder(path=path)
