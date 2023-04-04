@@ -9,6 +9,7 @@ from csv import DictReader
 from glob import glob
 import logging
 import json
+import math
 import os
 
 # Third party inputs
@@ -823,6 +824,36 @@ def evaluate_translated_length(aa_seq, length_dict, gene, notes, filtered):
     return filtered, notes
 
 
+def generic_evaluate_translated_length(aa_seq, sequence, gene, notes, filtered, cutoff=0.95):
+    """
+    Evaluate whether a translated sequence passes a generic length filter and starts with a methionine
+    residue
+    :param aa_seq: String of the amino acid sequence to evaluate
+    :param sequence: String of untrimmed nucleotide sequence
+    :param gene: String of the name of the gene
+    :param notes: List of notes on the alleles
+    :param filtered: Boolean of whether the allele has been filtered based on length or content
+    :param cutoff: Float of minimum cutoff value to be used for filtering trimmed sequences. Default is 0.95
+    :return: filtered: Updated filtering boolean
+    :return: notes: Updated list of notes
+    """
+    # Proper protein sequences must start with a methionine (M)
+    if not aa_seq.startswith('M'):
+        filtered = True
+        notes.append(f'{gene} amino acid sequence does not start with M')
+    # Minimum length of a trimmed amino acid allele permitted is 95% the length of the theoretical length of
+    # the translated nucleotide sequence e.g. a 99 bp nt sequence would be 33 amino acid residues, and 95% of
+    # that is 31.35 -> 31 (rounded down)
+    minimum_length = math.floor(len(sequence) / 3 * cutoff)
+    aa_seq_length = len(aa_seq)
+    if aa_seq_length < minimum_length:
+        filtered = True
+        notes.append(
+            f'{gene} amino acid sequence was trimmed to {aa_seq_length} residues '
+            f'the minimum length allowed is {minimum_length} residues')
+    return filtered, notes
+
+
 def find_next_allele(gene, allele_path, extension='.fasta'):
     """
     Update the allele database with the novel allele extracted above
@@ -1128,10 +1159,15 @@ def update_allele_database(gene, query_sequence, allele_path, report_path, amino
         last_id = record.id
     # Try to separate the gene name from the allele e.g. MutS_1
     try:
-        _, allele = last_id.split('_')
+        _, allele = last_id.rsplit('_', 1)
     # If there is no allele, set the allele to 1
     except ValueError:
         allele = 1
+    # Typecase the variable to an integer
+    allele = int(allele)
+    # If the sequence type corresponds to an Enterobase number, use our local numbering scheme instead
+    if allele < 1000000:
+        allele = 999999
     # Name the novel allele as the gene name _ allele number + 1
     novel_allele = f'{gene}_{int(allele) + 1}'
     # Create a SeqRecord of the allele using the novel allele name and sequence
