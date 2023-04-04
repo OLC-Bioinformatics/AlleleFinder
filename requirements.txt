@@ -1,0 +1,4 @@
+coloredlogs==15.0.1
+geneseekr==0.5.0
+pytest==7.2.1
+pytest-cov==4.0.0
