@@ -18,7 +18,7 @@ You can now install the AlleleFinder package:
 
 I prefer to create a new conda environment and install the AlleleFinder in a single step:
 
-`conda create -n allelefinder -c olc-bioinformatics allelefinder=0.1.0=py_0`
+`conda create -n allelefinder -c olc-bioinformatics allelefinder=0.1.1=py_0`
 
 If you wish to create an environment separately:
 
@@ -28,7 +28,7 @@ You can now install AlleleFinder into this environment:
 
 ```
 conda activate allelefinder
-conda install -c olcbioinformatics allelefinder=0.1.0
+conda install -c olcbioinformatics allelefinder=0.1.1
 ```
 
 Theoretically, if you don't have the ability to install conda for whatever reason, you can install the software with pip
@@ -57,7 +57,7 @@ Activate the environment:
 
 Install AlleleFinder
 
-`pip install allelefinder==0.1.0`
+`pip install allelefinder==0.1.1`
 
 You'll also need to install the dependencies
 
