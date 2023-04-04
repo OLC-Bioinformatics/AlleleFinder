@@ -8,7 +8,6 @@ Unit and integration tests for allele_tools/stec.py Only testing the allele_find
 from unittest.mock import patch
 from glob import glob
 import argparse
-import shutil
 import os
 
 # Third-party imports
@@ -60,6 +59,20 @@ def setup():
 
     return Variables()
 
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_allele_find_integration_no_files(mock_args, variables):
+    with pytest.raises(SystemExit):
+        mock_args.return_value = argparse.Namespace(
+            nt_profile=variables.nt_profile_file,
+            aa_profile=variables.aa_profile_file,
+            nt_alleles=variables.nt_allele_path,
+            aa_alleles=variables.aa_allele_path,
+            query_path=variables.query_path,
+            report_path=variables.report_path
+        )
+        arguments = cli()
+        allele_find(args=arguments)
 
 @patch('argparse.ArgumentParser.parse_args')
 def test_allele_find_integration(mock_args, variables):

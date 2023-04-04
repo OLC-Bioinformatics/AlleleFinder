@@ -9,6 +9,9 @@ from unittest.mock import patch
 import argparse
 import os
 
+# Third-party imports
+import pytest
+
 # Local imports
 from allele_tools.stec import \
     aa_allele_find, \
@@ -20,6 +23,18 @@ from .test_2_allele_updater import \
 
 assert vars(setup)['_pytestfixturefunction'].name == 'variables'
 
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_allele_find_integration_missing_files(mock_args, variables):
+    with pytest.raises(SystemExit):
+        mock_args.return_value = argparse.Namespace(
+            aa_alleles=variables.aa_allele_path,
+            query_path=variables.query_path,
+            report_path=variables.report_path,
+            cutoff=90,
+        )
+        arguments = cli()
+        aa_allele_find(args=arguments)
 
 @patch('argparse.ArgumentParser.parse_args')
 def test_allele_find_integration(mock_args, variables):

@@ -54,6 +54,16 @@ def clean_outputs(variables):
 
 
 @patch('argparse.ArgumentParser.parse_args')
+def test_profile_reduce_missing_tilde_profile_missing_files(mock_args, variables):
+    with pytest.raises(SystemExit):
+        mock_args.return_value = argparse.Namespace(
+            query_path=variables.query_path,
+            output_path=variables.output_path
+        )
+        arguments = cli()
+        allele_split(args=arguments)
+
+@patch('argparse.ArgumentParser.parse_args')
 def test_profile_reduce_missing_tilde_profile(mock_args, variables):
     prepare_files(variables=variables)
     mock_args.return_value = argparse.Namespace(

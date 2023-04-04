@@ -43,11 +43,11 @@ def setup():
             self.aa_profile_path = os.path.join(self.file_path, 'aa_profile')
             self.aa_profile_file = os.path.join(self.aa_profile_path, 'profile.txt')
             self.aa_notes_path = os.path.join(self.file_path, 'aa_notes')
-            self.aa_reports_path = os.path.join(self.file_path, 'aa_reports')
-            self.aa_report_file = os.path.join(self.aa_reports_path, 'aa_profiles.tsv')
             self.query_path = os.path.join(self.file_path, 'query')
             self.report_path = os.path.join(self.file_path, 'reports')
-            self.report_file = os.path.join(self.report_path, 'profiles.tsv')
+            self.aa_report_file = os.path.join(self.report_path, 'aa_profiles.tsv')
+
+            self.report_file = os.path.join(self.report_path, 'nt_profiles.tsv')
             self.length_dict = {
                 'ECs2973': 90,
                 'ECs2974': 316,
@@ -74,8 +74,6 @@ def clean_outputs(variables):
         shutil.rmtree(variables.report_path)
     if os.path.isdir(variables.aa_notes_path):
         shutil.rmtree(variables.aa_notes_path)
-    if os.path.isdir(variables.aa_reports_path):
-        shutil.rmtree(variables.aa_reports_path)
 
 
 def prepare_files(variables, nucleotide=True, links=False):
@@ -145,7 +143,7 @@ def test_report_contents(variables):
 def test_novel_alleles(variables):
     novel_allele_file = os.path.join(variables.report_path, 'nt_ECs1205_novel_alleles.fasta')
     novel_alleles = open(novel_allele_file, 'r', encoding='utf-8').readlines()
-    assert novel_alleles[0] == '>ECs1205_875\n'
+    assert novel_alleles[0] == '>ECs1205_1000000\n'
     clean_outputs(variables=variables)
 
 
@@ -175,7 +173,7 @@ def test_allele_updater_integration_aa_query(mock_args, variables):
 
 def test_aa_report_contents(variables):
     aa_report_contents = open(variables.aa_report_file, 'r', encoding='utf-8').readlines()
-    assert aa_report_contents[2] == 'ECs1205_11	2	11	0\n'
+    assert aa_report_contents[2] == 'ECs1205_11\t175\t11\t0\n'
     clean_outputs(variables=variables)
 
 
