@@ -30,8 +30,14 @@ jobs:
             conda config --add channels bioconda
             conda config --set always_yes yes --set changeps1 no
             conda activate
-            mamba create -n allelefinder -c olcbioinformatics allelefinder=0.0.5
+            mamba create -n allelefinder python=3.9.12
             source activate allelefinder
+            mamba install \
+              "coloredlogs=15.0.1=pyhd8ed1ab_3" \
+              "geneseekr=0.5.0=py_12" \
+              "pytest=7.2.1=pyhd8ed1ab_0" \
+              "pytest-cov=4.0.0=pyhd8ed1ab_0"
+            pip install -e .
             python -m pytest tests/ --cov=allele_tools/ --cov-config=.coveragec --cov-report=xml:test_reports/allele_finder.xml -s
       - store_artifacts:
           path: test_reports/
