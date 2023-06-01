@@ -572,7 +572,7 @@ def evaluate_translated_allele(aa_seq, gene, notes, aa=False):
     length_dict = {
         'ECs2973': 90,
         'ECs2974': 316,
-        'ECs1205': 320,
+        'ECs1205': 316,
         'ECs1206': 88
     }
     filtered = False

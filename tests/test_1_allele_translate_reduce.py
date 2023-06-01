@@ -38,7 +38,7 @@ def setup():
             self.length_dict = {
                 'ECs2973': 90,
                 'ECs2974': 316,
-                'ECs1205': 320,
+                'ECs1205': 316,
                 'ECs1206': 88
             }
             self.fake_path = os.path.join('~', 'completely_fake_path')
