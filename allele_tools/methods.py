@@ -7,16 +7,18 @@ Collection of methods for Allele finding
 # Standard imports
 from csv import DictReader
 from glob import glob
-import logging
 import json
+import logging
 import math
 import os
 
 # Third party inputs
-from olctools.accessoryFunctions.accessoryFunctions import GenObject, \
-    make_path, \
-    MetadataObject, \
+from olctools.accessoryFunctions.accessoryFunctions import (
+    GenObject,
+    make_path,
+    MetadataObject,
     relative_symlink
+ )
 from Bio.Blast.Applications import NcbiblastnCommandline, NcbiblastpCommandline
 from Bio.Data.CodonTable import TranslationError
 from Bio.SeqRecord import SeqRecord
@@ -440,7 +442,7 @@ def parse_colocated_results(runmetadata, fieldnames, extended_fieldnames, amino_
                     # Add the base gene name to the allele identifier
                     nt_allele = f'{base_gene}_{nt_allele_id}'
                     # Update the allele database with the new allele
-                    notes[contig][query_range_tuple] = update_allele_databases(
+                    notes[contig][query_range_tuple], nt_allele = update_allele_databases(
                         query_sequence=nt_querysequence,
                         header=nt_allele,
                         filtered=filtered,
@@ -457,7 +459,7 @@ def parse_colocated_results(runmetadata, fieldnames, extended_fieldnames, amino_
                         allele_path=aa_allele_path
                     )
                     aa_allele = f'{base_gene}_{aa_allele_id}'
-                    notes[contig][query_range_tuple] = update_allele_databases(
+                    notes[contig][query_range_tuple], aa_allele = update_allele_databases(
                         query_sequence=aa_querysequence,
                         header=aa_allele,
                         filtered=filtered,
@@ -607,10 +609,12 @@ def update_allele_databases(query_sequence, header, filtered, gene, report_path,
     :return: notes: Updated list of notes
     """
     # Create a SeqRecord of the allele using the novel allele name and sequence
-    new_record = SeqRecord(seq=Seq(query_sequence),
-                           id=header,
-                           name='',
-                           description='')
+    new_record = SeqRecord(
+        seq=Seq(query_sequence),
+        id=header,
+        name='',
+        description=''
+    )
     # Create a string to prepend to allele file names
     molecule_str = 'nt' if molecule == 'Nucleotide' else 'aa'
     # Set the correct files depending on the filtering status
@@ -630,15 +634,19 @@ def update_allele_databases(query_sequence, header, filtered, gene, report_path,
     if query_sequence not in [str(seq.seq) for seq in records]:
         # Append the SeqRecord to the novel alleles file
         with open(new_alleles, 'a+', encoding='utf-8') as novel:
-            SeqIO.write(sequences=new_record,
-                        handle=novel,
-                        format='fasta')
+            SeqIO.write(
+                sequences=new_record,
+                handle=novel,
+                format='fasta'
+            )
         records.append(new_record)
         # Overwrite the existing allele database file with the updated list of records
         with open(allele_file, 'w', encoding='utf-8') as alleles:
-            SeqIO.write(sequences=records,
-                        handle=alleles,
-                        format='fasta')
+            SeqIO.write(
+                sequences=records,
+                handle=alleles,
+                format='fasta'
+            )
         remove_combined_db_files(allele_path=allele_path)
         notes.append(f'{molecule} allele {header} is novel')
     # Non-novel sequences will have updated notes with the match
@@ -647,7 +655,9 @@ def update_allele_databases(query_sequence, header, filtered, gene, report_path,
             if str(query_sequence) == record.seq:
                 # Append the previous finding to the notes
                 notes.append(f'{molecule} matches previous result: {record.id}')
-    return notes
+                # Set the header to the corresponding record.id on a match
+                header = record.id
+    return notes, header
 
 
 def colocation_calculation(colocation_dict, gene_names, overlap_range):
@@ -1273,6 +1283,11 @@ def match_profile(profile_data, frozen_allele_comprehension, report_path, profil
                     allele_dict=allele_comprehension[contig][query_range],
                     molecule=molecule
                 )
+                # Update the profile_data dictionary with the new sequence type
+                profile_data[profile_matches[contig][query_range]] = allele_comprehension[contig][query_range]
+                frozen_profiles = freeze_profiles(
+                    profile_data=profile_data
+                )
     return profile_matches, frozen_profiles
 
 
@@ -1310,7 +1325,7 @@ def update_profiles(profile_file, report_path, genes, allele_dict, molecule):
         profile_file=profile_file
     )
     # Update the profile file
-    update_profile_file(
+    created = update_profile_file(
         profile_file=profile_file,
         next_seq_type=next_seq_type,
         allele_dict=allele_dict,
@@ -1318,6 +1333,8 @@ def update_profiles(profile_file, report_path, genes, allele_dict, molecule):
         report_path=report_path,
         molecule=molecule
     )
+    if not created:
+        next_seq_type = 'N/A'
     return next_seq_type
 
 
@@ -1357,6 +1374,7 @@ def update_profile_file(profile_file, next_seq_type, allele_dict, genes, report_
     :param genes: List of all genes in the analysis
     :param report_path: Name and absolute path to folder in which reports are to be created
     :param molecule: String of the current molecule being processed. Options are "aa" and "nt"
+    :return bool: Boolean of whether the profile could be created or not
     """
 
     # Initialise a string to store the profile information with the novel sequence type
@@ -1367,6 +1385,8 @@ def update_profile_file(profile_file, next_seq_type, allele_dict, genes, report_
     for gene in genes:
         # Extract the allele ID for each gene in the analysis
         allele = allele_dict[gene]
+        if not allele:
+            return False
         # Update the header with the gene
         header += f'\t{gene}'
         # Update the profile string with the allele ID
@@ -1386,6 +1406,7 @@ def update_profile_file(profile_file, next_seq_type, allele_dict, genes, report_
     else:
         with open(novel_profile_file, 'a+', encoding='utf-8') as novel_profile:
             novel_profile.write(seq_type_str + '\n')
+    return True
 
 
 def create_stec_report(runmetadata, nt_profile_matches, nt_alleles, aa_profile_matches,
@@ -1649,7 +1670,7 @@ def parse_aa_blast(runmetadata, extended_fieldnames, fieldnames, gene_names, not
                 # Set the name of the allele as gene_alleleID
                 aa_allele = f'{gene}_{aa_allele_id}'
                 # Update the allele database with the novel allele
-                notes = update_allele_databases(
+                notes, aa_allele = update_allele_databases(
                     query_sequence=query_seq,
                     header=aa_allele,
                     filtered=filtered,
@@ -1721,3 +1742,134 @@ def report_aa_alleles(runmetadata, report_file, notes):
     else:
         with open(report_file, 'a+', encoding='utf-8') as report:
             report.write(data)
+
+
+def load_alleles(
+        allele_path: str,
+        allele_order: dict):
+    """
+    Use SeqIO to read in allele files
+    :param str allele_path: Name and path of folder containing allele files
+    :param dict allele_order: Dictionary of stx gene name: allele order to use
+    :return: str stx_gene: Name of stx gene (stx1 or stx2) being concatenated
+    :return: dict allele_dict: Dictionary of stx gene name: allele name: allele sequence
+    """
+    # Initialise variable to store the stx gene name being analysed and the sequence of the alleles
+    stx_gene = None
+    allele_dict = {}
+    # Find all the allele files in the folder
+    allele_files = glob(os.path.join(allele_path, '*.fasta'))
+    for allele_file in allele_files:
+        # Set the name of the subunit by splitting off the path information and the file extension from the file
+        allele_name = os.path.splitext(os.path.basename(allele_file))[0]
+        # Determine which stx gene is being processed
+        for gene_name, alleles in allele_order.items():
+            # The name of the current subunit is present in the list of subunits linked to the stx gene
+            if allele_name in alleles:
+                stx_gene = gene_name
+        # Initialise the subunit name in the dictionary as required
+        if allele_name not in allele_dict:
+            allele_dict[allele_name] = {}
+        # Use SeqIO to read in the allele file
+        for record in SeqIO.parse(handle=allele_file, format='fasta'):
+            # Add the name of the allele and its sequence to the dictionary
+            allele_dict[allele_name][record.id] = str(record.seq)
+    return stx_gene, allele_dict
+
+
+def concatenate_alleles(
+        profile_data: dict,
+        allele_dict: dict,
+        allele_order: dict,
+        stx_gene: str,
+        linker_length_dict: dict,
+        molecule: str):
+    """
+
+    :param profile_data: Dictionary of all profiles in seq_type: {gene name: allele ID} format
+    :param allele_dict: Dictionary of stx gene name: allele name: allele sequence
+    :param dict allele_order: Dictionary of stx gene name: allele order to use
+    :param str stx_gene: Name of stx gene (stx1 or stx2) being concatenated
+    :param dict linker_length_dict: Dictionary of gene name: length of linker sequence to use
+    :param str molecule: String of the current molecule. Options are "nt" (nucleotide) and "aa" (amino acid)
+    :return: concatenated_sequences: List of SeqRecords for all concatenated sequences
+    """
+    # Create a list to store SeqRecords of the concatenated sequences
+    concatenated_sequences = []
+    # Iterate over all the sequence type: profile pairs in profile_data
+    for seq_type, profile in profile_data.items():
+        # Initialise a string to store the concatenated sequences
+        concatenated_seq = str()
+        # Create a boolean to store if one (or both) of the allele subunits is missing
+        complete = True
+        # Iterate over the subunits in order from the allele_order dictionary
+        for subunit in allele_order[stx_gene]:
+            # Extract the allele number from the profile dictionary using the subunit as the key
+            allele_number = profile[subunit]
+            # If the allele number is 0, the subunit is absent, and the concatenated sequence will not be created
+            if allele_number == '0':
+                complete = False
+                continue
+            # Set the full allele name by joining the subunit with the allele number
+            full_allele_name = f'{subunit}_{allele_number}'
+            # Extract the string of the allele sequence from the allele dictionary
+            allele_seq = allele_dict[subunit][full_allele_name]
+            # If the first subunit is already present, simply append the second subunit to the string
+            if concatenated_seq:
+                concatenated_seq += allele_seq
+            # Otherwise the linker sequence must be created
+            else:
+                # Extract the gene-specific linker length from the dictionary
+                linker_length = linker_length_dict[stx_gene]
+                # Nucleotide sequences will use N as the linker sequence
+                if molecule == 'nt':
+                    linker = 'N' * linker_length
+                # Amino acid sequences will use X as the linker sequence, and will be reduced by a factor of three
+                else:
+                    linker = 'X' * int(linker_length / 3)
+                concatenated_seq += f'{allele_seq}{linker}'
+        # Do not add incomplete sequences to the list
+        if not complete:
+            continue
+        # Create a SeqRecord of the allele using the novel allele name and sequence
+        concatenated_sequences.append(
+            SeqRecord(
+                seq=Seq(concatenated_seq),
+                id=seq_type,
+                name='',
+                description=''
+            )
+        )
+    return concatenated_sequences
+
+
+def write_concatenated_sequences(
+        concatenated_sequences: list,
+        concatenate_path: str,
+        file_name: str,
+        molecule: str):
+    """
+    Write the concatenated sequences to file
+    :param list concatenated_sequences: List of all SeqRecord objects for the concatenated sequences
+    :param str concatenate_path: Name and absolute path of the folder into which the FASTA files of the concatenated
+    sequences are to be written
+    :param str file_name: File name to use. 'ECs2974_ECs2973' (stx1) and 'ECs1205_ECs1206' (stx2)
+    :param str molecule: String of the current molecule. Options are "nt" (nucleotide) and "aa" (amino acid)
+    """
+    # Set the name of the output path by adding the molecule to the supplied path
+    output_path = os.path.join(concatenate_path, molecule)
+    make_path(inpath=output_path)
+    # Clear out any previous iterations of this script
+    previous_fastas = glob(os.path.join(output_path, '*.fasta'))
+    for fasta in previous_fastas:
+        os.remove(fasta)
+    # Set the name of the file to use
+    concatenated_file = os.path.join(output_path, f'{file_name}.fasta')
+    # Iterate over all the concatenated sequences
+    for concatenated_seq in concatenated_sequences:
+        with open(concatenated_file, 'a+', encoding='utf-8') as output_file:
+            SeqIO.write(
+                sequences=concatenated_seq,
+                handle=output_file,
+                format='fasta'
+            )

@@ -5,44 +5,52 @@ Run allele finding specifically for the co-located subunits of STEC genes
 """
 
 # Standard imports
-from argparse import \
-    ArgumentParser, \
+from argparse import (
+    ArgumentParser,
     RawTextHelpFormatter
-import multiprocessing
+)
 from glob import glob
 import logging
+import multiprocessing
 import sys
 import os
 
 # Third party inputs
-from olctools.accessoryFunctions.accessoryFunctions import make_path, MetadataObject
+from olctools.accessoryFunctions.accessoryFunctions import (
+    make_path,
+    MetadataObject,
+)
 
 # Local imports
+from allele_tools.allele_profiler import (
+    allele_prep,
+    parseable_blast_outputs,
+    read_profile
+)
 from allele_tools.allele_translate_reduce import Translate
 from allele_tools.profile_reduce import ProfileReduce
 from allele_tools.version import __version__
-from allele_tools.methods import \
-        setup_arguments, \
-        common_allele_find_errors, \
-        pathfinder, \
-        query_prep, \
-        blast_alleles, \
-        create_gene_names, \
-        parse_colocated_results, \
-        create_nt_allele_comprehension, \
-        create_aa_allele_comprehension, \
-        create_frozen_allele_comprehension, \
-        match_profile, \
-        create_stec_report, \
-        split_alleles, \
-        parse_aa_blast, \
-        analyse_aa_alleles, \
-        report_aa_alleles
-from allele_tools.allele_profiler import \
-    allele_prep, \
-    parseable_blast_outputs, \
-    read_profile
-
+from allele_tools.methods import (
+    analyse_aa_alleles,
+    blast_alleles,
+    common_allele_find_errors,
+    concatenate_alleles,
+    create_aa_allele_comprehension,
+    create_frozen_allele_comprehension,
+    create_gene_names,
+    create_nt_allele_comprehension,
+    create_stec_report,
+    load_alleles,
+    match_profile,
+    parse_aa_blast,
+    parse_colocated_results,
+    pathfinder,
+    query_prep,
+    report_aa_alleles,
+    setup_arguments,
+    split_alleles,
+    write_concatenated_sequences
+)
 
 __author__ = 'adamkoziol'
 
@@ -332,6 +340,89 @@ class AASTEC:
         self.data = str()
 
 
+class AlleleConcatenate:
+
+    """
+    Concatenate stx subunits. Read in profile files. Load alleles. Concatenate alleles with appropriate linker
+    """
+
+    def main(self):
+        """
+        Run the necessary methods for AlleleConcatenate
+        """
+        self.gene, self.nt_alleles = load_alleles(
+            allele_path=self.nt_allele_path,
+            allele_order=self.allele_order
+        )
+        self.gene, self.aa_alleles = load_alleles(
+            allele_path=self.aa_allele_path,
+            allele_order=self.allele_order
+        )
+        self.concatenated_nt_seq = concatenate_alleles(
+            profile_data=self.nt_profile_data,
+            allele_dict=self.nt_alleles,
+            allele_order=self.allele_order,
+            stx_gene=self.gene,
+            linker_length_dict=self.linker_length_dict,
+            molecule='nt'
+        )
+        self.concatenated_aa_seq = concatenate_alleles(
+            profile_data=self.aa_profile_data,
+            allele_dict=self.aa_alleles,
+            allele_order=self.allele_order,
+            stx_gene=self.gene,
+            linker_length_dict=self.linker_length_dict,
+            molecule='aa'
+        )
+        write_concatenated_sequences(
+            concatenated_sequences=self.concatenated_nt_seq,
+            concatenate_path=self.concatenate_path,
+            file_name=self.gene_allele[self.gene],
+            molecule='nt'
+        )
+        write_concatenated_sequences(
+            concatenated_sequences=self.concatenated_aa_seq,
+            concatenate_path=self.concatenate_path,
+            file_name=self.gene_allele[self.gene],
+            molecule='aa'
+        )
+
+    def __init__(
+            self,
+            nt_allele_path,
+            aa_allele_path,
+            nt_profile_file,
+            aa_profile_file,
+            concatenate_path):
+        self.nt_allele_path = pathfinder(path=nt_allele_path)
+        self.aa_allele_path = pathfinder(path=aa_allele_path)
+        self.nt_profile_file = pathfinder(path=nt_profile_file)
+        self.aa_profile_file = pathfinder(path=aa_profile_file)
+        self.nt_profile_path = os.path.dirname(self.nt_profile_file)
+        self.aa_profile_path = os.path.dirname(self.aa_profile_file)
+        self.concatenate_path = pathfinder(path=concatenate_path)
+        self.linker_length_dict = {
+            'stx1': 9,
+            'stx2': 12,
+        }
+        # Set the appropriate order for the genes in the report (stx1 genes are not in numerical order)
+        self.allele_order = {
+            'stx1': ['ECs2974', 'ECs2973'],
+            'stx2': ['ECs1205', 'ECs1206']
+        }
+        self.gene_allele = {
+            'stx1': 'ECs2974_ECs2973',
+            'stx2': 'ECs1205_ECs1206'
+        }
+        self.nt_profile_data = read_profile(profile_file=self.nt_profile_file)
+        self.aa_profile_data = read_profile(profile_file=self.aa_profile_file)
+        self.gene = str()
+        self.nt_alleles = {}
+        self.aa_alleles = {}
+        self.concatenated_nt_seq = []
+        self.concatenated_aa_seq = []
+
+
 def profile_reduce(args):
     """
     Reduce the Enterobase profile to only the genes of interest
@@ -521,6 +612,22 @@ def allele_split(args):
     )
 
 
+def allele_concatenate(args):
+    """
+    Concatenate subunit files with linkers. Provide linkages between nucleotide and amino acid files
+    :param args: type ArgumentParser arguments
+    """
+    logging.info('Concatenating allele subunits')
+    concatenate = AlleleConcatenate(
+        nt_allele_path=args.nt_alleles,
+        aa_allele_path=args.aa_alleles,
+        nt_profile_file=args.nt_profile,
+        aa_profile_file=args.aa_profile,
+        concatenate_path=args.concatenate_path
+    )
+    concatenate.main()
+
+
 def cli():
     """
     Collect the arguments, create an object, and run the script
@@ -707,7 +814,7 @@ def cli():
         help='Specify the percent identity cutoff for matches. Allowed values are between 90 and 100. Default is 100'
     )
     aa_allele_find_subparser.set_defaults(func=aa_allele_find)
-    # Create a subparser for allele discovery
+    # Create a subparser for splitting multi-FASTA files of alleles
     allele_split_subparser = subparsers.add_parser(
         parents=[parent_parser],
         name='allele_split',
@@ -730,6 +837,50 @@ def cli():
              'If not provided, the split_alleles folder in the current working directory will be used'
     )
     allele_split_subparser.set_defaults(func=allele_split)
+    # Create a subparser for concatenating stx subunits
+    allele_concatenate_subparser = subparsers.add_parser(
+        parents=[parent_parser],
+        name='allele_concatenate',
+        description='Concatenate stx toxin subunit alleles with linkers',
+        formatter_class=RawTextHelpFormatter,
+        help='Concatenate stx toxin subunit alleles with linkers'
+    )
+    allele_concatenate_subparser.add_argument(
+        '--nt_profile',
+        metavar='nt_profile',
+        default=os.path.join(os.getcwd(), 'nt_profile', 'profile.txt'),
+        help='Specify name and path of nucleotide profile file. If not provided, profile.txt in '
+             'the nt_profile folder in the current working directory will be used by default'
+    )
+    allele_concatenate_subparser.add_argument(
+        '--aa_profile',
+        metavar='aa_profile',
+        default=os.path.join(os.getcwd(), 'aa_profile', 'profile.txt'),
+        help='Specify name and path of amino acid profile file. If not provided, profile.txt in '
+             'the aa_profile folder in the current working directory will be used by default'
+    )
+    allele_concatenate_subparser.add_argument(
+        '--nt_alleles',
+        metavar='nt_alleles',
+        default=os.path.join(os.getcwd(), 'nt_alleles'),
+        help='Specify name and path of folder containing nucleotide alleles. If not provided, the '
+             'nt_allele folder in the current working directory will be used by default'
+    )
+    allele_concatenate_subparser.add_argument(
+        '--aa_alleles',
+        metavar='aa_alleles',
+        default=os.path.join(os.getcwd(), 'aa_alleles'),
+        help='Specify name and path of folder containing amino acid alleles. If not provided, the '
+             'aa_allele folder in the current working directory will be used by default'
+    )
+    allele_concatenate_subparser.add_argument(
+        '-c', '--concatenate_path',
+        metavar='concatenate_path',
+        default=os.path.join(os.getcwd(), 'concatenated_alleles'),
+        help='Specify name and path of folder into which concatenated subunit files are to be placed. If not '
+             'provided, the concatenated_alleles folder in the current working directory will be used'
+    )
+    allele_concatenate_subparser.set_defaults(func=allele_concatenate)
     # Get the arguments into an object
     arguments = setup_arguments(parser=parser)
     # Prevent the arguments being printed to the console (they are returned in order for the tests to work)
