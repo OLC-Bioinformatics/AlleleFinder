@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/allele_split/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/allele_concatenate/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Allele Splitting - OLC Bioinformatics AlleleFinder</title>
+    <title>Allele Concatenating - OLC Bioinformatics AlleleFinder</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Allele Splitting";
-        var mkdocs_page_input_path = "allele_split.md";
-        var mkdocs_page_url = "/AlleleFinder/allele_split/";
+        var mkdocs_page_name = "Allele Concatenating";
+        var mkdocs_page_input_path = "allele_concatenate.md";
+        var mkdocs_page_url = "/AlleleFinder/allele_concatenate/";
       </script>
     
     <script src="../js/jquery-3.6.0.min.js" defer></script>
@@ -68,8 +68,12 @@
                 <li class="toctree-l1"><a class="reference internal" href="../aa_allele_find/">Amino Acid Allele Finding</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_split/">Allele Splitting</a>
+                </li>
+              </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">Allele Splitting</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Allele Concatenating</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a>
     </li>
@@ -80,10 +84,6 @@
     <li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a>
     </li>
     </ul>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../allele_concatenate/">Allele Concatenating</a>
                 </li>
               </ul>
       </div>
@@ -99,9 +99,9 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Allele Splitting</li>
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Allele Concatenating</li>
     <li class="wy-breadcrumbs-aside">
-        <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/allele_split.md"
+        <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/allele_concatenate.md"
           class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
@@ -111,43 +111,66 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h2 id="split-allele-database">Split allele database</h2>
-<p>This script splits a single allele database file into multiple files; one sequence per file</p>
+                <h2 id="concatenate-allele-subunits">Concatenate allele subunits</h2>
+<p>This script concatenates allele subunits. The outputs from the STEC pipeline (by design) have separate STEC A and B 
+subunits. This script concatenates the subunits (<em>stx1</em>: ECs2974/ECs2973 and <em>stx2</em>: ECs1205/ECs1206) in the correct
+order with the appropriate linker sequence (<em>stx1</em>: 9 nt / 3 aa, <em>stx2</em>: 12 nt / 4 aa). The linker is <code>N</code> for nucleotide 
+and <code>X</code> for amino acid.</p>
 <h4 id="inputs">Inputs</h4>
 <ol>
-<li>allele database file</li>
+<li>nucleotide allele files prepare by <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce"><code>allele_translate_reduce</code></a></li>
+<li>reduced profile file prepared by <a href="https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce"><code>profile_reduce</code></a>. Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:<ul>
+<li>ECs2973</li>
+<li>ECs2974</li>
+</ul>
+</li>
 </ol>
 <h4 id="running-the-script">Running the script</h4>
-<pre><code>stec.py allele_split -q /path/to/query_folder -o /path/to_output_folder
+<pre><code>stec.py allele_concatenate 
+--nt_profile /path/to/nt_profile/profile.txt
+--aa_profile /path/to/aa_profile/profile.txt
+--nt_alleles /path/to/nt_alleles
+--aa_alleles /path/to/aa_alleles
+-c /path/to/outputs
 </code></pre>
 
-<p>An example with the query files in the <code>query</code> folder, and the desired outputs in the <code>split_alleles</code> folder (all in the current working directory)</p>
 <h4 id="usage">Usage</h4>
-<pre><code>usage: stec.py allele_split [-h] [-version] [-v verbosity] [-q query_path]
-                            [-o output_path]
+<pre><code>usage: stec.py allele_concatenate [-h] [-version] [-v verbosity]
+                                  [--nt_profile nt_profile]
+                                  [--aa_profile aa_profile]
+                                  [--nt_alleles nt_alleles]
+                                  [--aa_alleles aa_alleles]
+                                  [-c concatenate_path]
 
-Split combined allele files into individual files
+Concatenate stx toxin subunit alleles with linkers
 
 optional arguments:
   -h, --help            show this help message and exit
   -version, --version   show program's version number and exit
   -v verbosity, --verbosity verbosity
                         Set the logging level. Options are debug, info, warning, error, and critical. Default is info.
-  -q query_path, --query_path query_path
-                        Specify name and path of folder containing query files in FASTA format. If not provided, the query folder in the current working directory will be used
-  -o output_path, --output_path output_path
-                        Specify name and path of folder into which the split allele files are to be written. If not provided, the split_alleles folder in the current working directory will be used
+  --nt_profile nt_profile
+                        Specify name and path of nucleotide profile file. If not provided, profile.txt in the nt_profile folder in the current working directory will be used by default
+  --aa_profile aa_profile
+                        Specify name and path of amino acid profile file. If not provided, profile.txt in the aa_profile folder in the current working directory will be used by default
+  --nt_alleles nt_alleles
+                        Specify name and path of folder containing nucleotide alleles. If not provided, the nt_allele folder in the current working directory will be used by default
+  --aa_alleles aa_alleles
+                        Specify name and path of folder containing amino acid alleles. If not provided, the aa_allele folder in the current working directory will be used by default
+  -c concatenate_path, --concatenate_path concatenate_path
+                        Specify name and path of folder into which concatenated subunit files are to be placed. If not provided, the concatenated_alleles folder in the current working directory will be used
+
 </code></pre>
 
 <h4 id="outputs">Outputs</h4>
-<p>The provided output folder will contain all sequences in the provided database files, one per file</p>
-<p>Additional information regarding this functionality is available in the <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_split"><code>allele_split</code></a> documentation</p>
+<p>The concatenated alleles will be located in the provided <code>concatenate_path</code>. Nucleotide alleles will be in the <code>nt</code> subdirectory. 
+Amino acid alleles will be in the <code>aa</code> subdirectory. Files are named based on the ordered alleles: <em>stx1</em>: <code>ECs2974_ECs2973.fasta</code>, 
+<em>stx2</em>: <code>ECs1205_ECs1206.fasta</code></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../aa_allele_find/" class="btn btn-neutral float-left" title="Amino Acid Allele Finding"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../allele_concatenate/" class="btn btn-neutral float-right" title="Allele Concatenating">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../allele_split/" class="btn btn-neutral float-left" title="Allele Splitting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -174,10 +197,8 @@ optional arguments:
         </span>
     
     
-      <span><a href="../aa_allele_find/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../allele_split/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-    
-      <span><a href="../allele_concatenate/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

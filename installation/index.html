@@ -78,6 +78,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../allele_split/">Allele Splitting</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_concatenate/">Allele Concatenating</a>
+                </li>
+              </ul>
       </div>
     </div>
     </nav>
@@ -115,12 +119,12 @@ conda update -q conda
 <h3 id="allelefinder">AlleleFinder</h3>
 <p>You can now install the AlleleFinder package:</p>
 <p>I prefer to create a new conda environment and install the AlleleFinder in a single step:</p>
-<p><code>conda create -n allelefinder -c olc-bioinformatics allelefinder=0.1.1=py_0</code></p>
+<p><code>conda create -n allelefinder -c olc-bioinformatics allelefinder=0.1.2=py_0</code></p>
 <p>If you wish to create an environment separately:</p>
 <p><code>conda create -n allelefinder python=3.9</code></p>
 <p>You can now install AlleleFinder into this environment:</p>
 <pre><code>conda activate allelefinder
-conda install -c olcbioinformatics allelefinder=0.1.1
+conda install -c olcbioinformatics allelefinder=0.1.2=py_0
 </code></pre>
 
 <p>Theoretically, if you don't have the ability to install conda for whatever reason, you can install the software with pip</p>
@@ -136,7 +140,7 @@ conda install -c olcbioinformatics allelefinder=0.1.1
 <p>Activate the environment:</p>
 <p><code>source allelefinder/bin/activate</code></p>
 <p>Install AlleleFinder</p>
-<p><code>pip install allelefinder==0.1.1</code></p>
+<p><code>pip install allelefinder==0.1.2</code></p>
 <p>You'll also need to install the dependencies</p>
 <pre><code>pip install coloredlogs==15.0.1
 pip install geneseekr==0.5.0
