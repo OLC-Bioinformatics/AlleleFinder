@@ -5,6 +5,7 @@ Collection of methods for Allele finding
 """
 
 # Standard imports
+from argparse import ArgumentParser
 from csv import DictReader
 from glob import glob
 import json
@@ -53,7 +54,7 @@ def setup_logging(arguments):
     coloredlogs.install(level=arguments.verbosity.upper())
 
 
-def setup_arguments(parser):
+def setup_arguments(parser: ArgumentParser):
     """
     Finalise setting up the ArgumentParser arguments into an object, and running subparser
     functions, or displaying the help message
@@ -87,7 +88,10 @@ def setup_arguments(parser):
     return arguments
 
 
-def common_allele_find_errors(args, errors, amino_acid):
+def common_allele_find_errors(
+        args: ArgumentParser.parse_args,
+        errors: list,
+        amino_acid: bool):
     """
     Perform checks for arguments shared between allele finding scripts
     :param args: type ArgumentParser arguments
@@ -109,14 +113,51 @@ def common_allele_find_errors(args, errors, amino_acid):
                     query_path=args.query_path,
                     errors=errors
                 )
-    # Amino acid allele checks
-    if not os.path.isdir(args.aa_alleles):
-        errors.append(f'Could not find supplied amino acid allele folder: {args.aa_alleles}')
-    else:
-        if not glob(os.path.join(args.aa_alleles, '*.fasta')):
-            errors.append(
-                f'Could not locate sequence files in supplied amino acid allele folder: {args.aa_alleles}'
-            )
+    # Nucleotide and amino acid checks
+    errors = profile_allele_check(
+        args=args,
+        errors=errors
+    )
+    return errors
+
+
+def profile_allele_check(
+        args: ArgumentParser.parse_args,
+        errors: list):
+    """
+    Perform checks for arguments pertaining to profile and allele files
+    :param args: type ArgumentParser arguments
+    :param errors: List of errors with supplied arguments
+    :return: Updated list of errors
+    """
+    # Nucleotide checks
+    try:
+        if not os.path.isdir(args.nt_alleles):
+            errors.append(f'Could not find supplied nucleic acid allele folder: {args.nt_alleles}')
+        else:
+            if not glob(os.path.join(args.nt_alleles, '*.fasta')):
+                errors.append(
+                    f'Could not locate sequence files in supplied nucleic acid allele folder: {args.nt_alleles}'
+                )
+    # Allows for checks in analyses without nucleotide sequences
+    except AttributeError:
+        pass
+    try:
+        if not os.path.isfile(args.nt_profile):
+            errors.append(f'Could not locate supplied nucleic acid profile file: {args.nt_profile}')
+    except AttributeError:
+        pass
+    # Amino acid checks
+    try:
+        if not os.path.isdir(args.aa_alleles):
+            errors.append(f'Could not find supplied amino acid allele folder: {args.aa_alleles}')
+        else:
+            if not glob(os.path.join(args.aa_alleles, '*.fasta')):
+                errors.append(
+                    f'Could not locate sequence files in supplied amino acid allele folder: {args.aa_alleles}'
+                )
+    except AttributeError:
+        pass
     try:
         if not os.path.isfile(args.aa_profile):
             errors.append(f'Could not locate supplied amino acid profile file: {args.aa_profile}')
@@ -125,7 +166,24 @@ def common_allele_find_errors(args, errors, amino_acid):
     return errors
 
 
-def detect_protein(query_path, errors):
+def error_print(
+        errors: list):
+    """
+    Log grammatically correct error messages and exit
+    :param errors: List of errors with supplied arguments
+    """
+    # Create variables to allow for grammatically correct error messages
+    error_string = '\n'.join(errors)
+    was_were = 'was' if len(errors) == 1 else 'were'
+    correct = 'error' if len(errors) == 1 else 'errors'
+    logging.error(
+        'There %s %s %s when attempting to run your command: \n%s', was_were, len(errors), correct, error_string)
+    raise SystemExit
+
+
+def detect_protein(
+        query_path: str,
+        errors: list):
     """
     Attempt to determine whether a supplied file contains protein sequence
     :param query_path: String of absolute path to folder containing sequence files
@@ -155,7 +213,7 @@ def detect_protein(query_path, errors):
     return errors
 
 
-def pathfinder(path):
+def pathfinder(path: str):
     """
     Create absolute path user-supplied path. Allows for tilde expansion from
     :param path: String of path supplied by user. Could be relative, tilde expansion, or absolute
@@ -171,13 +229,16 @@ def pathfinder(path):
     return out_path
 
 
-def query_prep(query_path, runmetadata, clear_report=True):
+def query_prep(
+        query_path: str,
+        runmetadata: MetadataObject,
+        clear_report=True):
     """
-    Create metadata objects for each sample
+    Create MetadataObjects for each sample
     :param query_path: String of absolute path to folder containing sequence files
-    :param runmetadata: List of metadata objects for each query
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param clear_report: Boolean of whether to clear previous iterations of BLAST reports. Default is True
-    :return runmetadata: Metadata object updated with query information
+    :return runmetadata: MetadataObject updated with query information
     """
     logging.info('Preparing query files')
     # Find all the sequence files in the path
@@ -185,10 +246,10 @@ def query_prep(query_path, runmetadata, clear_report=True):
     for fasta in fasta_files:
         name = os.path.splitext(os.path.basename(fasta))[0]
         if name != 'combinedtargets':
-            # Create a metadata object for each sample
+            # Create a MetadataObject for each sample
             metadata = MetadataObject()
             metadata.samples = []
-            # Populate the metadata object with the required attributes
+            # Populate the MetadataObject with the required attributes
             metadata.name = name
             metadata.general = GenObject()
             metadata.commands = GenObject()
@@ -218,10 +279,15 @@ def query_prep(query_path, runmetadata, clear_report=True):
     return runmetadata
 
 
-def blast_alleles(runmetadata, amino_acid, combined_targets, cpus, outfmt):
+def blast_alleles(
+        runmetadata: MetadataObject,
+        amino_acid: bool,
+        combined_targets: str,
+        cpus: int,
+        outfmt: str):
     """
     Run the BLAST analyses on the query
-    :param runmetadata: List of metadata objects for each query
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param amino_acid: Boolean of whether the query sequence is amino acid or nucleotide
     :param combined_targets: String of absolute path to file containing all sequences in other files in folder
     :param cpus: Integer of number of threads to use for BLAST analyses
@@ -255,7 +321,9 @@ def blast_alleles(runmetadata, amino_acid, combined_targets, cpus, outfmt):
         blast()
 
 
-def create_gene_names(path=os.getcwd(), name='genes.txt'):
+def create_gene_names(
+        path=os.getcwd(),
+        name='genes.txt'):
     """
     Create a file with gene names to use in reducing a wgMLST profile by finding any .fasta files
     in a folder and adding them to the file (one per line)
@@ -285,10 +353,12 @@ def create_gene_names(path=os.getcwd(), name='genes.txt'):
         raise SystemExit
 
 
-def create_blast_dict(sample, extended_fieldnames):
+def create_blast_dict(
+        sample: MetadataObject,
+        extended_fieldnames: list):
     """
     Use DictReader to open and read a BLAST report into a dictionary
-    :param sample: Metadata object
+    :param sample: MetadataObject with list of GenObjects for each query
     :param extended_fieldnames: List of the BLAST fields used, as well as the additional percent
     match in index 14
     """
@@ -302,15 +372,24 @@ def create_blast_dict(sample, extended_fieldnames):
     return blastdict
 
 
-def parse_colocated_results(runmetadata, fieldnames, extended_fieldnames, amino_acid, gene_names, nt_allele_path,
-                            aa_allele_path, report_path, overlap_range=50, cutoff=90):
+def parse_colocated_results(
+        runmetadata: MetadataObject,
+        fieldnames: list,
+        extended_fieldnames: list,
+        amino_acid: bool,
+        gene_names: list,
+        nt_allele_path: str,
+        aa_allele_path: str,
+        report_path: str,
+        overlap_range=50,
+        cutoff=90):
     """
     Parse BLAST outputs. Ensure co-location of genes that must be co-located
-    :param runmetadata: List of metadata objects
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param fieldnames: List of the BLAST fields used
     :param extended_fieldnames: List of the BLAST fields used, as well as the additional percent
     match in index 14
-    :param amino_acid: Variable on whether targets are protein
+    :param amino_acid: Boolean of whether targets are protein
     :param gene_names: List of all gene names in the analysis
     :param nt_allele_path: String of the absolute path to the folder containing nucleotide allele files
     :param aa_allele_path: String of the absolute path to the folder containing amino acid allele files
@@ -319,7 +398,7 @@ def parse_colocated_results(runmetadata, fieldnames, extended_fieldnames, amino_
     them to be considered co-located. Default is 50 bp
     :param cutoff: Integer of the minimum percent identity between query and subject sequence.
     Default is 100%
-    :return: runmetadata: Updated list of metadata objects
+    :return: runmetadata: Updated MetadataObjects
     :return: notes: List of contig:query_range-specific notes
     """
     logging.info('Parsing BLAST outputs')
@@ -494,7 +573,7 @@ def parse_colocated_results(runmetadata, fieldnames, extended_fieldnames, amino_
                 else:
                     colocation_dict[contig]['query_ranges'].append(query_range)
                     colocation_dict[contig]['target'].append(nt_allele)
-            # Store the BLAST outputs in the metadata object
+            # Store the BLAST outputs in the MetadataObject
             sample.alleles.blastresults = resultdict
         # Populate missing results with 'NA' values
         if len(resultdict) == 0:
@@ -507,7 +586,7 @@ def parse_colocated_results(runmetadata, fieldnames, extended_fieldnames, amino_
     return runmetadata, notes
 
 
-def translate_sequence(nt_seq):
+def translate_sequence(nt_seq: str):
     """
     Uses BioPython to translate a nucleotide sequence to protein, and trims it to the first stop
     codon
@@ -530,7 +609,11 @@ def translate_sequence(nt_seq):
     return str(aa_seq)
 
 
-def aa_allele_lookup(aa_seq, gene, aa_allele_path, notes):
+def aa_allele_lookup(
+        aa_seq: str,
+        gene: str,
+        aa_allele_path: str,
+        notes: list):
     """
     Read in the amino acid allele file. Search for exact matches to the current sequence
     :param aa_seq: String of the amino acid sequence
@@ -559,7 +642,11 @@ def aa_allele_lookup(aa_seq, gene, aa_allele_path, notes):
     return filtered, notes
 
 
-def evaluate_translated_allele(aa_seq, gene, notes, aa=False):
+def evaluate_translated_allele(
+        aa_seq: str,
+        gene: str,
+        notes: list,
+        aa=False):
     """
     Evaluate whether an aa sequence passes the necessary length thresholds after trimming of an interior stop codons
     :param aa_seq: String of the amino acid sequence to evaluate
@@ -595,7 +682,15 @@ def evaluate_translated_allele(aa_seq, gene, notes, aa=False):
     return filtered, notes
 
 
-def update_allele_databases(query_sequence, header, filtered, gene, report_path, allele_path, notes, molecule):
+def update_allele_databases(
+        query_sequence: SeqIO.parse,
+        header: str,
+        filtered: bool,
+        gene: str,
+        report_path: str,
+        allele_path: str,
+        notes: list,
+        molecule: str):
     """
     Update the appropriate allele file depending on quality filter status and molecule
     :param query_sequence: SEQIO sequence object of the novel allele
@@ -660,7 +755,10 @@ def update_allele_databases(query_sequence, header, filtered, gene, report_path,
     return notes, header
 
 
-def colocation_calculation(colocation_dict, gene_names, overlap_range):
+def colocation_calculation(
+        colocation_dict: dict,
+        gene_names: list,
+        overlap_range: int):
     """
     Determine if gene results are co-located on a contig
     :param colocation_dict: Dictionary of contig: {'query_ranges': [query_range],
@@ -735,8 +833,15 @@ def colocation_calculation(colocation_dict, gene_names, overlap_range):
 
 
 def positive_overlap(
-        info_dict, other_iterator, query_range, other_range, overlap_dict,
-        current_allele, contig, gene_names, overlap):
+        info_dict: dict,
+        other_iterator: int,
+        query_range: range,
+        other_range: range,
+        overlap_dict: dict,
+        current_allele: str,
+        contig: str,
+        gene_names: list,
+        overlap: bool):
     """
     Determine the combined range of two overlapping ranges, extract gene names corresponding to
     allele names, populate dictionary of range overlaps
@@ -789,7 +894,9 @@ def positive_overlap(
     return overlap_dict, processed
 
 
-def calculate_full_range(query_range, other_range):
+def calculate_full_range(
+        query_range: range,
+        other_range: range):
     """
     Determine if two ranges overlap
     :param query_range: Range of hit corresponding to current_allele
@@ -809,7 +916,12 @@ def calculate_full_range(query_range, other_range):
     return full_range
 
 
-def evaluate_translated_length(aa_seq, length_dict, gene, notes, filtered):
+def evaluate_translated_length(
+        aa_seq: str,
+        length_dict: dict,
+        gene: str,
+        notes: list,
+        filtered: bool):
     """
     Evaluate whether a translated sequence passes a length filter and starts with a methionine
     residue
@@ -834,7 +946,13 @@ def evaluate_translated_length(aa_seq, length_dict, gene, notes, filtered):
     return filtered, notes
 
 
-def generic_evaluate_translated_length(aa_seq, sequence, gene, notes, filtered, cutoff=0.95):
+def generic_evaluate_translated_length(
+        aa_seq: str,
+        sequence: str,
+        gene: str,
+        notes: list,
+        filtered: bool,
+        cutoff=0.95):
     """
     Evaluate whether a translated sequence passes a generic length filter and starts with a methionine
     residue
@@ -864,7 +982,10 @@ def generic_evaluate_translated_length(aa_seq, sequence, gene, notes, filtered, 
     return filtered, notes
 
 
-def find_next_allele(gene, allele_path, extension='.fasta'):
+def find_next_allele(
+        gene: str,
+        allele_path: str,
+        extension='.fasta'):
     """
     Update the allele database with the novel allele extracted above
     :param gene: Name of the current gene being examined
@@ -891,7 +1012,7 @@ def find_next_allele(gene, allele_path, extension='.fasta'):
     return last_id + 1
 
 
-def remove_combined_db_files(allele_path):
+def remove_combined_db_files(allele_path: str):
     """
     Remove all the combined gene files used in BLAST analyses
     :param allele_path: String of the absolute path to the folder containing the alleles
@@ -903,10 +1024,12 @@ def remove_combined_db_files(allele_path):
         os.remove(file)
 
 
-def create_nt_allele_comprehension(runmetadata, gene_names):
+def create_nt_allele_comprehension(
+        runmetadata: MetadataObject,
+        gene_names: list):
     """
     Create gene: nucleotide allele ID comprehensions for each contig: range combination with hits
-    :param runmetadata: List of metadata objects
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param gene_names: List of all gene names in the analysis
     :return: allele_comprehension: nucleotide allele comprehension. allele_comprehension[contig][full_range] =
     {gene:allele}
@@ -979,10 +1102,12 @@ def create_nt_allele_comprehension(runmetadata, gene_names):
     return allele_comprehension
 
 
-def create_aa_allele_comprehension(runmetadata, gene_names):
+def create_aa_allele_comprehension(
+        runmetadata: MetadataObject,
+        gene_names: list):
     """
     Create gene: amino acid allele ID comprehensions for each contig: range combination with hits
-    :param runmetadata: List of metadata objects
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param gene_names: List of all gene names in the analysis
     :return: allele_comprehension: amino acid allele comprehension. allele_comprehension[contig][full_range] =
     {gene:allele}
@@ -1052,7 +1177,7 @@ def create_aa_allele_comprehension(runmetadata, gene_names):
     return allele_comprehension
 
 
-def create_frozen_allele_comprehension(allele_comprehension):
+def create_frozen_allele_comprehension(allele_comprehension: dict):
     """
     Freeze allele comprehension dictionaries
     :param allele_comprehension: Dictionary of contig:full_range: {gene:allele}
@@ -1075,11 +1200,17 @@ def create_frozen_allele_comprehension(allele_comprehension):
     return frozen_allele_comprehension
 
 
-def extract_novel_alleles(sample, gene, genome_query, amino_acid, allele_path, report_path,
-                          cutoff=75):
+def extract_novel_alleles(
+        sample: MetadataObject,
+        gene: str,
+        genome_query: bool,
+        amino_acid: bool,
+        allele_path: str,
+        report_path: str,
+        cutoff=75):
     """
     Extract the sequence of novel alleles from samples that do not have a 100% match
-    :param sample: Metadata object
+    :param sample: MetadataObject with list of GenObjects for each query
     :param gene: Name of current gene
     :param genome_query: Boolean of whether the allele or the genome are the query
     :param amino_acid: Variable indicating whether the current analyses are on DNA or
@@ -1140,7 +1271,12 @@ def extract_novel_alleles(sample, gene, genome_query, amino_acid, allele_path, r
     return sample, novel_allele, query_sequence
 
 
-def update_allele_database(gene, query_sequence, allele_path, report_path, amino_acid):
+def update_allele_database(
+        gene: str,
+        query_sequence: str,
+        allele_path: str,
+        report_path: str,
+        amino_acid: bool):
     """
     Update the allele database with the novel allele extracted above
     :param gene: Name of the current gene being examined
@@ -1206,11 +1342,11 @@ def update_allele_database(gene, query_sequence, allele_path, report_path, amino
     return novel_allele
 
 
-def translate(runmetadata):
+def translate(runmetadata: MetadataObject):
     """
     Use BioPython to translate DNA to amino acid
-    :param runmetadata: List of metadata objects for each query
-    :return: Updated list of metadata objects
+    :param runmetadata: MetadataObject with list of GenObjects for each query
+    :return: Updated MetadataObject
     """
     logging.info('Translating allele sequences to amino acid')
     for sample in runmetadata.samples:
@@ -1236,8 +1372,14 @@ def translate(runmetadata):
     return runmetadata
 
 
-def match_profile(profile_data, frozen_allele_comprehension, report_path, profile_file, genes,
-                  allele_comprehension, molecule):
+def match_profile(
+        profile_data: dict,
+        frozen_allele_comprehension: dict,
+        report_path: str,
+        profile_file: str,
+        genes: list,
+        allele_comprehension: dict,
+        molecule: str):
     """
     Match current profiles to any previously created profiles
     :param profile_data: Dictionary of seq_type: {gene name: allele ID}
@@ -1291,7 +1433,7 @@ def match_profile(profile_data, frozen_allele_comprehension, report_path, profil
     return profile_matches, frozen_profiles
 
 
-def freeze_profiles(profile_data):
+def freeze_profiles(profile_data: dict):
     """
     Freeze profiles, so that the frozen {gene:allele} dictionary can be used as the key and the corresponding sequence
     type as the value
@@ -1309,7 +1451,12 @@ def freeze_profiles(profile_data):
     return frozen_profiles
 
 
-def update_profiles(profile_file, report_path, genes, allele_dict, molecule):
+def update_profiles(
+        profile_file: str,
+        report_path: str,
+        genes: list,
+        allele_dict: dict,
+        molecule: str):
     """
     Run methods to add novel profiles to the profile file. Determine the sequence type to use, and update the file
     :param profile_file: Name and path of file containing reduced profiles
@@ -1338,7 +1485,7 @@ def update_profiles(profile_file, report_path, genes, allele_dict, molecule):
     return next_seq_type
 
 
-def return_next_seq_type(profile_file):
+def return_next_seq_type(profile_file: str):
     """
     Parse the profile file, and return the value for the next sequence type to be used. Local profiles will start at
     1000000 in order to be distinct from Enterobase profiles
@@ -1363,7 +1510,13 @@ def return_next_seq_type(profile_file):
     return int_last_seq_type + 1
 
 
-def update_profile_file(profile_file, next_seq_type, allele_dict, genes, report_path, molecule):
+def update_profile_file(
+        profile_file: str,
+        next_seq_type: int,
+        allele_dict: dict,
+        genes: list,
+        report_path: str,
+        molecule: str):
     """
     Update the profile file with novel profile. Additionally, either create or update the novel_profiles.txt file
     with the same profile
@@ -1409,12 +1562,20 @@ def update_profile_file(profile_file, next_seq_type, allele_dict, genes, report_
     return True
 
 
-def create_stec_report(runmetadata, nt_profile_matches, nt_alleles, aa_profile_matches,
-                       aa_alleles, report_file, gene_names, aa_profile_path, notes):
+def create_stec_report(
+        runmetadata: MetadataObject,
+        nt_profile_matches: dict,
+        nt_alleles: dict,
+        aa_profile_matches: dict,
+        aa_alleles: dict,
+        report_file: str,
+        gene_names: list,
+        aa_profile_path: str,
+        notes: list):
     """
     Create a STEC-specific report including the allele matches for each gene and sequence type for both nucleotide and
     amino acid sequence information
-    :param runmetadata: List of metadata objects for each query
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param nt_profile_matches: Dictionary of contig:query_range:nucleotide seq_type_match
     :param nt_alleles: Dictionary of nucleotide contig:full_range:nucleotide seq_type_match
     :param aa_profile_matches: Dictionary of contig:query_range:amino acid seq_type_match
@@ -1519,7 +1680,11 @@ def create_stec_report(runmetadata, nt_profile_matches, nt_alleles, aa_profile_m
             report.write(data)
 
 
-def update_profile_link_file(nt_seq_type, aa_seq_type, note, aa_profile_path):
+def update_profile_link_file(
+        nt_seq_type: str,
+        aa_seq_type: str,
+        note: list,
+        aa_profile_path: str):
     """
     Update the file linking amino acid sequence type to the (multiple) corresponding nucleotide sequence type(s)
     :param nt_seq_type: String of the nucleotide sequence type
@@ -1580,7 +1745,9 @@ def update_profile_link_file(nt_seq_type, aa_seq_type, note, aa_profile_path):
     return note
 
 
-def split_alleles(allele_files, output_path):
+def split_alleles(
+        allele_files: list,
+        output_path: str):
     """
     Split FASTA files into individual sequences
     :param allele_files: List of absolute path to FASTA-formatted allele sequence files
@@ -1603,11 +1770,18 @@ def split_alleles(allele_files, output_path):
                 SeqIO.write(record, output, 'fasta')
 
 
-def parse_aa_blast(runmetadata, extended_fieldnames, fieldnames, gene_names, notes, aa_allele_path,
-                   report_path, cutoff):
+def parse_aa_blast(
+        runmetadata: MetadataObject,
+        extended_fieldnames: list,
+        fieldnames: list,
+        gene_names: list,
+        notes: list,
+        aa_allele_path: str,
+        report_path: str,
+        cutoff: int):
     """
     Parse amino acid BLAST results
-    :param runmetadata: List of metadata objects
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param extended_fieldnames: List of the BLAST fields used, as well as the additional percent
     match in index 14
     :param fieldnames: List of the BLAST fields used
@@ -1618,7 +1792,7 @@ def parse_aa_blast(runmetadata, extended_fieldnames, fieldnames, gene_names, not
     them to be considered co-located. Default is 50 bp
     :param cutoff: Integer of the minimum percent identity between query and subject sequence.
     Default is 90
-    :return: runmetadata: Updated list of metadata objects
+    :return: runmetadata: Updated MetadataObject
     :return: filtered: Boolean of whether the sample fails quality/length checks
     :return: notes: Updated list of sample-specific notes
     """
@@ -1688,13 +1862,16 @@ def parse_aa_blast(runmetadata, extended_fieldnames, fieldnames, gene_names, not
     return runmetadata, filtered, notes
 
 
-def analyse_aa_alleles(runmetadata, gene_names, notes):
+def analyse_aa_alleles(
+        runmetadata: MetadataObject,
+        gene_names: list,
+        notes: list):
     """
     Analyse supplied amino acid alleles to ensure that they pass quality checks
-    :param runmetadata: List of metadata objects
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param gene_names: List of all gene names in the analysis
     :param notes: List of sample-specific notes
-    :return: runmetadata: Updated list of metadata objects
+    :return: runmetadata: Updated MetadataObject
     :return: notes: Updated list of sample-specific notes
     """
     # Iterate through all the samples
@@ -1714,10 +1891,13 @@ def analyse_aa_alleles(runmetadata, gene_names, notes):
     return runmetadata, notes
 
 
-def report_aa_alleles(runmetadata, report_file, notes):
+def report_aa_alleles(
+        runmetadata: MetadataObject,
+        report_file: str,
+        notes: list):
     """
     Create an amino acid query-specific report with sample name, allele match, and notes
-    :param runmetadata: List of metadata objects
+    :param runmetadata: MetadataObject with list of GenObjects for each query
     :param report_file: String of absolute path to the report file
     :param notes: List of sample-specific notes
     """
@@ -1727,7 +1907,7 @@ def report_aa_alleles(runmetadata, report_file, notes):
     data = str()
     # Iterate over all the samples
     for sample in runmetadata.samples:
-        # Extract the list of hits from the metadata object, and join with semicolons
+        # Extract the list of hits from the MetadataObject, and join with semicolons
         matches = ';'.join(sample.alleles.blastlist)
         # Join the list of notes with
         note = ';'.join(notes)

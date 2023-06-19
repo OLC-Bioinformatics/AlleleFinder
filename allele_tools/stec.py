@@ -40,11 +40,13 @@ from allele_tools.methods import (
     create_gene_names,
     create_nt_allele_comprehension,
     create_stec_report,
+    error_print,
     load_alleles,
     match_profile,
     parse_aa_blast,
     parse_colocated_results,
     pathfinder,
+    profile_allele_check,
     query_prep,
     report_aa_alleles,
     setup_arguments,
@@ -535,12 +537,7 @@ def allele_find(args):
     if not os.path.isfile(args.nt_profile):
         errors.append(f'Could not locate supplied nucleotide profile file: {args.nt_profile}')
     if errors:
-        error_string = '\n'.join(errors)
-        was_were = 'was' if len(errors) == 1 else 'were'
-        correct = 'error' if len(errors) == 1 else 'errors'
-        logging.error(
-            'There %s %s %s when attempting to run your command: \n%s', was_were, len(errors), correct, error_string)
-        raise SystemExit
+        error_print(errors=errors)
     stec = STEC(
         allele_path=args.nt_alleles,
         aa_allele_path=args.aa_alleles,
@@ -568,12 +565,7 @@ def aa_allele_find(args):
         amino_acid=True
     )
     if errors:
-        error_string = '\n'.join(errors)
-        was_were = 'was' if len(errors) == 1 else 'were'
-        correct = 'error' if len(errors) == 1 else 'errors'
-        logging.error(
-            'There %s %s %s when attempting to run your command: \n%s', was_were, len(errors), correct, error_string)
-        raise SystemExit
+        error_print(errors=errors)
     aa_stec = AASTEC(
         aa_allele_path=args.aa_alleles,
         query_path=args.query_path,
@@ -600,12 +592,7 @@ def allele_split(args):
                 f'Could not locate sequence files in supplied allele folder: {args.query_path}'
             )
     if errors:
-        error_string = '\n'.join(errors)
-        was_were = 'was' if len(errors) == 1 else 'were'
-        correct = 'error' if len(errors) == 1 else 'errors'
-        logging.error(
-            'There %s %s %s when attempting to run your command: \n%s', was_were, len(errors), correct, error_string)
-        raise SystemExit
+        error_print(errors=errors)
     split_alleles(
         allele_files=allele_files,
         output_path=args.output_path
@@ -618,6 +605,15 @@ def allele_concatenate(args):
     :param args: type ArgumentParser arguments
     """
     logging.info('Concatenating allele subunits')
+    errors = []
+    # Determine if the profile file, the allele folder, and the alleles all exist
+    errors = profile_allele_check(
+        args=args,
+        errors=errors
+    )
+    # If there were any errors with the supplied arguments, print them, and exit
+    if errors:
+        error_print(errors=errors)
     concatenate = AlleleConcatenate(
         nt_allele_path=args.nt_alleles,
         aa_allele_path=args.aa_alleles,

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Unit and integration tests for allele_tools/profile_reduce.py
+Unit and integration tests for allele_tools/stec.py allele_split
 """
 
 # Standard imports
@@ -16,9 +16,10 @@ from Bio import SeqIO
 import pytest
 
 # Local imports
-from allele_tools.stec import \
-    allele_split, \
+from allele_tools.stec import (
+    allele_split,
     cli
+)
 
 
 @pytest.fixture(name='variables', scope='module')
@@ -62,6 +63,7 @@ def test_profile_reduce_missing_tilde_profile_missing_files(mock_args, variables
         )
         arguments = cli()
         allele_split(args=arguments)
+
 
 @patch('argparse.ArgumentParser.parse_args')
 def test_profile_reduce_missing_tilde_profile(mock_args, variables):

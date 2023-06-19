@@ -74,6 +74,7 @@ def test_allele_find_integration_no_files(mock_args, variables):
         arguments = cli()
         allele_find(args=arguments)
 
+
 @patch('argparse.ArgumentParser.parse_args')
 def test_allele_find_integration(mock_args, variables):
     prepare_files(
@@ -96,10 +97,12 @@ def test_allele_find_integration(mock_args, variables):
 
 def test_report_contents(variables):
     variables.report_contents = open(variables.allele_report, 'r', encoding='utf-8').readlines()
+    assert variables.report_contents[1] == \
+        '2013-SEQ-0039	6	9	241	6	2	68\t\n'
     assert variables.report_contents[16] == \
-           '2017-SEQ-0617	0	2	116	0		1000002	ECs1206 amino acid sequence does not start ' \
-           'with M; ECs1206 amino acid sequence was 14 amino acid residues. Minimum allowed length is ' \
-           '88 amino acid residues; Novel nt_seq_type 116, and aa_seq_type 1000002\n'
+           '2017-SEQ-0617	0	2	116	0		N/A	ECs1206 amino acid sequence does not start with M; ' \
+           'ECs1206 amino acid sequence was 14 amino acid residues. Minimum allowed length is 88 amino acid residues; ' \
+           'Novel nt_seq_type 116, and aa_seq_type N/A\n'
 
 
 def test_clean(variables):

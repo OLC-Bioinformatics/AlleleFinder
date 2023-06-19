@@ -36,6 +36,7 @@ def test_allele_find_integration_missing_files(mock_args, variables):
         arguments = cli()
         aa_allele_find(args=arguments)
 
+
 @patch('argparse.ArgumentParser.parse_args')
 def test_allele_find_integration(mock_args, variables):
     prepare_files(
@@ -57,8 +58,11 @@ def test_allele_find_integration(mock_args, variables):
 
 def test_report_contents(variables):
     variables.report_contents = open(variables.allele_report, 'r', encoding='utf-8').readlines()
+    assert variables.report_contents[3] == \
+        'ECs1205_1388		ECs1205 trimmed sequence did not end with a stop codon;ECs1205 amino acid sequence ' \
+        'was 248 amino acid residues. Minimum allowed length is 316 amino acid residues\n'
     assert variables.report_contents[12] == \
-           'ECs1205_9	ECs1205_1000000;ECs1205_9	Amino acid matches previous result: ECs1205_9\n'
+           'ECs1205_9	ECs1205_9;ECs1205_9	Amino acid matches previous result: ECs1205_9\n'
 
 
 def test_clean(variables):
