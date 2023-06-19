@@ -14,3 +14,4 @@ nav:
   - Allele Finding: 'allele_find.md'
   - Amino Acid Allele Finding: 'aa_allele_find.md'
   - Allele Splitting: 'allele_split.md'
+  - Allele Concatenating: 'allele_concatenate.md'
