@@ -7,8 +7,8 @@ and `X` for amino acid.
 
 #### Inputs
 
-1. nucleotide allele files prepare by [`allele_translate_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce)
-2. reduced profile file prepared by [`profile_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce). Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:
+1. nucleotide and amino acid allele files prepare by [`allele_translate_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce)
+2. nucleotide and amino acid profile files prepared by [`allele_translate_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce). Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:
     * ECs2973
     * ECs2974
 

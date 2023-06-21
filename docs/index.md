@@ -8,13 +8,14 @@ Detailed installation instructions are provided [here](https://olc-bioinformatic
 
 ## Scripts
 
-There is a single STEC script with five separate functionalities:
+There is a single STEC script with six separate functionalities:
 
 1. [`profile_reduce`](profile_reduce.md)
 2. [`allele_translate_reduce`](allele_translate_reduce.md)
 3. [`allele_find`](allele_find.md)
 4. [`aa_allele_find`](aa_allele_find.md)
 5. [`allele_split`](allele_split.md)
+6. [`allele concatenate`](allele_concatenate.md)
 
 ## Feedback
 

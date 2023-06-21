@@ -12,17 +12,18 @@
 
 ### STEC AlleleFinder
 
-A suite of tools, written in Python, designed for the discovery, sequence typing, and profiling the _stx_ alleles in Shiga toxin-producing _E. coli_  
+A suite of tools, written in Python, designed for the discovery, sequence typing, and profiling the _stx_ alleles in Shiga toxin-producing _Escherichia coli_  
 
 ## Scripts
 
-There is a single STEC script with five separate functionalities:
+There is a single STEC script with six separate functionalities:
 
 1. [`profile_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce)
 2. [`allele_translate_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce)
 3. [`allele_find`](https://olc-bioinformatics.github.io/AlleleFinder/allele_find)
 4. [`aa_allele_find`](https://olc-bioinformatics.github.io/AlleleFinder/aa_allele_find)
 5. [`allele_split`](https://olc-bioinformatics.github.io/AlleleFinder/allele_split)
+6. [`allele_concatenate`](https://olc-bioinformatics.github.io/AlleleFinder/allele_concatenate)
 
 
 Full documentation is available at the [AlleleFinder GitHub pages site](https://olc-bioinformatics.github.io/AlleleFinder/)
@@ -159,6 +160,19 @@ stec.py allele_split -q /path/to/query_folder -o /path/to_output_folder
 
 Additional information regarding this functionality is available in the [`allele_split`](https://olc-bioinformatics.github.io/AlleleFinder/allele_split) documentation
 
+
+## Concatenate allele database
+
+This script concatenates alleles of the _stx_ A and B subunits into a single sequence with a linker
+
+1. nucleotide and amino acid allele files prepare by [`allele_translate_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce)
+2. nucleotide and amino acid profile files prepared by [`allele_translate_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce). Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:
+
+#### Running the script
+
+```
+stec.py allele_concatenate --nt_profile /path/to/nt_profile/profile.txt --aa_profile /path/to/aa_profile/profile.txt --nt_alleles /path/to/nt_alleles --aa_alleles /path/to/aa_alleles -c /path/to/outputs
+```
 
 ## Feedback
 
