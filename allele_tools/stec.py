@@ -360,6 +360,7 @@ class AlleleConcatenate:
             allele_path=self.aa_allele_path,
             allele_order=self.allele_order
         )
+        logging.info('Concatenating allele sequences')
         self.concatenated_nt_seq = concatenate_alleles(
             profile_data=self.nt_profile_data,
             allele_dict=self.nt_alleles,
@@ -376,6 +377,7 @@ class AlleleConcatenate:
             linker_length_dict=self.linker_length_dict,
             molecule='aa'
         )
+        logging.info('Writing concatenated allele sequences to file')
         write_concatenated_sequences(
             concatenated_sequences=self.concatenated_nt_seq,
             concatenate_path=self.concatenate_path,
