@@ -68,7 +68,11 @@ class ProfileReduce:
                         allele_str = ''
                         # Iterate through all the genes of interest
                         for gene in self.names:
-                            allele_str += allele_dict[gene]
+                            try:
+                                allele_str += allele_dict[gene]
+                            # If an allele has been filtered based on length, the sequence type needs to be removed
+                            except TypeError:
+                                continue
                             # Add the allele number to the list, and to the string
                             allele_list.append(allele_dict[gene])
                         # Check if the string of allele numbers is already in the dictionary
@@ -96,7 +100,7 @@ class ProfileReduce:
         try:
             assert os.path.isfile(self.profile)
         except AssertionError as exc:
-            logging.error('Cannot locate the specified profile file: %s, (self.profile,)')
+            logging.error('Cannot locate the specified profile file: %s', self.profile)
             raise SystemExit from exc
         # Create the folder into which the reduced profile and notes are to be placed
         self.report_path = os.path.join(os.path.dirname(self.profile), output)
@@ -134,8 +138,10 @@ def cli():
     # Get the arguments into an object
     arguments = parser.parse_args()
     SetupLogging(debug=True)
-    reduce = ProfileReduce(profile=arguments.profile,
-                           names=arguments.names)
+    reduce = ProfileReduce(
+        profile=arguments.profile,
+        names=arguments.names
+    )
     reduce.main()
     logging.info('Profile reduction complete!')
     # Prevent the arguments being printed to the console (they are returned in order for the tests to work)

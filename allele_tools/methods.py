@@ -1075,11 +1075,23 @@ def create_nt_allele_comprehension(
                             # Extract the gene_alleleID from the dictionary for this gene
                             corresponding_allele = info_dict['allele'][i]
                             # Remove the gene name information from the corresponding_allele variable
-                            allele_number = corresponding_allele.replace(f'{gene_name}_', '')
-                            # Update the dictionary with the new gene: allele number for the sample
-                            allele_comprehension[contig][query_range].update(
-                                {gene_name: allele_number}
-                            )
+
+                            if gene_name in corresponding_allele:
+                                allele_number = corresponding_allele.replace(f'{gene_name}_', '')
+                                # Update the dictionary with the new gene: allele number for the sample
+                                allele_comprehension[contig][query_range].update(
+                                    {gene_name: allele_number}
+                                )
+                            else:
+                                # Determine which gene(s) are not currently being examined
+                                corresponding_gene = [
+                                    other_gene for other_gene in gene_names if other_gene != gene_name
+                                ][0]
+                                allele_number = corresponding_allele.replace(f'{corresponding_gene}_', '')
+                                # Update the dictionary with the new gene: allele number for the sample
+                                allele_comprehension[contig][query_range].update(
+                                    {corresponding_gene: allele_number}
+                                )
         # If the allele_comprehension dictionary exists, it doesn't need to be further populated
         if allele_comprehension:
             continue
@@ -1538,8 +1550,14 @@ def update_profile_file(
     for gene in genes:
         # Extract the allele ID for each gene in the analysis
         allele = allele_dict[gene]
+        # If the allele has been filtered return False, as a sequence type should not exist for filtered alleles
         if not allele:
             return False
+        # Check if the gene name is in the allele
+        if gene in allele:
+            # Extract the allele number
+            allele = allele.split('_')[-1]
+
         # Update the header with the gene
         header += f'\t{gene}'
         # Update the profile string with the allele ID
@@ -1982,6 +2000,8 @@ def concatenate_alleles(
         concatenated_seq = str()
         # Create a boolean to store if one (or both) of the allele subunits is missing
         complete = True
+        # Create a variable to store the name of the concatenated allele
+        concatenated_name = str()
         # Iterate over the subunits in order from the allele_order dictionary
         for subunit in allele_order[stx_gene]:
             # Extract the allele number from the profile dictionary using the subunit as the key
@@ -2008,6 +2028,11 @@ def concatenate_alleles(
                 else:
                     linker = 'X' * int(linker_length / 3)
                 concatenated_seq += f'{allele_seq}{linker}'
+            # Update the name of the concatenated sequence
+            if concatenated_name:
+                concatenated_name += f'_{allele_number}'
+            else:
+                concatenated_name = allele_number
         # Do not add incomplete sequences to the list
         if not complete:
             continue
@@ -2015,7 +2040,7 @@ def concatenate_alleles(
         concatenated_sequences.append(
             SeqRecord(
                 seq=Seq(concatenated_seq),
-                id=seq_type,
+                id=concatenated_name,
                 name='',
                 description=''
             )
