@@ -36,7 +36,7 @@ Full documentation is available at the [AlleleFinder GitHub pages site](https://
 Create a new conda environment:
 
 ```
-conda create -n allele_finder -c olcbioinformatics allelefinder=0.1.2=py_0
+conda create -n allele_finder -c olcbioinformatics allelefinder=0.1.4=py_0
 ```
 
 Additional documentation is available [here](https://olc-bioinformatics.github.io/AlleleFinder/installation)
