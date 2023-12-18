@@ -36,10 +36,10 @@ def setup():
             self.aa_profile_path = os.path.join(self.file_path, 'aa_profile')
             self.aa_profile_file = os.path.join(self.aa_profile_path, 'profile.txt')
             self.length_dict = {
-                'ECs2973': 90,
-                'ECs2974': 316,
-                'ECs1205': 316,
-                'ECs1206': 88
+                'ECs2973': 82,
+                'ECs2974': 313,
+                'ECs1205': 313,
+                'ECs1206': 84
             }
             self.fake_path = os.path.join('~', 'completely_fake_path')
 

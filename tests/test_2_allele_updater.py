@@ -49,10 +49,10 @@ def setup():
 
             self.report_file = os.path.join(self.report_path, 'nt_profiles.tsv')
             self.length_dict = {
-                'ECs2973': 90,
-                'ECs2974': 316,
-                'ECs1205': 316,
-                'ECs1206': 88
+                'ECs2973': 82,
+                'ECs2974': 313,
+                'ECs1205': 313,
+                'ECs1206': 84
             }
             self.fake_path = os.path.join('~', 'completely_fake_path')
 

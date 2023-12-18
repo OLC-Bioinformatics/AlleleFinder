@@ -659,10 +659,10 @@ def evaluate_translated_allele(
     """
     # Dictionary of minimum acceptable lengths for each of the STEC genes
     length_dict = {
-        'ECs2973': 90,
-        'ECs2974': 316,
-        'ECs1205': 316,
-        'ECs1206': 88
+        'ECs2973': 82,
+        'ECs2974': 313,
+        'ECs1205': 313,
+        'ECs1206': 84
     }
     filtered = False
     if not aa_seq.endswith('*'):
