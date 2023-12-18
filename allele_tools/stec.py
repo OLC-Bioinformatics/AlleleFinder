@@ -254,7 +254,7 @@ class AASTEC:
             gene_names = sorted(gene_names)
             logging.info('Loading profile')
             if not os.path.isfile(sample.alleles.blast_report):
-                #
+                # BLAST the query against the allele database
                 blast_alleles(
                     runmetadata=sample,
                     amino_acid=self.amino_acid,
@@ -495,10 +495,10 @@ def translate_reduce(args):
                     ' reduced amino acid profile'
     logging.info(log_str)
     length_dict = {
-        'ECs2973': 90,
-        'ECs2974': 316,
-        'ECs1205': 316,
-        'ECs1206': 88
+        'ECs2973': 82,
+        'ECs2974': 313,
+        'ECs1205': 313,
+        'ECs1206': 84
     }
     allele_translate_reduce = Translate(
         path=args.allele_path,
