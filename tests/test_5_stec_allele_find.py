@@ -101,7 +101,7 @@ def test_report_contents(variables):
         '2013-SEQ-0039	6	9	241	6	2	68\t\n'
     assert variables.report_contents[16] == \
            '2017-SEQ-0617	0	2	116	0		N/A	ECs1206 amino acid sequence does not start with M; ' \
-           'ECs1206 amino acid sequence was 14 amino acid residues. Minimum allowed length is 88 amino acid residues; ' \
+           'ECs1206 amino acid sequence was 14 amino acid residues. Minimum allowed length is 84 amino acid residues; ' \
            'Novel nt_seq_type 116, and aa_seq_type N/A\n'
 
 

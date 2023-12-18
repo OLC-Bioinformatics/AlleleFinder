@@ -60,7 +60,7 @@ def test_report_contents(variables):
     variables.report_contents = open(variables.allele_report, 'r', encoding='utf-8').readlines()
     assert variables.report_contents[3] == \
         'ECs1205_1388		ECs1205 trimmed sequence did not end with a stop codon;ECs1205 amino acid sequence ' \
-        'was 248 amino acid residues. Minimum allowed length is 316 amino acid residues\n'
+        'was 248 amino acid residues. Minimum allowed length is 313 amino acid residues\n'
     assert variables.report_contents[12] == \
            'ECs1205_9	ECs1205_9;ECs1205_9	Amino acid matches previous result: ECs1205_9\n'
 
