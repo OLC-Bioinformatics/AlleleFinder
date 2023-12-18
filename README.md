@@ -1,10 +1,10 @@
 # AlleleFinder
 
-[![CircleCI](https://circleci.com/gh/OLC-Bioinformatics/AlleleFinder/tree/main.svg?style=shield)](https://circleci.com/gh/OLC-LOC-Bioinformatics/AzureStorage/tree/main)
+[![CircleCI](https://circleci.com/gh/OLC-Bioinformatics/AlleleFinder/tree/main.svg?style=shield)](https://circleci.com/gh/OLC-LOC-Bioinformatics/AlleleFinder/tree/main)
 [![codecov](https://codecov.io/gh/OLC-Bioinformatics/AlleleFinder/branch/main/graph/badge.svg?token=Z6SSEJV9GU)](https://codecov.io/gh/OLC-Bioinformatics/AlleleFinder)
 [![Anaconda-Server Badge](https://img.shields.io/badge/install%20with-conda-brightgreen)](https://anaconda.org/olcbioinformatics/allelefinder)
 [![GitHub version](https://badge.fury.io/gh/olc-bioinformatics%2Fallelefinder.svg)](https://badge.fury.io/gh/olc-bioinformatics%2Fallelefinder)
-[![GitHub issues](https://img.shields.io/github/issues/OLC-Bioinformatics/AlleleFinder)](https://github.com/OLC-LOC-Bioinformatics/AzureStorage/issues)
+[![GitHub issues](https://img.shields.io/github/issues/OLC-Bioinformatics/AlleleFinder)](https://github.com/OLC-LOC-Bioinformatics/AlleleFinder/issues)
 [![Documentation Status](https://readthedocs.org/projects/pip/badge/?version=stable)](https://OLC-Bioinformatics.github.io/AlleleFinder/?badge=stable)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen)](https://github.com/OLC-Bioinformatics/AlleleFinder/blob/main/LICENSE)
 
@@ -36,7 +36,7 @@ Full documentation is available at the [AlleleFinder GitHub pages site](https://
 Create a new conda environment:
 
 ```
-conda create -n allele_finder -c olcbioinformatics allelefinder=0.1.4=py_0
+conda create -n allele_finder -c olcbioinformatics allelefinder=0.1.5=py_0
 ```
 
 Additional documentation is available [here](https://olc-bioinformatics.github.io/AlleleFinder/installation)
@@ -85,10 +85,10 @@ In order for a translated allele to pass content and length checks, it must:
 1. Start with a `Methionine` residue
 2. Pass a minimum length threshold after trimming:
        * The length thresholds are:
-         * ECs2973: 90 amino acid residues
-         * ECs2974: 316 amino acid residues
-         * ECs1205: 320 amino acid residues
-         * ECs1206: 88 amino acid residues
+         * ECs2973: 82 amino acid residues
+         * ECs2974: 313 amino acid residues
+         * ECs1205: 313 amino acid residues
+         * ECs1206: 84 amino acid residues
 
 3. Not be a duplicate of an allele already in the reduced database
 
