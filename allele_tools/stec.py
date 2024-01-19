@@ -496,9 +496,13 @@ def translate_reduce(args):
     logging.info(log_str)
     length_dict = {
         'ECs2973': 82,
+        'stx1B': 82,
         'ECs2974': 313,
+        'stx1A': 313,
         'ECs1205': 313,
-        'ECs1206': 84
+        'stx2A': 313,
+        'ECs1206': 84,
+        'stx2B': 84
     }
     allele_translate_reduce = Translate(
         path=args.allele_path,
