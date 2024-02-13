@@ -20,7 +20,11 @@ from olctools.accessoryFunctions.accessoryFunctions import (
     MetadataObject,
     relative_symlink
  )
-from Bio.Blast.Applications import NcbiblastnCommandline, NcbiblastpCommandline
+from Bio.Blast.Applications import (
+    NcbiblastnCommandline,
+    NcbiblastpCommandline,
+    NcbiblastxCommandline
+)
 from Bio.Data.CodonTable import TranslationError
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
@@ -321,6 +325,34 @@ def blast_alleles(
         blast()
 
 
+def blastx_alleles(
+        runmetadata: MetadataObject,
+        combined_targets: str,
+        cpus: int,
+        outfmt: str):
+    """
+    Run the BLAST analyses on the query
+    :param runmetadata: MetadataObject with list of GenObjects for each query
+    :param combined_targets: String of absolute path to file containing all sequences in other files in folder
+    :param cpus: Integer of number of threads to use for BLAST analyses
+    :param outfmt: String of BLAST fields to include in the report
+    """
+    logging.info('Running BLAST analyses')
+    # Iterate through the samples
+    for sample in runmetadata.samples:
+        # Run the BLASTx command
+        blast = NcbiblastxCommandline(
+                query=sample.general.bestassemblyfile,
+                db=os.path.splitext(combined_targets)[0],
+                evalue=0.001,
+                num_alignments=100000000,
+                num_threads=cpus,
+                outfmt=outfmt,
+                out=sample.alleles.blast_report
+            )
+        blast()
+
+
 def create_gene_names(
         path=os.getcwd(),
         name='genes.txt'):
@@ -467,8 +499,6 @@ def parse_colocated_results(
                 # If range has already been processed, we can skip this iteration of it
                 if processed:
                     continue
-                # Update the processed ranges dictionary with the current range
-                processed_range_dict[contig].add(tuple(query_range))
                 # Create a tuple of the query range list to allow it to be used as a dictionary key
                 query_range_tuple = tuple(query_range)
                 # Add keys to the targetsequence dictionary as required
@@ -487,8 +517,8 @@ def parse_colocated_results(
                 if query_range_tuple not in notes[contig]:
                     notes[contig][query_range_tuple] = []
                 # Determine the name of the gene corresponding to the allele e.g. if the allele
-                # ECs1206_138, the corresponding gene is ECs1206_
-                base_gene = [gene_name for gene_name in gene_names if gene_name in nt_allele][0]
+                # Stx1A_1|315aa, the corresponding gene is stx1A
+                base_gene = [gene_name for gene_name in gene_names if gene_name.lower() in nt_allele.lower()][0]
                 # Translate the query sequence to protein
                 aa_querysequence = translate_sequence(
                     nt_seq=nt_querysequence
@@ -519,7 +549,7 @@ def parse_colocated_results(
                         allele_path=nt_allele_path
                     )
                     # Add the base gene name to the allele identifier
-                    nt_allele = f'{base_gene}_{nt_allele_id}'
+                    nt_allele = f'{base_gene}_{nt_allele_id}|{len(nt_querysequence)}nt'
                     # Update the allele database with the new allele
                     notes[contig][query_range_tuple], nt_allele = update_allele_databases(
                         query_sequence=nt_querysequence,
@@ -537,7 +567,7 @@ def parse_colocated_results(
                         gene=base_gene,
                         allele_path=aa_allele_path
                     )
-                    aa_allele = f'{base_gene}_{aa_allele_id}'
+                    aa_allele = f'{base_gene}_{aa_allele_id}|{len(aa_querysequence)}aa'
                     notes[contig][query_range_tuple], aa_allele = update_allele_databases(
                         query_sequence=aa_querysequence,
                         header=aa_allele,
@@ -605,7 +635,7 @@ def translate_sequence(nt_seq: str):
         seq = Seq(allele_seq)
         aa_seq_object = str(seq.translate())
     # Split the sting on stop codons, keep only the first part of the split
-    aa_seq = str(aa_seq_object).split('*', maxsplit=1)[0] + '*'
+    aa_seq = str(aa_seq_object).split('*', maxsplit=1)[0]
     return str(aa_seq)
 
 
@@ -634,7 +664,7 @@ def aa_allele_lookup(
         if aa_seq == str(record.seq):
             return record.id
     # If no records match, evaluate whether the aa allele passes necessary length thresholds
-    filtered, notes = evaluate_translated_allele(
+    filtered, notes, aa_seq = evaluate_translated_allele(
         aa_seq=aa_seq,
         gene=gene,
         notes=notes
@@ -645,36 +675,25 @@ def aa_allele_lookup(
 def evaluate_translated_allele(
         aa_seq: str,
         gene: str,
-        notes: list,
-        aa=False):
+        notes: list):
     """
     Evaluate whether an aa sequence passes the necessary length thresholds after trimming of an interior stop codons
     :param aa_seq: String of the amino acid sequence to evaluate
     :param gene: String of the name of the gene (no allele information) being evaluated
     :param notes: List of notes for the current contig: query_range
-    :param aa: Boolean of whether the query sequence is amino acid. Triggers filtering if sequence doesn't end with a
-    stop codon
     :return filtered: Boolean of whether the amino acid sequence passes length thresholds
     :return notes: Populated notes
     """
     # Dictionary of minimum acceptable lengths for each of the STEC genes
     length_dict = {
-        'ECs2973': 82,
         'stx1B': 82,
-        'ECs2974': 313,
         'stx1A': 313,
-        'ECs1205': 313,
         'stx2A': 313,
-        'ECs1206': 84,
         'stx2B': 84
     }
     filtered = False
-    if not aa_seq.endswith('*'):
-        notes.append(f'{gene} trimmed sequence did not end with a stop codon')
-        if aa:
-            filtered = True
-    # Remove all sequence after a stop codon (*)
-    aa_seq = aa_seq.split('*', maxsplit=1)[0] + '*'
+    # Remove stop codons and all sequence following it
+    aa_seq = aa_seq.split('*')[0]
     # Evaluate the translated length of the sequence
     filtered, notes = evaluate_translated_length(
         aa_seq=aa_seq,
@@ -683,7 +702,7 @@ def evaluate_translated_allele(
         notes=notes,
         filtered=filtered
     )
-    return filtered, notes
+    return filtered, notes, aa_seq
 
 
 def update_allele_databases(
@@ -823,8 +842,8 @@ def colocation_calculation(
                 if tuple_range not in overlap_dict[contig]:
                     overlap_dict[contig][tuple_range] = {}
                 # Extract the gene name corresponding to the allele identifier
-                # e.g. gene = ECs1206 allele = ECs1206_138 will create ECs1206
-                gene = [gene_name for gene_name in gene_names if gene_name in current_allele][0]
+                # e.g. gene = stx1A allele = Stx1A_1|315aa will create stx1A
+                gene = [gene_name for gene_name in gene_names if gene_name.lower() in current_allele.lower()][0]
                 # Add the gene name to the dictionary, and update create the overlap and allele keys
                 if gene not in overlap_dict[contig][tuple_range]:
                     overlap_dict[contig][tuple_range][gene] = {
@@ -880,8 +899,8 @@ def positive_overlap(
     # Iterate over all the alleles
     for allele in alleles:
         # Add the gene from the list of genes if it is present in the allele
-        # identifier e.g. gene = ECs1206 allele = ECs1206_138 will add ECs1206
-        genes.add([gene for gene in gene_names if gene in allele][0])
+        # identifier e.g. gene = stx1A allele = Stx1A_1|315aa will create stx1A
+        genes.add([gene for gene in gene_names if gene.lower() in allele.lower()][0])
     # Create a tuple of the sorted list of genes present in the set
     gene_pair = tuple(sorted(list(genes)))
     # Update the dictionary as required
@@ -1006,13 +1025,10 @@ def find_next_allele(
         # Iterate through all the records in the allele database
         for record in SeqIO.parse(allele_file, 'fasta'):
             # Update the last_id variable
-            last_id = int(record.id.split('_')[-1])
+            last_id = int(record.id.split('|')[0].split('_')[-1])
             records.append(record)
     else:
         last_id = 0
-    # Make it clear that these are novel profiles by starting at 1000000
-    if last_id < 1000000:
-        last_id = 999999
     return last_id + 1
 
 
@@ -1327,9 +1343,6 @@ def update_allele_database(
         allele = 1
     # Typecase the variable to an integer
     allele = int(allele)
-    # If the sequence type corresponds to an Enterobase number, use our local numbering scheme instead
-    if allele < 1000000:
-        allele = 999999
     # Name the novel allele as the gene name _ allele number + 1
     novel_allele = f'{gene}_{int(allele) + 1}'
     # Create a SeqRecord of the allele using the novel allele name and sequence
@@ -1503,8 +1516,7 @@ def update_profiles(
 
 def return_next_seq_type(profile_file: str):
     """
-    Parse the profile file, and return the value for the next sequence type to be used. Local profiles will start at
-    1000000 in order to be distinct from Enterobase profiles
+    Parse the profile file, and return the value for the next sequence type to be used.
     :param profile_file: Name and path of file containing reduced profiles
     :return: last_seq_type + 1: Integer of the sequence type to be assigned to the novel profile
     """
@@ -1519,9 +1531,6 @@ def return_next_seq_type(profile_file: str):
         last_seq_type = last_line.split('\t')[0]
     # Typecase the variable to an integer
     int_last_seq_type = int(last_seq_type)
-    # If the sequence type corresponds to an Enterobase number, use our local numbering scheme instead
-    if int_last_seq_type < 1000000:
-        int_last_seq_type = 999999
     # Return the last sequence type + 1 to give the next sequence type
     return int_last_seq_type + 1
 
@@ -1608,10 +1617,10 @@ def create_stec_report(
     :param notes: List of notes on the alleles
     """
     logging.info('Creating report')
-    # Set the appropriate order for the genes in the report (stx1 genes are not in numerical order)
+    # Set the appropriate order for the genes in the report
     gene_order = {
-        'stx1': ['ECs2974', 'ECs2973'],
-        'stx2': ['ECs1205', 'ECs1206']
+        'stx1': ['stx1A', 'stx1B'],
+        'stx2': ['stx2A', 'stx2B']
     }
     # Create a list to store the ordered genes
     ordered_genes = []
@@ -1830,33 +1839,60 @@ def parse_aa_blast(
             sample=sample,
             extended_fieldnames=extended_fieldnames
         )
-        # Initialise a boolean to track whether this contig:query_range has already been processed
-        processed = False
+        # Initialise dictionaries to store hit information
+        processed_range_dict = {}
+        colocation_dict = {}
         # Go through each BLAST result
         for row in blastdict:
+            aa_allele = str()
             # Ignore the headers
             if row['query_id'].startswith(fieldnames[0]):
                 continue
+            processed = False
             # Create variables to reduce extra typing and for extra clarity
             target_id = row['subject_id']
             percent_id = float(row['percent_match'])
+            contig = row['query_id']
+            high = max([int(row['query_start']), int(row['query_end'])])
+            low = min([int(row['query_start']), int(row['query_end'])])
+            # Create a list of the properly ordered start and stop points of the match
+            query_range = [low, high]
+            # Add the contig key to the dictionary as required
+            if contig not in processed_range_dict:
+                processed_range_dict[contig] = set()
+            # Check the processed range dictionary to see if the current range is present
+            if processed_range_dict[contig]:
+                for previous_range in processed_range_dict[contig]:
+                    # Allow a small overlap of five bases in case the range of one query is slightly different
+                    overlap = query_range[1] + 5 >= previous_range[0] and \
+                              previous_range[1] + 5 >= query_range[0]
+                    # If the range is already present in the dictionary, update the tracking boolean
+                    if overlap:
+                        processed = True
+            # Add the range to the set if it is empty
+            else:
+                processed_range_dict[contig].add(tuple(query_range))
+            # Do not evaluate this contig:query_range if it has already been processed
+            if processed:
+                continue
             # If the match is perfect
             if percent_id == 100:
                 # Add the name of the matching allele to the list
                 sample.alleles.blastlist.append(target_id)
+                # Extract the allele number from the subject name e.g. Stx1A_1|315aa yields Stx1A_1
+                aa_allele = target_id.split('|')[0]
                 # Update the processed boolean to indicate that this region has been processed
                 processed = True
             # If the match is imperfect, but greater than the cutoff
             elif cutoff < percent_id < 100 and not processed:
                 # Determine which gene is being processed by finding the match of the genes against the allele
-                gene = [gene for gene in gene_names if gene in target_id][0]
+                gene = [gene for gene in gene_names if gene.lower() in target_id.lower()][0]
                 query_seq = row['query_sequence']
                 # Evaluate the sequence for length, as well as required start/stop codons
-                filtered, notes = evaluate_translated_allele(
+                filtered, notes, query_seq = evaluate_translated_allele(
                     aa_seq=query_seq,
                     gene=gene,
-                    notes=notes,
-                    aa=True
+                    notes=notes
                 )
                 # Find the next available allele identifier in the database
                 aa_allele_id = find_next_allele(
@@ -1864,7 +1900,7 @@ def parse_aa_blast(
                     allele_path=aa_allele_path
                 )
                 # Set the name of the allele as gene_alleleID
-                aa_allele = f'{gene}_{aa_allele_id}'
+                aa_allele = f'{gene}_{aa_allele_id}|{len(query_seq)}aa'
                 # Update the allele database with the novel allele
                 notes, aa_allele = update_allele_databases(
                     query_sequence=query_seq,
@@ -1881,7 +1917,86 @@ def parse_aa_blast(
                     sample.alleles.blastlist.append(aa_allele)
                 # Update the processed boolean
                 processed = True
+            # Do not process any sequences that are either already processed, or below the cutoff
+            if not processed:
+                continue
+            # Create a list of the properly ordered start and stop points of the match
+            query_range = [low, high]
+            # Add the contig key to the dictionary as required
+            if contig not in processed_range_dict:
+                processed_range_dict[contig] = set()
+            # Update the processed ranges dictionary with the current range
+            processed_range_dict[contig].add(tuple(query_range))
+            # Create a tuple of the query range list to allow it to be used as a dictionary key
+            query_range_tuple = tuple(query_range)
+            # Add keys to the targetsequence dictionary as required
+            if contig not in sample.alleles.targetsequence:
+                sample.alleles.targetsequence[contig] = {}
+            if query_range_tuple not in sample.alleles.targetsequence[contig]:
+                sample.alleles.targetsequence[contig][query_range_tuple] = {}
+            # Determine the name of the gene corresponding to the allele e.g. gene = stx1A allele = Stx1A_1|315aa
+            # will create stx1A
+            base_gene = [gene_name for gene_name in gene_names if gene_name.lower() in target_id.lower()][0]
+            # Populate the targetsequence dictionary with information on the nt and aa alleles
+            if base_gene not in sample.alleles.targetsequence[contig][query_range_tuple]:
+                sample.alleles.targetsequence[contig][query_range_tuple][base_gene] = {
+                    'nt': {
+                        'allele': '',
+                        'sequence': extract_nt_sequence(
+                            sample=sample,
+                            row=row
+                        )
+                    },
+                    'aa': {
+                        'allele': aa_allele,
+                        'sequence': row['query_sequence'].split('*')[0]
+                    }
+                }
+            # Populate the co-location dictionary with the required keys as necessary
+            if contig not in colocation_dict:
+                colocation_dict[contig] = {}
+            # The query_ranges and target keys both correspond to lists of values
+            if 'query_ranges' not in colocation_dict[contig]:
+                colocation_dict[contig] = {
+                    'query_ranges': [query_range],
+                    'target': [aa_allele]
+                }
+            # If the keys already exist, append to the lists
+            else:
+                colocation_dict[contig]['query_ranges'].append(query_range)
+                colocation_dict[contig]['target'].append(aa_allele)
+        sample.alleles.overlap_dict = colocation_calculation(
+            colocation_dict=colocation_dict,
+            gene_names=gene_names,
+            overlap_range=50
+        )
     return runmetadata, filtered, notes
+
+
+def extract_nt_sequence(
+        sample: GenObject,
+        row: dict):
+    """
+    Extract the nucleotide sequence from a file given the contig name as well as the start and stop locations
+    :param sample: GenObject of current query
+    :param row: Dictionary from DictReader object created from BLAST outputs
+    :return nt_querysequence: String of extract nucleotide sequence
+    """
+    nt_querysequence = str()
+    for record in SeqIO.parse(sample.general.bestassemblyfile, 'fasta'):
+        # Ensure that the correct contig is being considered
+        if record.id == row['query_id']:
+            start = int(row['query_start'])
+            stop = int(row['query_end'])
+            # Ensure that the query sequence is returned in the proper orientation
+            if stop < start:
+                # Create a Seq object of the slice of the sequence
+                seq = Seq(record.seq[stop - 1:start])
+                # Calculate the reverse complement of the sequence
+                nt_querysequence = str(seq.reverse_complement())
+            else:
+                nt_querysequence = str(Seq(record.seq[start - 1:stop]))
+    return nt_querysequence
 
 
 def analyse_aa_alleles(
@@ -1904,13 +2019,85 @@ def analyse_aa_alleles(
             # Determine to which gene the allele corresponds
             gene = [gene for gene in gene_names if gene in record.id][0]
             # Perform content/length checks
-            filtered, notes = evaluate_translated_allele(
+            filtered, notes, record.seq = evaluate_translated_allele(
                 aa_seq=record.seq,
                 gene=gene,
-                notes=notes,
-                aa=True
+                notes=notes
             )
     return runmetadata, notes
+
+
+def translated_update_nucleotide(
+        runmetadata: MetadataObject,
+        nt_allele_path: str,
+        report_path: str,
+        notes: list):
+    """
+    Search nucleotide allele databases to determine whether the corresponding allele already exists
+    :param runmetadata: MetadataObject with list of GenObjects for each query
+    :param nt_allele_path: Name and absolute path to folder containing nucleotide alleles
+    :param report_path: String of the absolute path to the folder into which reports are to be written
+    :param notes: List of sample-specific notes
+    :return: runmetadata: Updated MetadataObject
+    :return: notes: Updated list of sample-specific notes
+    """
+    # Iterate through all the samples
+    for sample in runmetadata.samples:
+        for contig, range_dict in sample.alleles.targetsequence.items():
+            for query_range_tuple, gene_dict in range_dict.items():
+                for gene, molecule_dict in gene_dict.items():
+                    # for molecule, info_dict in molecule_dict.items():
+                    nt_length = len(molecule_dict['nt']['sequence'])
+                    aa_length = len(molecule_dict['aa']['sequence']) * 3
+
+                    if nt_length > aa_length:
+                        molecule_dict['nt']['sequence'] = molecule_dict['nt']['sequence'][:aa_length]
+                        nt_length = len(molecule_dict['nt']['sequence'])
+                    nt_sequence = molecule_dict['nt']['sequence']
+                    nt_allele_id = nt_allele_lookup(
+                        nt_seq=nt_sequence,
+                        gene=gene,
+                        nt_allele_path=nt_allele_path
+                    )
+                    nt_allele_id = find_next_allele(
+                        gene=gene,
+                        allele_path=nt_allele_path
+                    )
+                    nt_allele = f'{gene}_{nt_allele_id}|{len(nt_sequence)}nt'
+                    notes, nt_allele = update_allele_databases(
+                        query_sequence=nt_sequence,
+                        header=nt_allele,
+                        filtered=False,
+                        gene=gene,
+                        report_path=report_path,
+                        allele_path=nt_allele_path,
+                        notes=notes,
+                        molecule='Nucleotide'
+                    )
+    return runmetadata, notes
+
+
+def nt_allele_lookup(
+        nt_seq: str,
+        gene: str,
+        nt_allele_path: str):
+    """
+    Read in the nucleotide allele file. Search for exact matches to the current sequence
+    :param nt_seq: String of the nucleotide sequence
+    :param gene: Sting of the gene name
+    :param nt_allele_path: String of the absolute path to the folder containing the amino acid
+    allele files
+    :return record.id: Allele identifier corresponding to the sequence matching the nt_seq
+    if no matches: return None
+    """
+    # Set the name of the amino acid allele file by joining the allele folder path to the gene name
+    nt_allele_file = os.path.join(nt_allele_path, f'{gene}.fasta')
+    # Iterate through all the alleles in the file
+    for record in SeqIO.parse(nt_allele_file, 'fasta'):
+        # If the sequence in the file matches the current sequence, return the allele identifier
+        if nt_seq == str(record.seq):
+            return record.id
+    return None
 
 
 def report_aa_alleles(
@@ -2062,7 +2249,7 @@ def write_concatenated_sequences(
     :param list concatenated_sequences: List of all SeqRecord objects for the concatenated sequences
     :param str concatenate_path: Name and absolute path of the folder into which the FASTA files of the concatenated
     sequences are to be written
-    :param str file_name: File name to use. 'ECs2974_ECs2973' (stx1) and 'ECs1205_ECs1206' (stx2)
+    :param str file_name: File name to use. 'stx1A_stx1B' (stx1) and 'stx2A_stx2B' (stx2)
     :param str molecule: String of the current molecule. Options are "nt" (nucleotide) and "aa" (amino acid)
     """
     # Set the name of the output path by adding the molecule to the supplied path

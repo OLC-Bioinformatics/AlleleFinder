@@ -33,6 +33,7 @@ from allele_tools.version import __version__
 from allele_tools.methods import (
     analyse_aa_alleles,
     blast_alleles,
+    blastx_alleles,
     common_allele_find_errors,
     concatenate_alleles,
     create_aa_allele_comprehension,
@@ -51,6 +52,7 @@ from allele_tools.methods import (
     report_aa_alleles,
     setup_arguments,
     split_alleles,
+    translated_update_nucleotide,
     write_concatenated_sequences
 )
 
@@ -184,6 +186,181 @@ class STEC:
             self.combined_targets = os.path.join(self.nt_allele_path, 'combinedtargets.fasta')
         else:
             self.combined_targets = os.path.join(self.aa_allele_path, 'combinedtargets.fasta')
+        self.gene_names = []
+        self.runmetadata = MetadataObject()
+        self.runmetadata.samples = []
+        self.cpus = multiprocessing.cpu_count() - 1
+        self.profile_report = os.path.join(self.report_path, 'nt_profiles.tsv')
+        self.aa_profile_report = os.path.join(self.aa_report_path, 'aa_profiles.tsv')
+        try:
+            os.remove(self.profile_report)
+        except FileNotFoundError:
+            pass
+
+        self.report_file = os.path.join(self.report_path, 'stec_report.tsv')
+        reports = glob(os.path.join(self.report_path, '*.tsv'))
+        for report in reports:
+            os.remove(report)
+        # Fields used for custom outfmt 6 BLAST output:
+        self.fieldnames = [
+            'query_id',
+            'subject_id',
+            'identical',
+            'mismatches',
+            'gaps',
+            'evalue',
+            'bit_score',
+            'query_length',
+            'subject_length',
+            'alignment_length',
+            'query_start',
+            'query_end',
+            'subject_start',
+            'subject_end',
+            'query_sequence',
+            'subject_sequence'
+        ]
+        self.extended_fieldnames = self.fieldnames.copy()
+        self.extended_fieldnames.insert(14, 'percent_match')
+        self.outfmt = '6 qseqid sseqid nident mismatch gaps evalue bitscore qlen slen length ' \
+                      'qstart qend sstart send qseq sseq'
+        # A string of the header to use for formatting the profile file, and the report headers
+        self.data = str()
+        self.aa_allele_dict = {}
+        self.aa_nt_allele_link_dict = {}
+
+
+class STECTranslate:
+    """
+    Find alleles in genomes against an amino acid database
+    """
+
+    def main(self):
+        """
+        Run the necessary methods in the correct order
+        """
+        self.runmetadata = query_prep(
+            query_path=self.query_path,
+            runmetadata=self.runmetadata,
+            clear_report=True
+        )
+        for sample in self.runmetadata.samples:
+            logging.debug('Processing sample %s', sample.name)
+            notes = []
+            records, gene_names, self.data = \
+                allele_prep(
+                    allele_path=self.aa_allele_path,
+                    gene_names=self.gene_names,
+                    combined_targets=self.combined_targets,
+                    amino_acid=True
+                )
+            gene_names = sorted(gene_names)
+            logging.info('Loading profile')
+            nt_profile_data = read_profile(profile_file=self.nt_profile_file)
+            aa_profile_data = read_profile(profile_file=self.aa_profile_file)
+            if not os.path.isfile(sample.alleles.blast_report):
+                # BLAST the query against the allele database
+                blastx_alleles(
+                    runmetadata=sample,
+                    combined_targets=self.combined_targets,
+                    cpus=self.cpus,
+                    outfmt=self.outfmt
+                )
+                # Add headers to the BLAST outputs, and filter based on cutoff value
+                parseable_blast_outputs(
+                    runmetadata=sample,
+                    fieldnames=self.fieldnames,
+                    extended_fieldnames=self.extended_fieldnames,
+                    records=records,
+                    cutoff=95
+                )
+                # Parse the amino acid BLAST results
+                sample, filtered, notes = parse_aa_blast(
+                    runmetadata=sample,
+                    extended_fieldnames=self.extended_fieldnames,
+                    fieldnames=self.fieldnames,
+                    gene_names=gene_names,
+                    notes=notes,
+                    aa_allele_path=self.aa_allele_path,
+                    report_path=self.report_path,
+                    cutoff=95
+                )
+                # Update the nucleotide database as required
+                sample, notes = translated_update_nucleotide(
+                    runmetadata=sample,
+                    nt_allele_path=self.nt_allele_path,
+                    report_path=self.report_path,
+                    notes=notes
+                )
+                print(notes)
+                # Create nucleotide allele comprehensions from the BLAST outputs
+                nt_allele_comprehension = create_nt_allele_comprehension(
+                    runmetadata=sample,
+                    gene_names=gene_names
+                )
+                # Create an amino acid allele comprehensions from the translated BLAST outputs
+                aa_allele_comprehension = create_aa_allele_comprehension(
+                    runmetadata=sample,
+                    gene_names=gene_names,
+                )
+                # Freeze the nucleotide allele comprehension
+                nt_frozen_allele_comprehension = create_frozen_allele_comprehension(
+                    allele_comprehension=nt_allele_comprehension
+                )
+                # Freeze the amino acid allele comprehension
+                aa_frozen_allele_comprehension = create_frozen_allele_comprehension(
+                    allele_comprehension=aa_allele_comprehension
+                )
+                # Find nucleotide profile matches
+                nt_profile_matches, nt_frozen_profiles = match_profile(
+                    profile_data=nt_profile_data,
+                    frozen_allele_comprehension=nt_frozen_allele_comprehension,
+                    report_path=self.report_path,
+                    profile_file=self.nt_profile_file,
+                    genes=gene_names,
+                    allele_comprehension=nt_allele_comprehension,
+                    molecule='nt'
+                )
+                # Find amino acid profile matches
+                aa_profile_matches, aa_frozen_profiles = match_profile(
+                    profile_data=aa_profile_data,
+                    frozen_allele_comprehension=aa_frozen_allele_comprehension,
+                    report_path=self.report_path,
+                    profile_file=self.aa_profile_file,
+                    genes=gene_names,
+                    allele_comprehension=aa_allele_comprehension,
+                    molecule='aa'
+                )
+                # Create the STEC-specific report
+                create_stec_report(
+                    runmetadata=sample,
+                    nt_profile_matches=nt_profile_matches,
+                    nt_alleles=nt_allele_comprehension,
+                    aa_profile_matches=aa_profile_matches,
+                    aa_alleles=aa_allele_comprehension,
+                    report_file=self.report_file,
+                    gene_names=gene_names,
+                    aa_profile_path=self.aa_profile_path,
+                    notes=notes
+                )
+
+    def __init__(self, allele_path, aa_allele_path, profile_file, aa_profile_file, query_path, report_path):
+
+        self.nt_allele_path = pathfinder(path=allele_path)
+        self.aa_allele_path = pathfinder(path=aa_allele_path)
+        self.nt_profile_file = pathfinder(path=profile_file)
+        self.aa_profile_file = pathfinder(path=aa_profile_file)
+        self.profile_path = os.path.dirname(self.nt_profile_file)
+        self.aa_profile_path = os.path.dirname(self.aa_profile_file)
+        self.query_path = pathfinder(path=query_path)
+        self.report_path = pathfinder(path=report_path)
+        self.aa_report_path = self.report_path
+        make_path(inpath=self.report_path)
+        novel_alleles = glob(os.path.join(self.report_path, '*.fasta'))
+        for novel_allele in novel_alleles:
+            os.remove(novel_allele)
+
+        self.combined_targets = os.path.join(self.aa_allele_path, 'combinedtargets.fasta')
         self.gene_names = []
         self.runmetadata = MetadataObject()
         self.runmetadata.samples = []
@@ -409,14 +586,14 @@ class AlleleConcatenate:
             'stx1': 9,
             'stx2': 12,
         }
-        # Set the appropriate order for the genes in the report (stx1 genes are not in numerical order)
+        # Set the appropriate order for the genes in the report
         self.allele_order = {
-            'stx1': ['ECs2974', 'ECs2973'],
-            'stx2': ['ECs1205', 'ECs1206']
+            'stx1': ['stx1B', 'stx1B'],
+            'stx2': ['stx2A', 'stx2B']
         }
         self.gene_allele = {
-            'stx1': 'ECs2974_ECs2973',
-            'stx2': 'ECs1205_ECs1206'
+            'stx1': 'stx1A_stx1B',
+            'stx2': 'stx1A_stx2B'
         }
         self.nt_profile_data = read_profile(profile_file=self.nt_profile_file)
         self.aa_profile_data = read_profile(profile_file=self.aa_profile_file)
@@ -495,13 +672,9 @@ def translate_reduce(args):
                     ' reduced amino acid profile'
     logging.info(log_str)
     length_dict = {
-        'ECs2973': 82,
         'stx1B': 82,
-        'ECs2974': 313,
         'stx1A': 313,
-        'ECs1205': 313,
         'stx2A': 313,
-        'ECs1206': 84,
         'stx2B': 84
     }
     allele_translate_reduce = Translate(
@@ -545,6 +718,48 @@ def allele_find(args):
     if errors:
         error_print(errors=errors)
     stec = STEC(
+        allele_path=args.nt_alleles,
+        aa_allele_path=args.aa_alleles,
+        profile_file=args.nt_profile,
+        aa_profile_file=args.aa_profile,
+        query_path=args.query_path,
+        report_path=args.report_path
+    )
+    stec.main()
+
+
+def allele_translate_find(args):
+    """
+    Perform allele discovery analyses. Queries nucleotide sequences against amino acid alleles
+    :param args: type ArgumentParser arguments
+    """
+    log_str = f'Performing STEC allele discovery on sequences in {args.query_path} using' \
+        f' amino acid alleles in {args.aa_alleles}, and amino acid profile in {args.aa_profile}'
+    logging.info(log_str)
+    errors = []
+
+    # Nucleotide allele checks
+    if not os.path.isdir(args.nt_alleles):
+        os.makedirs(args.nt_alleles)
+    else:
+        if not glob(os.path.join(args.nt_alleles, '*.fasta')):
+            # Create the necessary allele files
+            for gene in ['stx1.fasta', 'stx2.fasta']:
+                open(os.path.join(args.nt_alleles, gene), 'a').close()
+    # Find errors for amino acid and query checks
+    errors = common_allele_find_errors(
+        args=args,
+        errors=errors,
+        amino_acid=False
+    )
+    if not os.path.isfile(args.nt_profile):
+        # Create the folder if required
+        os.makedirs(os.path.dirname(args.nt_profile))
+        # Create the empty profile file
+        open(args.nt_profile, 'a').close()
+    if errors:
+        error_print(errors=errors)
+    stec = STECTranslate(
         allele_path=args.nt_alleles,
         aa_allele_path=args.aa_alleles,
         profile_file=args.nt_profile,
@@ -777,7 +992,62 @@ def cli():
              'If not provided, the query folder in the current working directory will be used'
     )
     allele_find_subparser.set_defaults(func=allele_find)
-    # Create a subparser for allele discovery
+    # Create a subparser for allele discovery using nucleotide inputs against an amino acid database
+    allele_translate_find_subparser = subparsers.add_parser(
+        parents=[parent_parser],
+        name='allele_translate_find',
+        description='Analyse nucleotide sequences against an amino acid databasee to determine allele complement.'
+                    'Update profiles and databases. Keep notes',
+        formatter_class=RawTextHelpFormatter,
+        help='Analyse nucleotide sequences against an amino acid databasee to determine allele complement.'
+             'Update profiles and databases. Keep notes'
+    )
+    allele_translate_find_subparser.add_argument(
+        '--nt_profile',
+        metavar='nt_profile',
+        default=os.path.join(os.getcwd(), 'nt_profile', 'profile.txt'),
+        required=False,
+        help='Specify name and path of nucleotide profile file. If not provided, profile.txt in '
+             'the nt_profile folder in the current working directory will be used by default'
+    )
+    allele_translate_find_subparser.add_argument(
+        '--aa_profile',
+        metavar='aa_profile',
+        default=os.path.join(os.getcwd(), 'aa_profile', 'profile.txt'),
+        help='Specify name and path of amino acid profile file. If not provided, profile.txt in '
+             'the aa_profile folder in the current working directory will be used by default'
+    )
+    allele_translate_find_subparser.add_argument(
+        '--nt_alleles',
+        metavar='nt_alleles',
+        default=os.path.join(os.getcwd(), 'nt_alleles'),
+        required=False,
+        help='Specify name and path of folder containing nucleotide alleles. If not provided, the '
+             'nt_allele folder in the current working directory will be used by default'
+    )
+    allele_translate_find_subparser.add_argument(
+        '--aa_alleles',
+        metavar='aa_alleles',
+        default=os.path.join(os.getcwd(), 'aa_alleles'),
+        help='Specify name and path of folder containing amino acid alleles. If not provided, the '
+             'aa_allele folder in the current working directory will be used by default'
+    )
+    allele_translate_find_subparser.add_argument(
+        '-r', '--report_path',
+        metavar='report_path',
+        default=os.path.join(os.getcwd(), 'reports'),
+        help='Specify name and path of folder into which reports are to be placed. If not '
+             'provided, the reports folder in the current working directory will be used'
+    )
+    allele_translate_find_subparser.add_argument(
+        '-q', '--query_path',
+        metavar='query_path',
+        default=os.path.join(os.getcwd(), 'query'),
+        help='Specify name and path of folder containing query files in FASTA format. '
+             'If not provided, the query folder in the current working directory will be used'
+    )
+    allele_translate_find_subparser.set_defaults(func=allele_translate_find)
+    # Create a subparser for allele discovery using amino acid inputs against an amino acid database
     aa_allele_find_subparser = subparsers.add_parser(
         parents=[parent_parser],
         name='aa_allele_find',

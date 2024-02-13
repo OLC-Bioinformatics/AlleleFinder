@@ -117,10 +117,10 @@ class Translate:
                         if len(split_allele) > 2:
                             if split_allele[1]:
                                 for trimmed in split_allele[1:]:
-                                    trimmed_seq += f'*{trimmed}'
+                                    trimmed_seq += trimmed
                             else:
                                 for trimmed in split_allele[2:]:
-                                    trimmed_seq += f'*{trimmed}'
+                                    trimmed_seq += trimmed
                             note.append(f'Trimmed {trimmed_seq} from end')
                         elif len(split_allele) == 1:
                             pass
@@ -277,9 +277,6 @@ class Translate:
             filtered=filtered,
             note=note
         )
-        # Update the notes if the sequence does not end with a stop codon
-        if not str(translated_allele).endswith('*'):
-            note.append('Trimmed sequence did not end with a stop codon')
         return filtered, note, nt_sequences, translated_allele
     
     @staticmethod
