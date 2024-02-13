@@ -43,12 +43,12 @@ def setup():
                 'stx2': 12,
             }
             self.allele_order = {
-                'stx1': ['ECs2974', 'ECs2973'],
-                'stx2': ['ECs1205', 'ECs1206']
+                'stx1': ['stx1B', 'stx1B'],
+                'stx2': ['stx2A', 'stx2B']
             }
             self.gene_allele = {
-                'stx1': 'ECs2974_ECs2973',
-                'stx2': 'ECs1205_ECs1206'
+                'stx1': 'stx1A_stx1B',
+                'stx2': 'stx1A_stx2B'
             }
 
     return Variables()
