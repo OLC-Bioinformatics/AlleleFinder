@@ -30,7 +30,6 @@ from allele_tools.methods import (
 )
 from allele_tools.profile_reduce import (
     cli,
-    ProfileReduce
 )
 
 
