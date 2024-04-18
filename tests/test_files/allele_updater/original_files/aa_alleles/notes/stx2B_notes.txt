@@ -1,0 +1,136 @@
+nt_allele	aa_allele	note
+stx2B_1	stx2B_1	
+stx2B_2	stx2B_2	
+stx2B_3	stx2B_3	Trimmed *P from end
+stx2B_4	stx2B_4	
+stx2B_5	stx2B_2	Duplicate
+stx2B_6	stx2B_2	Duplicate
+stx2B_7	stx2B_4	Duplicate
+stx2B_8	stx2B_4	Duplicate
+stx2B_9	stx2B_2	Duplicate
+stx2B_10	stx2B_10	
+stx2B_11	stx2B_11	
+stx2B_12	stx2B_2	Duplicate
+stx2B_13	stx2B_13	Trimmed ES from end
+stx2B_14	stx2B_14	
+stx2B_15	stx2B_15	
+stx2B_16	stx2B_16	
+stx2B_17	stx2B_4	Duplicate
+stx2B_18	stx2B_18	
+stx2B_19	stx2B_10	Duplicate
+stx2B_20	stx2B_20	
+stx2B_21	stx2B_21	Trimmed ES from end
+stx2B_22	stx2B_22	
+stx2B_23	stx2B_2	Duplicate
+stx2B_24	stx2B_4	Duplicate
+stx2B_25	stx2B_25	Trimmed ES from end
+stx2B_26	stx2B_20	Duplicate
+stx2B_27	stx2B_27	Trimmed *P from end
+stx2B_28	stx2B_28	
+stx2B_29	stx2B_29	
+stx2B_30	stx2B_30	Trimmed *P from end
+stx2B_31	stx2B_31	
+stx2B_32	stx2B_2	Duplicate
+stx2B_33	ND	Filtered: stx2B amino acid sequence does not start with M; stx2B amino acid sequence was 76 amino acid residues. Minimum allowed length is 88 amino acid residues
+stx2B_34	stx2B_1	Duplicate
+stx2B_35	stx2B_35	
+stx2B_36	stx2B_36	Trimmed ES from end
+stx2B_37	stx2B_37	Trimmed ES from end
+stx2B_38	stx2B_18	Duplicate
+stx2B_39	stx2B_39	
+stx2B_40	stx2B_40	Trimmed ES from end
+stx2B_41	stx2B_4	Duplicate
+stx2B_42	ND	Filtered: stx2B amino acid sequence does not start with M
+stx2B_43	stx2B_20	Duplicate
+stx2B_44	stx2B_13	Duplicate; Trimmed ES from end
+stx2B_45	stx2B_45	
+stx2B_46	stx2B_2	Duplicate
+stx2B_47	ND	Filtered: Trimmed *CNGGGLC*R*N*VFQV**G*HIYSEG*RERILDQSLESATVTAKCSVDRNDCHNQIQYL*IRLRIC*SAV***L from end; stx2B amino acid sequence was 15 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_48	ND	Filtered: Trimmed *GKIEFSKYNEDDTFTVKVDGKEYWTSRWNLQPLLQSAQLTGMTVTIKSSTCESGSGFAEVQFNND* from end; stx2B amino acid sequence was 23 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_49	stx2B_49	
+stx2B_50	stx2B_50	
+stx2B_51	stx2B_4	Duplicate
+stx2B_52	stx2B_4	Duplicate
+stx2B_53	stx2B_53	
+stx2B_54	stx2B_11	Duplicate
+stx2B_55	stx2B_55	
+stx2B_56	stx2B_15	Duplicate
+stx2B_57	stx2B_2	Duplicate
+stx2B_58	ND	Filtered: stx2B amino acid sequence does not start with M
+stx2B_59	stx2B_2	Duplicate
+stx2B_60	stx2B_3	Duplicate; Trimmed *P from end
+stx2B_61	ND	Filtered: Trimmed **L from end; stx2B amino acid sequence was 85 amino acid residues. Minimum allowed length is 88 amino acid residues
+stx2B_62	stx2B_62	Trimmed *L from end
+stx2B_63	stx2B_63	
+stx2B_64	ND	Filtered: stx2B amino acid sequence does not start with M
+stx2B_65	stx2B_1	Duplicate
+stx2B_66	stx2B_66	Trimmed sequence did not end with a stop codon
+stx2B_67	stx2B_67	
+stx2B_68	stx2B_4	Duplicate
+stx2B_69	stx2B_2	Duplicate
+stx2B_70	stx2B_70	Trimmed *Q from end
+stx2B_71	stx2B_53	Duplicate
+stx2B_72	ND	Filtered: Trimmed *SAV***L from end; stx2B amino acid sequence was 82 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_73	stx2B_13	Duplicate; Trimmed ES from end
+stx2B_74	stx2B_74	
+stx2B_75	stx2B_75	Trimmed YQ from end
+stx2B_76	stx2B_3	Duplicate; Trimmed *P from end
+stx2B_77	stx2B_77	Trimmed ES from end
+stx2B_78	stx2B_78	Trimmed ES from end
+stx2B_80	stx2B_80	Trimmed *P from end
+stx2B_81	stx2B_3	Duplicate; Trimmed *P from end
+stx2B_82	stx2B_82	Trimmed YQ from end
+stx2B_83	stx2B_75	Duplicate; Trimmed YQ from end
+stx2B_84	stx2B_78	Duplicate; Trimmed ES from end
+stx2B_85	stx2B_85	Trimmed ES from end
+stx2B_86	stx2B_78	Duplicate; Trimmed ES from end
+stx2B_87	stx2B_2	Duplicate
+stx2B_88	stx2B_88	
+stx2B_89	stx2B_89	Trimmed YQ from end
+stx2B_90	stx2B_90	Trimmed ES from end
+stx2B_91	stx2B_91	
+stx2B_92	stx2B_92	Trimmed YQ from end
+stx2B_93	stx2B_75	Duplicate; Trimmed YQ from end
+stx2B_94	stx2B_2	Duplicate
+stx2B_95	stx2B_1	Duplicate
+stx2B_96	stx2B_11	Duplicate
+stx2B_97	stx2B_97	Trimmed YQ from end
+stx2B_98	stx2B_35	Duplicate
+stx2B_99	ND	Filtered: Trimmed *AKGKIEFSKYNENDTFTVKVAGKEYWTSRWNLQPLLQSAQLTGMTVTIKSSTCESGSGFAEVQFNND* from end; stx2B amino acid sequence was 21 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_100	stx2B_100	
+stx2B_101	stx2B_101	Trimmed sequence did not end with a stop codon
+stx2B_102	stx2B_102	
+stx2B_103	stx2B_103	Trimmed YQ from end
+stx2B_104	stx2B_2	Duplicate
+stx2B_105	stx2B_105	
+stx2B_106	stx2B_2	Duplicate
+stx2B_107	stx2B_2	Duplicate
+stx2B_108	ND	Filtered: Trimmed *Q* from end; stx2B amino acid sequence was 87 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_109	stx2B_2	Duplicate
+stx2B_110	stx2B_110	
+stx2B_111	ND	Filtered: Trimmed *TNRWNLQPLLQSAQLTGMTVTIKSNTCASGSGFAEVQFN*YQ from end; stx2B amino acid sequence was 47 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_112	stx2B_80	Duplicate; Trimmed *P from end
+stx2B_113	stx2B_113	
+stx2B_114	stx2B_74	Duplicate
+stx2B_115	stx2B_74	Duplicate
+stx2B_116	stx2B_74	Duplicate
+stx2B_117	ND	Filtered: stx2B amino acid sequence does not start with M
+stx2B_118	stx2B_118	Trimmed sequence did not end with a stop codon
+stx2B_119	stx2B_119	Trimmed YQ from end
+stx2B_120	stx2B_120	Trimmed YQ from end
+stx2B_121	stx2B_121	Trimmed ES from end
+stx2B_122	stx2B_122	
+stx2B_123	ND	Filtered: Trimmed *FN*YQ from end; stx2B amino acid sequence was 84 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_124	stx2B_74	Duplicate
+stx2B_125	stx2B_11	Duplicate
+stx2B_126	stx2B_1	Duplicate
+stx2B_127	stx2B_2	Duplicate
+stx2B_128	stx2B_31	Duplicate
+stx2B_129	stx2B_129	
+stx2B_130	stx2B_13	Duplicate; Trimmed ES from end
+stx2B_131	stx2B_2	Duplicate
+stx2B_132	stx2B_11	Duplicate
+stx2B_133	ND	Filtered: Trimmed *QE*LSQSNPVPVNQAPDLLKCSLIMT from end; stx2B amino acid sequence was 62 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_134	stx2B_134	Trimmed sequence did not end with a stop codon
+stx2B_135	ND	Filtered: Trimmed *NTCASGSGFAEVQFN*YQ from end; stx2B amino acid sequence was 71 amino acid residues. Minimum allowed length is 88 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2B_136	stx2B_136	Trimmed ES from end

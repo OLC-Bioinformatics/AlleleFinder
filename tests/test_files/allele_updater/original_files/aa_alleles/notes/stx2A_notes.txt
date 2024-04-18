@@ -1,0 +1,863 @@
+nt_allele	aa_allele	note
+stx2A_1	stx2A_1	
+stx2A_2	stx2A_2	
+stx2A_3	stx2A_3	
+stx2A_4	stx2A_1	Duplicate
+stx2A_5	stx2A_5	
+stx2A_6	stx2A_6	
+stx2A_7	stx2A_7	
+stx2A_8	stx2A_8	
+stx2A_9	stx2A_9	
+stx2A_10	stx2A_5	Duplicate
+stx2A_11	stx2A_11	
+stx2A_12	stx2A_9	Duplicate
+stx2A_13	stx2A_11	Duplicate
+stx2A_14	stx2A_14	
+stx2A_15	stx2A_1	Duplicate
+stx2A_16	stx2A_16	
+stx2A_17	stx2A_17	
+stx2A_18	stx2A_18	
+stx2A_19	stx2A_1	Duplicate
+stx2A_20	stx2A_7	Duplicate
+stx2A_21	stx2A_21	
+stx2A_22	stx2A_6	Duplicate
+stx2A_23	stx2A_1	Duplicate
+stx2A_24	stx2A_7	Duplicate
+stx2A_25	stx2A_6	Duplicate
+stx2A_26	stx2A_26	
+stx2A_27	stx2A_27	
+stx2A_28	stx2A_6	Duplicate
+stx2A_29	stx2A_29	
+stx2A_30	stx2A_30	
+stx2A_31	stx2A_31	
+stx2A_32	stx2A_32	
+stx2A_33	stx2A_30	Duplicate
+stx2A_34	stx2A_34	
+stx2A_35	stx2A_9	Duplicate
+stx2A_36	stx2A_36	
+stx2A_37	stx2A_37	
+stx2A_38	stx2A_11	Duplicate
+stx2A_39	stx2A_1	Duplicate
+stx2A_40	stx2A_40	
+stx2A_41	stx2A_41	
+stx2A_42	stx2A_42	
+stx2A_43	stx2A_43	
+stx2A_44	stx2A_44	
+stx2A_45	stx2A_45	
+stx2A_46	stx2A_46	
+stx2A_47	stx2A_11	Duplicate
+stx2A_48	stx2A_48	
+stx2A_49	stx2A_49	
+stx2A_50	stx2A_1	Duplicate
+stx2A_51	stx2A_51	
+stx2A_52	stx2A_1	Duplicate
+stx2A_53	stx2A_53	
+stx2A_54	stx2A_1	Duplicate
+stx2A_55	stx2A_55	
+stx2A_56	stx2A_56	
+stx2A_57	stx2A_57	
+stx2A_58	stx2A_58	
+stx2A_59	stx2A_6	Duplicate
+stx2A_60	stx2A_60	
+stx2A_61	stx2A_61	
+stx2A_62	stx2A_6	Duplicate
+stx2A_63	stx2A_11	Duplicate
+stx2A_64	stx2A_9	Duplicate
+stx2A_65	stx2A_6	Duplicate
+stx2A_66	stx2A_11	Duplicate
+stx2A_67	stx2A_9	Duplicate
+stx2A_68	stx2A_6	Duplicate
+stx2A_69	stx2A_21	Duplicate
+stx2A_70	stx2A_70	
+stx2A_71	stx2A_34	Duplicate
+stx2A_72	stx2A_36	Duplicate
+stx2A_73	stx2A_36	Duplicate
+stx2A_74	stx2A_1	Duplicate
+stx2A_75	stx2A_75	
+stx2A_76	stx2A_1	Duplicate
+stx2A_77	stx2A_77	
+stx2A_78	stx2A_9	Duplicate
+stx2A_79	stx2A_6	Duplicate
+stx2A_80	stx2A_1	Duplicate
+stx2A_81	stx2A_5	Duplicate
+stx2A_82	stx2A_1	Duplicate
+stx2A_83	stx2A_21	Duplicate
+stx2A_84	stx2A_41	Duplicate
+stx2A_85	stx2A_1	Duplicate
+stx2A_86	stx2A_86	
+stx2A_87	stx2A_87	
+stx2A_88	stx2A_88	
+stx2A_89	stx2A_89	
+stx2A_90	stx2A_36	Duplicate
+stx2A_91	stx2A_1	Duplicate
+stx2A_92	stx2A_1	Duplicate
+stx2A_93	stx2A_77	Duplicate
+stx2A_94	ND	Filtered: Trimmed *YATGK* from end; stx2A amino acid sequence was 313 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_95	stx2A_48	Duplicate
+stx2A_96	stx2A_96	
+stx2A_97	stx2A_7	Duplicate
+stx2A_98	stx2A_6	Duplicate
+stx2A_99	stx2A_21	Duplicate
+stx2A_100	stx2A_5	Duplicate
+stx2A_101	stx2A_101	
+stx2A_102	stx2A_102	
+stx2A_103	stx2A_40	Duplicate
+stx2A_104	stx2A_1	Duplicate
+stx2A_105	stx2A_105	
+stx2A_106	stx2A_106	
+stx2A_107	stx2A_11	Duplicate
+stx2A_108	stx2A_11	Duplicate
+stx2A_109	stx2A_36	Duplicate
+stx2A_110	stx2A_1	Duplicate
+stx2A_111	stx2A_1	Duplicate
+stx2A_112	stx2A_5	Duplicate
+stx2A_113	stx2A_113	
+stx2A_114	stx2A_114	
+stx2A_115	stx2A_115	
+stx2A_116	stx2A_40	Duplicate
+stx2A_117	stx2A_11	Duplicate
+stx2A_118	stx2A_11	Duplicate
+stx2A_119	stx2A_11	Duplicate
+stx2A_120	stx2A_120	
+stx2A_121	stx2A_121	
+stx2A_122	stx2A_61	Duplicate
+stx2A_123	stx2A_123	
+stx2A_124	stx2A_124	
+stx2A_125	stx2A_125	
+stx2A_126	ND	Filtered: Trimmed *K*TIHYGKVIQQQPF*TESLSHYIQRVN from end; stx2A amino acid sequence was 292 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_127	stx2A_127	
+stx2A_128	stx2A_128	
+stx2A_129	stx2A_87	Duplicate
+stx2A_130	stx2A_6	Duplicate
+stx2A_131	stx2A_6	Duplicate
+stx2A_132	stx2A_57	Duplicate
+stx2A_133	stx2A_8	Duplicate
+stx2A_134	stx2A_36	Duplicate
+stx2A_135	stx2A_11	Duplicate
+stx2A_136	stx2A_11	Duplicate
+stx2A_137	stx2A_1	Duplicate
+stx2A_138	stx2A_138	
+stx2A_139	stx2A_1	Duplicate
+stx2A_140	stx2A_1	Duplicate
+stx2A_141	stx2A_141	
+stx2A_142	stx2A_1	Duplicate
+stx2A_143	stx2A_143	
+stx2A_144	stx2A_144	
+stx2A_145	stx2A_145	
+stx2A_146	stx2A_1	Duplicate
+stx2A_147	stx2A_147	
+stx2A_148	stx2A_148	
+stx2A_149	stx2A_9	Duplicate
+stx2A_150	stx2A_1	Duplicate
+stx2A_151	stx2A_36	Duplicate
+stx2A_152	stx2A_96	Duplicate
+stx2A_153	stx2A_77	Duplicate
+stx2A_154	stx2A_154	
+stx2A_155	stx2A_155	
+stx2A_156	stx2A_6	Duplicate
+stx2A_157	ND	Filtered: Trimmed *K*TIHYGKVIQQQPF*TESLSHYIQRVN from end; stx2A amino acid sequence was 292 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_158	stx2A_158	
+stx2A_159	ND	Filtered: stx2A amino acid sequence was 318 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_160	stx2A_36	Duplicate
+stx2A_161	stx2A_11	Duplicate
+stx2A_162	stx2A_162	
+stx2A_163	stx2A_1	Duplicate
+stx2A_164	stx2A_1	Duplicate
+stx2A_165	stx2A_9	Duplicate
+stx2A_166	stx2A_1	Duplicate
+stx2A_167	stx2A_11	Duplicate
+stx2A_168	stx2A_168	
+stx2A_169	stx2A_16	Duplicate
+stx2A_170	stx2A_170	
+stx2A_171	stx2A_44	Duplicate
+stx2A_172	stx2A_11	Duplicate
+stx2A_173	stx2A_173	
+stx2A_174	stx2A_174	
+stx2A_175	stx2A_175	
+stx2A_176	stx2A_176	
+stx2A_177	stx2A_177	
+stx2A_178	stx2A_1	Duplicate
+stx2A_179	stx2A_120	Duplicate
+stx2A_180	stx2A_41	Duplicate
+stx2A_181	stx2A_1	Duplicate
+stx2A_182	stx2A_36	Duplicate
+stx2A_183	stx2A_11	Duplicate
+stx2A_184	stx2A_6	Duplicate
+stx2A_185	stx2A_1	Duplicate
+stx2A_186	stx2A_9	Duplicate
+stx2A_187	stx2A_1	Duplicate
+stx2A_188	stx2A_6	Duplicate
+stx2A_189	stx2A_9	Duplicate
+stx2A_190	stx2A_11	Duplicate
+stx2A_191	stx2A_41	Duplicate
+stx2A_192	stx2A_192	
+stx2A_193	stx2A_193	
+stx2A_194	stx2A_1	Duplicate
+stx2A_195	stx2A_41	Duplicate
+stx2A_196	stx2A_120	Duplicate
+stx2A_197	stx2A_5	Duplicate
+stx2A_198	stx2A_198	
+stx2A_199	stx2A_170	Duplicate
+stx2A_200	stx2A_11	Duplicate
+stx2A_201	stx2A_170	Duplicate
+stx2A_202	stx2A_46	Duplicate
+stx2A_203	stx2A_2	Duplicate
+stx2A_204	stx2A_204	
+stx2A_205	stx2A_7	Duplicate
+stx2A_206	stx2A_206	
+stx2A_207	stx2A_7	Duplicate
+stx2A_208	stx2A_208	
+stx2A_209	stx2A_208	Duplicate
+stx2A_210	stx2A_77	Duplicate
+stx2A_211	ND	Filtered: Trimmed *YATGK* from end; stx2A amino acid sequence was 313 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_212	ND	Filtered: stx2A amino acid sequence does not start with M
+stx2A_213	stx2A_9	Duplicate
+stx2A_214	stx2A_1	Duplicate
+stx2A_215	stx2A_215	
+stx2A_216	stx2A_9	Duplicate
+stx2A_217	stx2A_11	Duplicate
+stx2A_218	stx2A_218	
+stx2A_219	stx2A_9	Duplicate
+stx2A_220	stx2A_9	Duplicate
+stx2A_221	stx2A_170	Duplicate
+stx2A_222	stx2A_11	Duplicate
+stx2A_223	stx2A_41	Duplicate
+stx2A_224	stx2A_11	Duplicate
+stx2A_225	stx2A_225	
+stx2A_226	stx2A_9	Duplicate
+stx2A_227	ND	Filtered: Trimmed *R*STRMSDNWRQARYKNKQYIMGK*YSCSVSEQKVTVFIYNG*I from end; stx2A amino acid sequence was 272 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_228	stx2A_228	
+stx2A_229	stx2A_9	Duplicate
+stx2A_230	stx2A_230	
+stx2A_231	stx2A_7	Duplicate
+stx2A_232	stx2A_170	Duplicate
+stx2A_233	stx2A_11	Duplicate
+stx2A_234	stx2A_9	Duplicate
+stx2A_235	stx2A_235	
+stx2A_236	stx2A_236	
+stx2A_237	stx2A_36	Duplicate
+stx2A_238	ND	Filtered: Trimmed *R*STRMSDNWRQARYKNKQYIMGK*YSCSVSEQKVTVFIYNG*I from end; stx2A amino acid sequence was 275 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_239	stx2A_239	
+stx2A_240	stx2A_11	Duplicate
+stx2A_241	stx2A_1	Duplicate
+stx2A_242	stx2A_101	Duplicate
+stx2A_243	stx2A_11	Duplicate
+stx2A_244	stx2A_244	
+stx2A_245	stx2A_36	Duplicate
+stx2A_246	stx2A_246	
+stx2A_247	stx2A_247	
+stx2A_248	stx2A_248	
+stx2A_249	stx2A_170	Duplicate
+stx2A_250	stx2A_250	
+stx2A_251	stx2A_251	
+stx2A_252	stx2A_1	Duplicate
+stx2A_253	stx2A_16	Duplicate
+stx2A_254	stx2A_254	
+stx2A_255	stx2A_6	Duplicate
+stx2A_256	ND	Filtered: Trimmed *MKRVNQNVR*LATGLL*K*TIHYGKVIQLQRF*TESHSFYIQRVN from end; stx2A amino acid sequence was 273 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_257	stx2A_9	Duplicate
+stx2A_258	stx2A_258	
+stx2A_259	stx2A_36	Duplicate
+stx2A_260	stx2A_260	
+stx2A_261	stx2A_1	Duplicate
+stx2A_262	stx2A_14	Duplicate
+stx2A_263	stx2A_9	Duplicate
+stx2A_264	stx2A_264	
+stx2A_265	stx2A_265	
+stx2A_266	stx2A_1	Duplicate
+stx2A_267	stx2A_1	Duplicate
+stx2A_268	stx2A_6	Duplicate
+stx2A_269	stx2A_269	
+stx2A_270	stx2A_9	Duplicate
+stx2A_271	stx2A_6	Duplicate
+stx2A_272	stx2A_6	Duplicate
+stx2A_273	stx2A_273	
+stx2A_274	stx2A_274	
+stx2A_275	stx2A_11	Duplicate
+stx2A_276	stx2A_55	Duplicate
+stx2A_277	stx2A_1	Duplicate
+stx2A_278	stx2A_11	Duplicate
+stx2A_279	stx2A_236	Duplicate
+stx2A_280	stx2A_40	Duplicate
+stx2A_281	stx2A_6	Duplicate
+stx2A_282	stx2A_34	Duplicate
+stx2A_283	stx2A_1	Duplicate
+stx2A_284	ND	Filtered: Trimmed *AYISGDHIGVCY*PHPTGQLFCCGYTRA*CLSGAF*PSSSDY*AK*FICGRVR*YGNKYFLPFFRFYTYISARCDNGFHDNGQQLYHSATCRSAGTFRNANQSSLTGFIISGVNGVQW*YNDQRCIQSSSAFCHCHSRSLTLQADTERISSGTV*NCSCVYDDAGRRGPHSELGANQQCASGVSGRGWCQSGENIL**YIGDTGHCGRYTELSSSGGAFCSRRE*R*STRMSDNWRQARYKNKQYIMGK*YSCSVSEQKVTVFIYNG*I from end; stx2A amino acid sequence was 51 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_285	stx2A_285	
+stx2A_286	stx2A_286	
+stx2A_287	stx2A_61	Duplicate
+stx2A_288	stx2A_113	Duplicate
+stx2A_289	ND	Filtered: Trimmed *YGNKYFLPFFRFYTYISARCDNGFHDNGQQLYHSATCRSAGTFRNANQSSLTGFIISGVNGVQW*YNDQRCIQSSSAFCHCHSRSLTLQADTERISSGTV*NCSCVYDDAGRRGPHSELGANQQCASGVSGRGWCQSGENIL**YISDTGDCGRYTELPSSGGAFCSRRE*RESTRMSDNWRQACYKNKQYIMGK*YSCSVSEQKVTVFIYNG*I from end; stx2A amino acid sequence was 104 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_290	stx2A_61	Duplicate
+stx2A_291	stx2A_41	Duplicate
+stx2A_292	stx2A_145	Duplicate
+stx2A_293	stx2A_51	Duplicate
+stx2A_294	stx2A_294	
+stx2A_295	stx2A_48	Duplicate
+stx2A_296	ND	Filtered: stx2A amino acid sequence was 318 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_297	stx2A_297	
+stx2A_298	stx2A_170	Duplicate
+stx2A_299	stx2A_170	Duplicate
+stx2A_300	stx2A_11	Duplicate
+stx2A_301	stx2A_170	Duplicate
+stx2A_302	stx2A_1	Duplicate
+stx2A_303	stx2A_303	
+stx2A_304	stx2A_304	
+stx2A_305	stx2A_170	Duplicate
+stx2A_306	stx2A_51	Duplicate
+stx2A_307	stx2A_44	Duplicate
+stx2A_308	stx2A_9	Duplicate
+stx2A_309	stx2A_309	
+stx2A_310	stx2A_40	Duplicate
+stx2A_311	stx2A_311	
+stx2A_312	stx2A_7	Duplicate
+stx2A_313	stx2A_313	
+stx2A_314	stx2A_314	
+stx2A_315	stx2A_315	
+stx2A_316	stx2A_6	Duplicate
+stx2A_317	ND	Filtered: stx2A amino acid sequence does not start with M
+stx2A_318	stx2A_101	Duplicate
+stx2A_319	stx2A_319	
+stx2A_320	stx2A_1	Duplicate
+stx2A_321	stx2A_321	
+stx2A_322	stx2A_322	
+stx2A_323	stx2A_40	Duplicate
+stx2A_324	stx2A_41	Duplicate
+stx2A_325	stx2A_6	Duplicate
+stx2A_326	stx2A_9	Duplicate
+stx2A_327	stx2A_327	
+stx2A_328	stx2A_9	Duplicate
+stx2A_329	stx2A_6	Duplicate
+stx2A_330	stx2A_330	
+stx2A_331	stx2A_120	Duplicate
+stx2A_332	stx2A_40	Duplicate
+stx2A_333	stx2A_1	Duplicate
+stx2A_334	stx2A_334	
+stx2A_335	stx2A_11	Duplicate
+stx2A_336	stx2A_336	
+stx2A_337	stx2A_14	Duplicate
+stx2A_338	stx2A_5	Duplicate
+stx2A_339	stx2A_1	Duplicate
+stx2A_340	stx2A_30	Duplicate
+stx2A_341	stx2A_6	Duplicate
+stx2A_342	stx2A_1	Duplicate
+stx2A_343	stx2A_258	Duplicate
+stx2A_344	stx2A_344	
+stx2A_345	stx2A_29	Duplicate
+stx2A_346	stx2A_258	Duplicate
+stx2A_347	stx2A_29	Duplicate
+stx2A_348	stx2A_9	Duplicate
+stx2A_349	stx2A_86	Duplicate
+stx2A_350	stx2A_350	
+stx2A_351	stx2A_7	Duplicate
+stx2A_352	stx2A_9	Duplicate
+stx2A_353	stx2A_9	Duplicate
+stx2A_354	stx2A_6	Duplicate
+stx2A_355	stx2A_1	Duplicate
+stx2A_356	stx2A_356	
+stx2A_357	stx2A_357	
+stx2A_358	stx2A_9	Duplicate
+stx2A_359	stx2A_359	
+stx2A_360	stx2A_11	Duplicate
+stx2A_361	stx2A_361	
+stx2A_362	stx2A_322	Duplicate
+stx2A_363	stx2A_363	
+stx2A_364	stx2A_14	Duplicate
+stx2A_365	stx2A_365	
+stx2A_366	stx2A_366	
+stx2A_367	stx2A_36	Duplicate
+stx2A_368	stx2A_7	Duplicate
+stx2A_369	stx2A_21	Duplicate
+stx2A_370	stx2A_246	Duplicate
+stx2A_371	stx2A_7	Duplicate
+stx2A_372	stx2A_11	Duplicate
+stx2A_373	stx2A_373	
+stx2A_374	stx2A_374	
+stx2A_375	stx2A_269	Duplicate
+stx2A_376	stx2A_7	Duplicate
+stx2A_377	stx2A_269	Duplicate
+stx2A_378	stx2A_378	
+stx2A_379	stx2A_1	Duplicate
+stx2A_380	stx2A_1	Duplicate
+stx2A_381	stx2A_381	
+stx2A_382	stx2A_96	Duplicate
+stx2A_383	stx2A_41	Duplicate
+stx2A_384	stx2A_14	Duplicate
+stx2A_385	stx2A_385	Trimmed sequence did not end with a stop codon
+stx2A_386	stx2A_374	Duplicate
+stx2A_387	ND	Filtered: Trimmed *NTSGE* from end; stx2A amino acid sequence was 313 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_388	stx2A_357	Duplicate
+stx2A_389	stx2A_6	Duplicate
+stx2A_390	stx2A_390	
+stx2A_391	stx2A_391	
+stx2A_392	stx2A_34	Duplicate
+stx2A_393	stx2A_393	
+stx2A_394	stx2A_34	Duplicate
+stx2A_395	stx2A_395	
+stx2A_396	stx2A_11	Duplicate
+stx2A_397	stx2A_1	Duplicate
+stx2A_398	stx2A_398	
+stx2A_399	stx2A_1	Duplicate
+stx2A_400	stx2A_34	Duplicate
+stx2A_401	stx2A_7	Duplicate
+stx2A_402	stx2A_402	
+stx2A_403	stx2A_7	Duplicate
+stx2A_404	stx2A_101	Duplicate
+stx2A_405	stx2A_34	Duplicate
+stx2A_406	stx2A_406	
+stx2A_407	stx2A_407	
+stx2A_408	stx2A_406	Duplicate
+stx2A_409	stx2A_36	Duplicate
+stx2A_410	stx2A_14	Duplicate
+stx2A_411	stx2A_1	Duplicate
+stx2A_412	stx2A_1	Duplicate
+stx2A_413	stx2A_413	
+stx2A_414	ND	Filtered: Trimmed *TPLEHISQGTTSVSVINHTPPGSYFAVDIRGLDVYQARFDHLRLIIEQNNLYVAGFVNTATNTFYRFSDFTHISVPGVTTVSMTTDSSYTTLQRVAALERSGMQISRHSLVSSYLALMEFSGNTMTRDASRAVLRFVTVTAEALRFRQIQREFRQALSETAPVYTMTPGDVDLTLNWGRISNVLPEYRGEDGVRVGRISFNNISAILGTVAVILNCHHQGARSVRAVNEDSQPECQITGDRPVIKINNTLWESNTAAAFLNRKSQFLYTTGK* from end; stx2A amino acid sequence was 46 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_415	stx2A_415	
+stx2A_416	stx2A_6	Duplicate
+stx2A_417	stx2A_9	Duplicate
+stx2A_418	stx2A_418	
+stx2A_419	stx2A_7	Duplicate
+stx2A_420	stx2A_40	Duplicate
+stx2A_421	ND	Filtered: Trimmed *AYISGDHIGVCY*PHPTGQLFCCGYTRA*CLSGAF*PSSSDY*AK*FICGRVR*YGNKYFLPFFRFYTYISARCDNGFHDNGQQLYHSATCRSAGTFRNANQSSLTGFIISGVNGVQW*YNDQRCIQSSSAFCHCHSRSLTLQADTERISSGTV*NCSCVYDDAGRRGPHSELGANQQCASGVSGRGWCQSGENIL**YISDTGYCGRYTELPSSGGAFCSRRE*R*STRMSDNWRQARYKNKQYIMGK*YSSSVSEQKVTVFIYNG*I from end; stx2A amino acid sequence was 51 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_422	stx2A_422	
+stx2A_423	stx2A_423	
+stx2A_424	stx2A_1	Duplicate
+stx2A_425	stx2A_425	
+stx2A_426	stx2A_14	Duplicate
+stx2A_427	stx2A_427	
+stx2A_428	stx2A_11	Duplicate
+stx2A_429	stx2A_11	Duplicate
+stx2A_430	stx2A_1	Duplicate
+stx2A_431	stx2A_1	Duplicate
+stx2A_432	stx2A_432	
+stx2A_433	stx2A_1	Duplicate
+stx2A_434	stx2A_170	Duplicate
+stx2A_435	stx2A_435	
+stx2A_436	stx2A_41	Duplicate
+stx2A_437	stx2A_437	
+stx2A_438	stx2A_7	Duplicate
+stx2A_439	stx2A_6	Duplicate
+stx2A_440	stx2A_228	Duplicate
+stx2A_441	stx2A_441	
+stx2A_443	stx2A_443	
+stx2A_444	ND	Filtered: Trimmed *NCSCLYDDTGRSGPHTELGENQQCASGVSGRGWCQSGANIL**YISDTGHSGGYTELPSSGGAFRSRRE*RDTTRMSDNWRQASYKDKQYVMGK*YRSCFSESQGSLFKYIRRI from end; stx2A amino acid sequence was 205 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_445	stx2A_445	
+stx2A_446	stx2A_446	
+stx2A_447	stx2A_11	Duplicate
+stx2A_448	stx2A_448	
+stx2A_449	stx2A_449	
+stx2A_450	stx2A_357	Duplicate
+stx2A_451	stx2A_451	
+stx2A_452	stx2A_452	
+stx2A_453	stx2A_453	
+stx2A_454	stx2A_454	
+stx2A_455	stx2A_455	
+stx2A_456	stx2A_456	
+stx2A_457	stx2A_11	Duplicate
+stx2A_458	stx2A_458	
+stx2A_459	stx2A_459	
+stx2A_460	stx2A_460	
+stx2A_461	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_462	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_463	stx2A_463	
+stx2A_464	stx2A_464	
+stx2A_465	stx2A_465	
+stx2A_466	stx2A_466	
+stx2A_467	stx2A_120	Duplicate
+stx2A_468	stx2A_9	Duplicate
+stx2A_469	stx2A_26	Duplicate
+stx2A_470	stx2A_6	Duplicate
+stx2A_471	stx2A_6	Duplicate
+stx2A_472	stx2A_145	Duplicate
+stx2A_473	stx2A_5	Duplicate
+stx2A_474	stx2A_474	
+stx2A_475	stx2A_11	Duplicate
+stx2A_476	stx2A_476	
+stx2A_477	stx2A_1	Duplicate
+stx2A_478	stx2A_41	Duplicate
+stx2A_479	stx2A_479	
+stx2A_480	stx2A_247	Duplicate
+stx2A_481	stx2A_481	
+stx2A_482	stx2A_31	Duplicate
+stx2A_483	stx2A_483	
+stx2A_484	stx2A_484	
+stx2A_485	stx2A_1	Duplicate
+stx2A_486	stx2A_21	Duplicate
+stx2A_487	stx2A_26	Duplicate
+stx2A_488	stx2A_488	
+stx2A_489	stx2A_3	Duplicate
+stx2A_490	stx2A_6	Duplicate
+stx2A_491	stx2A_40	Duplicate
+stx2A_492	stx2A_492	
+stx2A_493	stx2A_41	Duplicate
+stx2A_494	stx2A_9	Duplicate
+stx2A_495	stx2A_21	Duplicate
+stx2A_496	stx2A_496	
+stx2A_497	ND	Filtered: Trimmed *WKCHDQRCIQSSSAFCHCHSRSLTVQANTERISSGTV*NCSCLYDDTGRSGPHTELGENQQCASGVSGRGWCQSGANIL**YISDTGHSGGYTELPSSGGTFRSLRE*RDTTRMSDNWRQASYKAKQYFMGK*YRSCFSESQGSLFKYIRRI from end; stx2A amino acid sequence was 164 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_498	stx2A_498	
+stx2A_499	stx2A_9	Duplicate
+stx2A_500	stx2A_61	Duplicate
+stx2A_501	stx2A_1	Duplicate
+stx2A_502	stx2A_9	Duplicate
+stx2A_503	stx2A_6	Duplicate
+stx2A_504	stx2A_1	Duplicate
+stx2A_505	stx2A_1	Duplicate
+stx2A_506	stx2A_5	Duplicate
+stx2A_507	stx2A_11	Duplicate
+stx2A_508	stx2A_508	
+stx2A_509	stx2A_509	
+stx2A_510	stx2A_9	Duplicate
+stx2A_511	stx2A_511	
+stx2A_512	stx2A_6	Duplicate
+stx2A_513	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_514	stx2A_11	Duplicate
+stx2A_515	stx2A_515	
+stx2A_516	stx2A_6	Duplicate
+stx2A_517	stx2A_235	Duplicate
+stx2A_518	stx2A_518	
+stx2A_519	stx2A_1	Duplicate
+stx2A_520	stx2A_1	Duplicate
+stx2A_521	stx2A_9	Duplicate
+stx2A_522	stx2A_9	Duplicate
+stx2A_523	stx2A_523	
+stx2A_524	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_525	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_526	stx2A_526	
+stx2A_527	stx2A_41	Duplicate
+stx2A_528	stx2A_321	Duplicate
+stx2A_529	stx2A_36	Duplicate
+stx2A_530	stx2A_530	
+stx2A_531	stx2A_9	Duplicate
+stx2A_532	stx2A_120	Duplicate
+stx2A_533	stx2A_533	
+stx2A_534	ND	Filtered: Trimmed *VLCLLLGFSSVSYSREFTIDFSTQQTYVSSLNSIRTEISTPLEHISQGATSVSVINHTPPGSYISVDIRGLDIYEARFDHLRLIIEQNNLYVAGFVNTATNTFYRFSDFTHISVPGVTTVSMTTDSSYTTLQRVAALERSGMQISRHSLVSSYLALMEFSGNTMTRDASRAVLRFVTVTAEALRFRQIQREFRLALSETAPVYTMTPEDVDLTLNWGRISNVLPEYRGEDGVRVGRISFNNISAILGTVAVILNCHHQGARSVRYVNEEMQPKCQISGDRPVIKINNTLWESNTAAAFLNRKSQSLYTTGE* from end; stx2A amino acid sequence was 7 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_535	stx2A_415	Duplicate
+stx2A_536	stx2A_415	Duplicate
+stx2A_537	stx2A_415	Duplicate
+stx2A_538	stx2A_7	Duplicate
+stx2A_539	stx2A_415	Duplicate
+stx2A_540	stx2A_415	Duplicate
+stx2A_541	stx2A_51	Duplicate
+stx2A_542	stx2A_542	
+stx2A_543	stx2A_11	Duplicate
+stx2A_545	stx2A_269	Duplicate
+stx2A_546	stx2A_546	
+stx2A_547	stx2A_1	Duplicate
+stx2A_548	stx2A_509	Duplicate
+stx2A_549	stx2A_21	Duplicate
+stx2A_550	stx2A_550	
+stx2A_551	stx2A_551	
+stx2A_552	stx2A_552	
+stx2A_553	stx2A_1	Duplicate
+stx2A_554	stx2A_554	
+stx2A_555	stx2A_555	
+stx2A_556	stx2A_29	Duplicate
+stx2A_557	stx2A_557	
+stx2A_558	stx2A_1	Duplicate
+stx2A_559	stx2A_559	
+stx2A_560	stx2A_3	Duplicate
+stx2A_561	stx2A_120	Duplicate
+stx2A_562	stx2A_6	Duplicate
+stx2A_563	stx2A_125	Duplicate
+stx2A_564	stx2A_564	
+stx2A_565	stx2A_5	Duplicate
+stx2A_566	stx2A_11	Duplicate
+stx2A_567	stx2A_567	
+stx2A_568	stx2A_465	Duplicate
+stx2A_569	stx2A_273	Duplicate
+stx2A_570	stx2A_570	
+stx2A_571	stx2A_465	Duplicate
+stx2A_572	stx2A_6	Duplicate
+stx2A_573	stx2A_557	Duplicate
+stx2A_574	stx2A_29	Duplicate
+stx2A_575	stx2A_1	Duplicate
+stx2A_576	stx2A_42	Duplicate
+stx2A_577	stx2A_11	Duplicate
+stx2A_578	stx2A_546	Duplicate
+stx2A_579	stx2A_579	
+stx2A_580	stx2A_61	Duplicate
+stx2A_581	stx2A_9	Duplicate
+stx2A_582	stx2A_1	Duplicate
+stx2A_583	stx2A_583	
+stx2A_585	stx2A_374	Duplicate
+stx2A_586	stx2A_14	Duplicate
+stx2A_587	stx2A_36	Duplicate
+stx2A_588	stx2A_9	Duplicate
+stx2A_589	stx2A_170	Duplicate
+stx2A_590	stx2A_36	Duplicate
+stx2A_591	stx2A_1	Duplicate
+stx2A_592	stx2A_9	Duplicate
+stx2A_593	stx2A_593	
+stx2A_594	stx2A_3	Duplicate
+stx2A_595	stx2A_269	Duplicate
+stx2A_596	stx2A_596	
+stx2A_597	stx2A_9	Duplicate
+stx2A_598	stx2A_9	Duplicate
+stx2A_600	stx2A_481	Duplicate
+stx2A_601	stx2A_11	Duplicate
+stx2A_602	stx2A_11	Duplicate
+stx2A_603	stx2A_41	Duplicate
+stx2A_604	stx2A_30	Duplicate
+stx2A_605	stx2A_605	
+stx2A_606	stx2A_606	
+stx2A_607	stx2A_1	Duplicate
+stx2A_608	stx2A_391	Duplicate
+stx2A_609	stx2A_9	Duplicate
+stx2A_610	stx2A_610	
+stx2A_611	stx2A_611	
+stx2A_612	stx2A_6	Duplicate
+stx2A_613	stx2A_1	Duplicate
+stx2A_614	stx2A_1	Duplicate
+stx2A_615	stx2A_615	
+stx2A_616	stx2A_616	
+stx2A_617	stx2A_617	
+stx2A_618	stx2A_464	Duplicate
+stx2A_619	stx2A_40	Duplicate
+stx2A_620	stx2A_9	Duplicate
+stx2A_622	ND	Filtered: stx2A amino acid sequence does not start with M
+stx2A_623	ND	Filtered: stx2A amino acid sequence does not start with M
+stx2A_624	stx2A_11	Duplicate
+stx2A_625	stx2A_1	Duplicate
+stx2A_626	stx2A_6	Duplicate
+stx2A_627	stx2A_627	
+stx2A_628	stx2A_6	Duplicate
+stx2A_629	stx2A_9	Duplicate
+stx2A_630	stx2A_321	Duplicate
+stx2A_631	stx2A_11	Duplicate
+stx2A_632	stx2A_632	
+stx2A_633	stx2A_6	Duplicate
+stx2A_634	stx2A_5	Duplicate
+stx2A_635	stx2A_193	Duplicate
+stx2A_636	stx2A_5	Duplicate
+stx2A_637	stx2A_11	Duplicate
+stx2A_638	stx2A_9	Duplicate
+stx2A_639	stx2A_639	
+stx2A_640	stx2A_640	
+stx2A_641	ND	Filtered: Trimmed *HRKKWTSH*TGGESAMCFRSFGERVVSEWGEYPLIIYQRYWAQWRLY*IAIIRGHVPFAP*MKRYNQNVR*LATGQL*G*TILYGKVIPQLLF*IAGLTL*IHPEN from end; stx2A amino acid sequence was 212 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_642	stx2A_642	
+stx2A_643	stx2A_41	Duplicate
+stx2A_644	stx2A_644	
+stx2A_645	stx2A_57	Duplicate
+stx2A_646	stx2A_3	Duplicate
+stx2A_647	stx2A_647	
+stx2A_648	stx2A_6	Duplicate
+stx2A_649	stx2A_649	
+stx2A_650	stx2A_374	Duplicate
+stx2A_651	stx2A_651	
+stx2A_652	stx2A_27	Duplicate
+stx2A_653	stx2A_125	Duplicate
+stx2A_654	stx2A_101	Duplicate
+stx2A_655	stx2A_655	
+stx2A_656	stx2A_656	
+stx2A_657	stx2A_125	Duplicate
+stx2A_658	stx2A_9	Duplicate
+stx2A_659	stx2A_659	
+stx2A_660	stx2A_5	Duplicate
+stx2A_661	stx2A_40	Duplicate
+stx2A_662	stx2A_11	Duplicate
+stx2A_664	stx2A_204	Duplicate
+stx2A_665	stx2A_665	
+stx2A_666	stx2A_666	
+stx2A_667	stx2A_7	Duplicate
+stx2A_668	stx2A_1	Duplicate
+stx2A_669	stx2A_611	Duplicate
+stx2A_670	stx2A_1	Duplicate
+stx2A_672	stx2A_57	Duplicate
+stx2A_673	stx2A_9	Duplicate
+stx2A_675	stx2A_61	Duplicate
+stx2A_676	stx2A_1	Duplicate
+stx2A_677	stx2A_41	Duplicate
+stx2A_678	stx2A_1	Duplicate
+stx2A_679	stx2A_9	Duplicate
+stx2A_680	stx2A_36	Duplicate
+stx2A_681	stx2A_9	Duplicate
+stx2A_682	stx2A_682	
+stx2A_683	stx2A_7	Duplicate
+stx2A_684	stx2A_17	Duplicate
+stx2A_685	stx2A_9	Duplicate
+stx2A_686	stx2A_9	Duplicate
+stx2A_687	stx2A_687	
+stx2A_688	stx2A_11	Duplicate
+stx2A_689	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_690	stx2A_1	Duplicate
+stx2A_691	ND	Filtered: Trimmed *K*TIHYGKVIQQQPF*TESLSHYIQRVN from end; stx2A amino acid sequence was 292 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_692	stx2A_692	
+stx2A_693	stx2A_693	
+stx2A_694	stx2A_105	Duplicate
+stx2A_695	stx2A_695	
+stx2A_696	stx2A_6	Duplicate
+stx2A_697	stx2A_697	
+stx2A_698	stx2A_36	Duplicate
+stx2A_699	stx2A_699	
+stx2A_700	stx2A_700	
+stx2A_701	stx2A_701	
+stx2A_702	stx2A_6	Duplicate
+stx2A_703	stx2A_415	Duplicate
+stx2A_704	stx2A_459	Duplicate
+stx2A_705	stx2A_705	
+stx2A_706	stx2A_706	
+stx2A_707	stx2A_1	Duplicate
+stx2A_708	ND	Filtered: Trimmed *RDTTRMSDNWRQASYKDKQYFMGK*YRSCFSESQGSLFKYIRRI from end; stx2A amino acid sequence was 275 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_709	ND	Filtered: Trimmed *K*TIHYGKVIQQQPF*TESLSHYIQRVN from end; stx2A amino acid sequence was 292 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_710	stx2A_710	
+stx2A_711	stx2A_415	Duplicate
+stx2A_712	stx2A_40	Duplicate
+stx2A_713	stx2A_713	
+stx2A_714	stx2A_714	
+stx2A_715	stx2A_297	Duplicate
+stx2A_716	stx2A_11	Duplicate
+stx2A_717	stx2A_9	Duplicate
+stx2A_718	stx2A_718	
+stx2A_719	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_720	stx2A_120	Duplicate
+stx2A_721	stx2A_250	Duplicate
+stx2A_722	stx2A_722	
+stx2A_723	ND	Filtered: Trimmed *VYEGLMFIRRVLTIFV*LLSKIIYMWPGSLIRQQILSTDFQILHIYHCPV*QLFP*QRTAVIPLCNVSQRWNVPECKSVVTHWFHHIWR*WSSVVIQ*PERLLGLPCVL*PSQPKPYGSGRYRENFVRHCLKQLLFIR*RRKTWTSL*TGGESAMCFRSIGERMVSEWGEYPLITYQRYWVLWPLY*IAIIRARVLFAL*MKRVNQNVR*LATGPL*K*TIHYGKVIQQQRF*TESHSLYIQRVN from end; stx2A amino acid sequence was 73 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_724	stx2A_6	Duplicate
+stx2A_725	stx2A_1	Duplicate
+stx2A_726	stx2A_1	Duplicate
+stx2A_727	stx2A_727	
+stx2A_728	stx2A_321	Duplicate
+stx2A_729	stx2A_729	
+stx2A_730	stx2A_41	Duplicate
+stx2A_731	stx2A_6	Duplicate
+stx2A_732	stx2A_710	Duplicate
+stx2A_733	stx2A_61	Duplicate
+stx2A_734	stx2A_11	Duplicate
+stx2A_735	stx2A_406	Duplicate
+stx2A_736	stx2A_736	
+stx2A_737	stx2A_48	Duplicate
+stx2A_738	stx2A_9	Duplicate
+stx2A_740	stx2A_36	Duplicate
+stx2A_741	stx2A_741	
+stx2A_742	stx2A_742	
+stx2A_743	stx2A_743	
+stx2A_744	stx2A_9	Duplicate
+stx2A_745	stx2A_9	Duplicate
+stx2A_746	stx2A_1	Duplicate
+stx2A_747	ND	Filtered: Trimmed *MT from end; stx2A amino acid sequence was 317 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_748	stx2A_6	Duplicate
+stx2A_749	stx2A_749	
+stx2A_750	stx2A_51	Duplicate
+stx2A_751	ND	Filtered: Trimmed *YISDTGHSGGYTELPSSGGAFRSRRE*RDTTRMSDNWRQASYKDKQYFMGK*YRSCFSESQGPLFKYIRRI from end; stx2A amino acid sequence was 248 amino acid residues. Minimum allowed length is 320 amino acid residues
+stx2A_752	stx2A_752	
+stx2A_753	stx2A_36	Duplicate
+stx2A_754	stx2A_9	Duplicate
+stx2A_755	stx2A_7	Duplicate
+stx2A_756	stx2A_36	Duplicate
+stx2A_758	stx2A_758	
+stx2A_759	stx2A_479	Duplicate
+stx2A_760	stx2A_162	Duplicate
+stx2A_761	stx2A_9	Duplicate
+stx2A_762	stx2A_710	Duplicate
+stx2A_763	stx2A_96	Duplicate
+stx2A_764	stx2A_764	
+stx2A_765	stx2A_61	Duplicate
+stx2A_766	stx2A_710	Duplicate
+stx2A_767	stx2A_767	
+stx2A_768	stx2A_768	
+stx2A_769	stx2A_769	
+stx2A_770	stx2A_770	
+stx2A_771	ND	Filtered: Trimmed *YNDQRCIKSSSAFCHCHSRSLTVQANTERISSGTV*NCSCLYDDAGRRGPHSELGENQQCASGVSGRGWCQSGENIL**YISDTWYCGRYTELPSSGRAFCSRRE*RESTRMSDNWRQARYKNKQYIMGK*YSSSVSEQKVTAFIYNW*M from end; stx2A amino acid sequence was 166 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_772	stx2A_772	
+stx2A_773	stx2A_773	
+stx2A_774	stx2A_710	Duplicate
+stx2A_775	stx2A_6	Duplicate
+stx2A_776	stx2A_776	
+stx2A_777	stx2A_777	
+stx2A_778	stx2A_778	
+stx2A_779	stx2A_415	Duplicate
+stx2A_780	stx2A_14	Duplicate
+stx2A_781	stx2A_6	Duplicate
+stx2A_782	stx2A_41	Duplicate
+stx2A_783	stx2A_6	Duplicate
+stx2A_784	stx2A_784	
+stx2A_785	stx2A_785	
+stx2A_786	stx2A_786	
+stx2A_787	stx2A_269	Duplicate
+stx2A_788	stx2A_9	Duplicate
+stx2A_789	stx2A_9	Duplicate
+stx2A_790	stx2A_790	
+stx2A_791	stx2A_17	Duplicate
+stx2A_792	stx2A_7	Duplicate
+stx2A_793	stx2A_793	
+stx2A_794	stx2A_9	Duplicate
+stx2A_795	stx2A_795	
+stx2A_796	stx2A_36	Duplicate
+stx2A_797	stx2A_583	Duplicate
+stx2A_798	stx2A_1	Duplicate
+stx2A_799	stx2A_799	
+stx2A_800	stx2A_11	Duplicate
+stx2A_801	stx2A_9	Duplicate
+stx2A_802	stx2A_710	Duplicate
+stx2A_803	stx2A_250	Duplicate
+stx2A_804	stx2A_804	
+stx2A_806	stx2A_806	
+stx2A_807	stx2A_807	
+stx2A_808	stx2A_3	Duplicate
+stx2A_809	stx2A_9	Duplicate
+stx2A_810	stx2A_810	
+stx2A_811	stx2A_11	Duplicate
+stx2A_812	stx2A_812	
+stx2A_813	ND	Filtered: Trimmed *GARSVRAVNEDSQPECQITGDRPVIKINNTLWESNTAAAFLNRKSQFLYTTGK* from end; stx2A amino acid sequence was 265 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_814	stx2A_814	
+stx2A_815	stx2A_297	Duplicate
+stx2A_816	stx2A_1	Duplicate
+stx2A_817	stx2A_41	Duplicate
+stx2A_818	stx2A_9	Duplicate
+stx2A_819	stx2A_204	Duplicate
+stx2A_820	stx2A_36	Duplicate
+stx2A_821	stx2A_36	Duplicate
+stx2A_822	stx2A_822	
+stx2A_823	stx2A_105	Duplicate
+stx2A_824	stx2A_9	Duplicate
+stx2A_825	stx2A_9	Duplicate
+stx2A_826	stx2A_826	
+stx2A_827	stx2A_1	Duplicate
+stx2A_828	stx2A_1	Duplicate
+stx2A_829	ND	Filtered: Trimmed *GTTSVSVINHTPPGSYFAVDIRGLDVYQARFDHLRLIIEQNNLYVAGFVNTATNTFYRFSDFTHISVPGVTTVSMTTDSSYTTLQRVAALERSGMQISRHSLVSSYLALMEFSGNTMTRDASRAVLRFVTVTAEALRFRQIQREFRQALSETAPVYTMTPGDVDLTLNWGRISNVLPEYRGEDGVRVGRISFNNISAILGTVAVILNCHHQGARSVRAVNEDSQPECQITGDRPVIKINNTLWESNTAAAFLNRKSQFLYTTGK* from end; stx2A amino acid sequence was 54 amino acid residues. Minimum allowed length is 320 amino acid residues; Trimmed sequence did not end with a stop codon
+stx2A_830	stx2A_11	Duplicate
+stx2A_831	stx2A_831	
+stx2A_832	stx2A_1	Duplicate
+stx2A_833	stx2A_1	Duplicate
+stx2A_834	stx2A_834	
+stx2A_835	stx2A_246	Duplicate
+stx2A_836	stx2A_836	
+stx2A_837	stx2A_9	Duplicate
+stx2A_838	stx2A_9	Duplicate
+stx2A_839	stx2A_839	
+stx2A_840	stx2A_11	Duplicate
+stx2A_841	stx2A_18	Duplicate
+stx2A_842	stx2A_415	Duplicate
+stx2A_843	stx2A_583	Duplicate
+stx2A_844	stx2A_321	Duplicate
+stx2A_845	stx2A_6	Duplicate
+stx2A_846	stx2A_5	Duplicate
+stx2A_847	stx2A_5	Duplicate
+stx2A_848	stx2A_9	Duplicate
+stx2A_849	stx2A_26	Duplicate
+stx2A_850	stx2A_5	Duplicate
+stx2A_851	stx2A_314	Duplicate
+stx2A_852	stx2A_145	Duplicate
+stx2A_853	stx2A_853	
+stx2A_854	stx2A_124	Duplicate
+stx2A_855	stx2A_40	Duplicate
+stx2A_856	stx2A_9	Duplicate
+stx2A_857	stx2A_321	Duplicate
+stx2A_858	stx2A_858	
+stx2A_859	stx2A_41	Duplicate
+stx2A_860	stx2A_321	Duplicate
+stx2A_861	stx2A_6	Duplicate
+stx2A_863	stx2A_1	Duplicate
+stx2A_864	stx2A_6	Duplicate
+stx2A_865	stx2A_1	Duplicate
+stx2A_866	stx2A_866	
+stx2A_867	stx2A_867	
+stx2A_868	stx2A_6	Duplicate
+stx2A_869	stx2A_1	Duplicate
+stx2A_870	stx2A_1	Duplicate
+stx2A_871	stx2A_6	Duplicate
+stx2A_872	stx2A_120	Duplicate
+stx2A_873	stx2A_86	Duplicate
+stx2A_874	stx2A_705	Duplicate
