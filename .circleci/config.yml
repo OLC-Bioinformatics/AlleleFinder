@@ -67,7 +67,7 @@ jobs:
       # Upload the coverage report to codecov
       - codecov/upload:
           file: /root/project/test_reports/allele_finder.xml
-          xtra_args: -R /root/project/
+          flags: -R /root/project/
 
 # Define a workflow that runs the defined job
 workflows:
