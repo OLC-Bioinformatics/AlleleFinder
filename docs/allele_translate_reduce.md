@@ -1,4 +1,11 @@
-## Translate and reduce alleles
+## Table of Contents
+1. [Translate and Reduce Alleles](#translate-and-reduce-alleles)
+2. [Inputs](#inputs)
+3. [Running the Script](#running-the-script)
+4. [Usage](#usage)
+5. [Outputs](#outputs)
+
+## Translate and Reduce Alleles <a name="translate-and-reduce-alleles"></a>
 
 This script translates allele files from Enterobase in nucleotide format to amino acid, performs content and length checks, and removes duplicates.
 
@@ -6,35 +13,35 @@ In order for a translated allele to pass content and length checks, it must:
 
 1. Start with a `Methionine` residue
 2. Pass a minimum length threshold after trimming:
-       * The length thresholds are:
-         * ECs2973: 90 amino acid residues
-         * ECs2974: 316 amino acid residues
-         * ECs1205: 320 amino acid residues
-         * ECs1206: 88 amino acid residues
+    * The length thresholds are:
+        * ECs2973 (stx2B): 90 amino acid residues
+        * ECs2974 (stx2A): 316 amino acid residues
+        * ECs1205 (stx1A): 320 amino acid residues
+        * ECs1206 (stx1B): 88 amino acid residues
 3. Not be a duplicate of an allele already in the reduced database
 
-#### Inputs
+## Inputs <a name="inputs"></a>
 
-1. nucleotide allele files from Enterobase in FASTA format. [Download instructions.](downloads.md#download-alleles)
-2. reduced profile file prepared by [`profile_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce). Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:
+1. Nucleotide allele files from Enterobase in FASTA format. [Download instructions.](downloads.md#download-alleles)
+2. Reduced profile file prepared by [`profile_reduce`](https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce). Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:
     * ECs2973
     * ECs2974
 
-#### Running the script
+## Running the Script <a name="running-the-script"></a>
 
-```
+```bash
 stec.py allele_translate_reduce -a /path/to/allele_folder -p /path/to/profile_file -r /path/to/output/folder/aa_profile -t /path/to/output/folder/aa_alleles
 ```
 
 An example with the nucleotide allele folder `nt_alleles`, the profile file `profiles.txt` in the `nt_profile` folder, the desired amino acid profile output folder `aa_profile`, and the desired amino acid allele output folder `aa_alleles` all in the current working directory: 
 
-
-```
+```bash
 stec.py allele_translate_reduce -a nt_alleles -p nt_profile/profile.txt -r aa_profile -t aa_alleles
 ```
 
-#### Usage
-```
+## Usage <a name="usage"></a>
+
+```bash
 usage: stec.py allele_translate_reduce [-h] [-version] [-v verbosity]
                                        [-a allele_path] [-p profile_file]
                                        [-r report_path] [-t translated_path]
@@ -56,7 +63,7 @@ optional arguments:
                         Specify the name and path of the folder into which alleles are to be placed. If not provided, the aa_alleles folder in the current working directory will be used
 ```
 
-#### Outputs
+## Outputs <a name="outputs"></a>
 
 These represent the folder structure of the directory containing the outputs
 
