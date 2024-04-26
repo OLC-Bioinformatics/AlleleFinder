@@ -40,12 +40,8 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
-            # Install necessary Python packages using mamba
-            mamba install \
-              "coloredlogs=15.0.1=pyhd81ab_3" \
-              "geneseekr=0.5.0=py_12" \
-              "pytest=7.2.1=pyhd8ed1ab_0" \
-              "pytest-cov=4.0.0=pyhd8ed1ab_0"
+            # Install necessary Python packages using pip
+            pip install -r requirements.txt
             # Install the current project (in editable mode) using pip
             pip install -e .
       - run:
