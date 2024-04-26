@@ -1,10 +1,18 @@
+# Site information
 site_name: OLC Bioinformatics AlleleFinder
 site_url:  https://OLC-Bioinformatics.github.io/AlleleFinder/
 site_description: Tools designed for discovery, sequence typing, and profiling the _stx_ alleles in Shiga toxin-producing _E. coli_
 repo_url:  https://github.com/OLC-Bioinformatics/AlleleFinder/
 edit_uri: edit/main/docs/
 theme: readthedocs
+site_author: Adam Koziol
+copyright: Copyright © 2024, Government of Canada
+repo_name: AlleleFinder
 
+# Directory containing the documentation source files
+docs_dir: 'docs'
+
+# Navigation structure
 nav:
   - Home: 'index.md'
   - Installation: 'installation.md'
@@ -12,6 +20,7 @@ nav:
   - Profile Reduction: 'profile_reduce.md'
   - Allele Translation/Reduction: 'allele_translate_reduce.md'
   - Allele Finding: 'allele_find.md'
+  - Allele Translate/Finding: 'allele_translate_find.md'
   - Amino Acid Allele Finding: 'aa_allele_find.md'
   - Allele Splitting: 'allele_split.md'
   - Allele Concatenating: 'allele_concatenate.md'
