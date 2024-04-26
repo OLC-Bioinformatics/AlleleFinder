@@ -1,22 +1,33 @@
-## STEC AlleleFinder
+## Table of Contents
+1. [STEC AlleleFinder](#stec-allelefinder)
+2. [Installation](#installation)
+3. [Scripts](#scripts)
+4. [Feedback](#feedback)
 
-A suite of tools, written in Python, designed for the discovery, sequence typing, and profiling the _stx_ alleles of Shiga toxin-producing _E. coli_  
+## STEC AlleleFinder <a name="stec-allelefinder"></a>
 
-## Installation
+STEC AlleleFinder is a suite of Python tools designed for the discovery, sequence typing, and profiling of the _stx_ alleles of Shiga toxin-producing _E. coli_.
 
-Detailed installation instructions are provided [here](https://olc-bioinformatics.github.io/AlleleFinder/installation)
+## Installation <a name="installation"></a>
 
-## Scripts
+Detailed installation instructions for STEC AlleleFinder are provided in the [Installation Guide](https://olc-bioinformatics.github.io/AlleleFinder/installation).
 
-There is a single STEC script with six separate functionalities:
+## Scripts <a name="scripts"></a>
 
-1. [`profile_reduce`](profile_reduce.md)
-2. [`allele_translate_reduce`](allele_translate_reduce.md)
-3. [`allele_find`](allele_find.md)
-4. [`aa_allele_find`](aa_allele_find.md)
-5. [`allele_split`](allele_split.md)
-6. [`allele concatenate`](allele_concatenate.md)
+STEC AlleleFinder comprises a single script with six separate functionalities:
 
-## Feedback
+1. [Profile Reduce](profile_reduce.md)
+2. [Allele Translate Reduce](allele_translate_reduce.md)
+3. [Allele Find](allele_find.md)
+4. [Allele Translate Find](allele_translate_find.md)
+5. [AA Allele Find](aa_allele_find.md)
+6. [Allele Split](allele_split.md)
+7. [Allele Concatenate](allele_concatenate.md)
 
-If you encounter any issues installing or running AlleleFinder, have feature requests, or need assistance, please [open an issue on GitHub](https://github.com/OLC-Bioinformatics/AlleleFinder/issues/new/choose)
+Each link will take you to a detailed description of each functionality.
+
+## Feedback <a name="feedback"></a>
+
+If you encounter any issues while installing or running AlleleFinder, have feature requests, or need assistance, please [open an issue on GitHub](https://github.com/OLC-Bioinformatics/AlleleFinder/issues/new/choose).
+
+For more information about the workflow or any other queries, feel free to ask.
