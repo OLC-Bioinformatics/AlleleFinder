@@ -99,7 +99,7 @@ To ensure that AlleleFinder is working correctly, you can run a set of tests. He
 
     The `--cov=allele_tools/` option is used to measure code coverage of the `allele_tools` module.
 
-    The `--cov-config=.coveragec` option specifies the configuration file for coverage.
+    The `--cov-config=.coveragerc` option specifies the configuration file for coverage.
 
     The `--cov-report term-missing` option generates a report in the terminal showing lines missed.
 
@@ -108,5 +108,5 @@ To ensure that AlleleFinder is working correctly, you can run a set of tests. He
     The `-vvv` option increases verbosity. Pytest will give more detailed output, including all test names and the results for each test.
 
     ```bash
-    python -m pytest tests/ --cov=allele_tools/ --cov-config=.coveragec --cov-report term-missing -s -vvv
+    python -m pytest tests/ --cov=allele_tools/ --cov-config=.coveragerc --cov-report term-missing -s -vvv
     ```
