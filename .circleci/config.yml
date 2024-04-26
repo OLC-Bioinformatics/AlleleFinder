@@ -3,43 +3,40 @@ version: 2.1
 
 # Create the orb for the code coverage upload
 orbs:
-  codecov: codecov/codecov@3.2.4
+  codecov: codecov/codecov@4.1.0
 
 # Define a job to be invoked later in a workflow.
 jobs:
   allelefinder:
-    # Specify the execution environment. Using Ubuntu 22.04 image from Dockerhub.
+    # Specify the execution environment. Using miniconda3 image from Dockerhub.
     docker:
-      - image: ubuntu:22.04
+      - image: continuumio/miniconda3
+    environment:
+      PYTHON_VERSION: 3.9.12
     # Add steps to the job
     steps:
       # Checkout the code from the repository
       - checkout
+      - restore_cache:
+          key: conda-env-v1-{{ checksum "environment.yml" }}
       - run:
-          name: Setup Environment
-          command: |
-            # Update the package lists for upgrades for packages that need upgrading, as well as new packages that have just come to the repositories
-            apt update
-            # Install necessary packages
-            apt install -y wget coreutils curl gnupg
-            # Download Mambaforge installer
-            wget -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
-            # Install Mambaforge
-            bash Mambaforge.sh -b -p "${HOME}/conda"
-            # Source the conda and mamba shell scripts to set up the environment
-            source "${HOME}/conda/etc/profile.d/conda.sh"
-            source "${HOME}/conda/etc/profile.d/mamba.sh"
-            # Add necessary channels for conda
-            conda config --add channels olcbioinformatics
-            conda config --add channels bioconda
-            # Set conda configuration options
-            conda config --set always_yes yes --set changeps1 no
-            # Activate the base conda environment
-            conda activate
-            # Create a new conda environment with a specific version of Python
-            mamba create -n allelefinder python=3.9.12
-            # Activate the newly created conda environment
-            source activate allelefinder
+        name: Setup Environment
+        command: |
+          # Add necessary channels for conda
+          conda config --add channels olcbioinformatics
+          conda config --add channels bioconda
+          # Set conda configuration options
+          conda config --set always_yes yes --set changeps1 no
+          # Install mamba
+          conda install mamba -c conda-forge
+          # Create a new conda environment with a specific version of Python
+          mamba create -n allelefinder python=${PYTHON_VERSION}
+          # Activate the newly created conda environment
+          conda activate allelefinder
+      - save_cache:
+          key: conda-env-v1-{{ checksum "environment.yml" }}
+          paths:
+            - ~/conda
       - run:
           name: Install Dependencies
           command: |
@@ -54,8 +51,17 @@ jobs:
       - run:
           name: Run Tests
           command: |
+            # Activate the testing environment
+            conda activate allelefinder
             # Run pytest with coverage options
-            python -m pytest tests/ --cov=allele_tools/ --cov-config=.coveragec --cov-report=xml:test_reports/allele_finder.xml -s
+            pytest tests/ --cov=allele_tools/ --cov-config=.coveragerc --cov-report=xml:test_reports/allele_finder.xml -s
+      - run:
+          name: Check Test Reports
+          command: |
+            if [ ! -f /root/project/test_reports/allele_finder.xml ]; then
+              echo "Test reports not found!"
+              exit 1
+            fi
       # Store the test reports as artifacts
       - store_artifacts:
           path: test_reports/
