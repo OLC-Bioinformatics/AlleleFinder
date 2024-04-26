@@ -20,19 +20,19 @@ jobs:
       - restore_cache:
           key: conda-env-v1-{{ checksum "environment.yml" }}
       - run:
-        name: Setup Environment
-        command: |
-          # Add necessary channels for conda
-          conda config --add channels olcbioinformatics
-          conda config --add channels bioconda
-          # Set conda configuration options
-          conda config --set always_yes yes --set changeps1 no
-          # Install mamba
-          conda install mamba -c conda-forge
-          # Create a new conda environment with a specific version of Python
-          mamba create -n allelefinder python=${PYTHON_VERSION}
-          # Activate the newly created conda environment
-          conda activate allelefinder
+          name: Setup Environment
+          command: |
+            # Add necessary channels for conda
+            conda config --add channels olcbioinformatics
+            conda config --add channels bioconda
+            # Set conda configuration options
+            conda config --set always_yes yes --set changeps1 no
+            # Install mamba
+            conda install mamba -c conda-forge
+            # Create a new conda environment with a specific version of Python
+            mamba create -n allelefinder python=${PYTHON_VERSION}
+            # Activate the newly created conda environment
+            echo "conda activate allelefinder" >> $BASH_ENV
       - save_cache:
           key: conda-env-v1-{{ checksum "environment.yml" }}
           paths:
@@ -51,8 +51,6 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            # Activate the testing environment
-            conda activate allelefinder
             # Run pytest with coverage options
             pytest tests/ --cov=allele_tools/ --cov-config=.coveragerc --cov-report=xml:test_reports/allele_finder.xml -s
       - run:
