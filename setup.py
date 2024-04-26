@@ -19,7 +19,7 @@ with open(convert_path(
 # Read the contents of your README file
 with open('README.md', 'r') as f:
     long_description = f.read()
-    
+
 # Open the requirements.txt file
 with open('requirements.txt') as f:
     # Read the file and split it into lines
