@@ -18,7 +18,15 @@ jobs:
       # Checkout the code from the repository
       - checkout
       - restore_cache:
-          key: conda-env-v1-{{ checksum "environment.yml" }}
+        key: deps-{{ checksum "requirements.txt" }}-{{ .Environment.PYTHON_VERSION }}
+      - run:
+          name: Check if dependencies are cached
+          command: |
+            if [ -d ~/conda/envs/allelefinder ] && [ -d ~/.cache/pip ]; then
+              echo 'Dependencies are cached, skipping installation'
+              echo "conda activate allelefinder" >> $BASH_ENV
+              exit 0
+            fi
       - run:
           name: Setup Environment
           command: |
@@ -34,12 +42,15 @@ jobs:
             # Activate the newly created conda environment
             echo "conda activate allelefinder" >> $BASH_ENV
       - save_cache:
-          key: conda-env-v1-{{ checksum "environment.yml" }}
+          key: deps-{{ checksum "requirements.txt" }}-{{ .Environment.PYTHON_VERSION }}
           paths:
             - ~/conda
+            - ~/.cache/pip
       - run:
           name: Install Dependencies
           command: |
+            # Activate the environment
+            conda activate allelefinder
             # Install necessary Python packages using pip
             pip install -r requirements.txt
             # Install the current project (in editable mode) using pip
