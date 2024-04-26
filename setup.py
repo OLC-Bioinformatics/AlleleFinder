@@ -43,17 +43,17 @@ setup(
     url="https://github.com/OLC-Bioinformatics/AlleleFinder",
     # The requirements from requirements.txt
     install_requires=requirements,
-    # Classifiers help users find your project by categorizing it.
+    # Classifiers categorize the project for users.
     classifiers=[
-        # Indicate who your project is intended for
+        # Specifies the intended audience of the project
         'Intended Audience :: Science/Research',
-        # Pick your license as you wish
+        # Defines the license of the project
         'License :: OSI Approved :: MIT License',
-        # Specify the Python versions you support here
+        # Specifies the supported Python versions
         'Programming Language :: Python :: 3.9',
-        # Show your project's status - planning, alpha, beta, or stable
+        # Indicates the development status of the project
         'Development Status :: 5 - Production/Stable',
-        # Indicate if your project relates to a particular topic
+        # Specifies the topic related to the project
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
 )
