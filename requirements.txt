@@ -2,6 +2,7 @@ biopython==1.81
 coloredlogs==15.0.1
 genemethods==0.0.0.61
 geneseekr==0.5.0
+genewrappers==0.0.0.10
 numpy==1.26.4
 OLCTools==1.3.5
 pytest==7.2.1
