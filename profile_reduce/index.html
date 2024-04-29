@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/profile_reduce/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Adam Koziol" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/profile_reduce/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
     <title>Profile Reduction - OLC Bioinformatics AlleleFinder</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
@@ -17,12 +17,11 @@
         var mkdocs_page_url = "/AlleleFinder/profile_reduce/";
       </script>
     
-    <script src="../js/jquery-3.6.0.min.js" defer></script>
     <!--[if lt IE 9]>
       <script src="../js/html5shiv.min.js"></script>
     <![endif]-->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
-      <script>hljs.initHighlightingOnLoad();</script> 
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
 </head>
 
 <body class="wy-body-for-nav" role="document">
@@ -34,7 +33,7 @@
           <a href=".." class="icon icon-home"> OLC Bioinformatics AlleleFinder
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -53,15 +52,19 @@
                 </li>
               </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">Profile Reduction</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Profile Reduction</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a>
+    <li class="toctree-l2"><a class="reference internal" href="#reduce-profiles">Reduce Profiles</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#inputs">Inputs</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#running-the-script">Running the script</a>
+    <li class="toctree-l3"><a class="reference internal" href="#running-the-script">Running the Script</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+    <li class="toctree-l3"><a class="reference internal" href="#usage">Usage</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a>
+    <li class="toctree-l3"><a class="reference internal" href="#outputs">Outputs</a>
+    </li>
+        </ul>
     </li>
     </ul>
                 </li>
@@ -72,6 +75,10 @@
               </ul>
               <ul>
                 <li class="toctree-l1"><a class="reference internal" href="../allele_find/">Allele Finding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_translate_find/">Allele Translate/Finding</a>
                 </li>
               </ul>
               <ul>
@@ -99,19 +106,26 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Profile Reduction</li>
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Profile Reduction</li>
     <li class="wy-breadcrumbs-aside">
-        <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/profile_reduce.md"
-          class="icon icon-github"> Edit on GitHub</a>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/profile_reduce.md">Edit on AlleleFinder</a>
     </li>
   </ul>
   <hr/>
 </div>
-
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h2 id="reduce-profiles">Reduce profiles</h2>
+                <h1 id="table-of-contents">Table of Contents</h1>
+<ol>
+<li><a href="#reduce-profiles">Reduce Profiles</a></li>
+<li><a href="#inputs">Inputs</a></li>
+<li><a href="#running-the-script">Running the Script</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#outputs">Outputs</a></li>
+</ol>
+<h2 id="reduce-profiles">Reduce Profiles <a name="reduce-profiles"></a></h2>
 <p>This script reduces full wgMLST profile from Enterobase using genes of interest. </p>
 <p>The two <em>stx</em> genes, <em>stx1</em> and <em>stx2</em>, have the following identifiers in Enterobase:</p>
 <ul>
@@ -120,25 +134,22 @@
 <li>stx2 subunit A: <strong>ECs1205</strong> </li>
 <li>stx2 subunit B: <strong>ECs1206</strong></li>
 </ul>
-<h4 id="inputs">Inputs</h4>
+<h4 id="inputs">Inputs <a name="inputs"></a></h4>
 <p>In order to extract all the unique profiles from a full Enterobase wgMLST profile for both <em>stx1</em> subunits, create a text
 file containing the two identifiers (one per row) e.g.:</p>
 <p><code>genes.txt</code></p>
-<pre><code>ECs2974
+<pre><code class="language-bash">ECs2974
 ECs2973
 </code></pre>
-
 <p>A full <em>Escherichia</em>  wgMLST profile file from Enterobase is also required. <a href="../downloads/#download-profile">Download instructions.</a></p>
-<h4 id="running-the-script">Running the script</h4>
-<pre><code>stec.py profile_reduce -p /path/to/profile_file -g /path/to/genes_file -o /path/to/output_folder
+<h4 id="running-the-script">Running the Script <a name="running-the-script"></a></h4>
+<pre><code class="language-bash">stec.py profile_reduce -p /path/to/profile_file -g /path/to/genes_file -o /path/to/output_folder
 </code></pre>
-
 <p>An example with the profile file, <code>profiles.list</code> in the <code>profile</code> folder, the genes file, <code>genes.txt</code>, in the <code>genes</code> folder, the reduced profile to be written to the <code>nt_profile</code> folder (all in the current working directory):</p>
-<pre><code>stec.py profile_reduce -p profiles/profiles.list -g genes/genes.txt -o nt_profile
+<pre><code class="language-bash">stec.py profile_reduce -p profiles/profiles.list -g genes/genes.txt -o nt_profile
 </code></pre>
-
-<h4 id="usage">Usage</h4>
-<pre><code>usage: stec.py profile_reduce [-h] [-version] [-v verbosity] [-p profile_file]
+<h4 id="usage">Usage <a name="usage"></a></h4>
+<pre><code class="language-bash">usage: stec.py profile_reduce [-h] [-version] [-v verbosity] [-p profile_file]
                               [-g gene_names] [-o output_folder]
 
 Reduce full wgMLST profile from Enterobase using genes of interest
@@ -155,8 +166,7 @@ optional arguments:
   -o output_folder, --output_folder output_folder
                         Name and path of folder into which the reduced profile and notes are to be placed. If not provided, the default &quot;nt_profile&quot; folder in the current working directory will be used
 </code></pre>
-
-<h4 id="outputs">Outputs</h4>
+<h4 id="outputs">Outputs <a name="outputs"></a></h4>
 <p>The reduced profile will be written to <code>profile.txt</code> in the supplied output folder. It contains all the unique profiles extracted from the full profile file</p>
 <p>A notes file will be written to <code>reducing_notes.txt</code> in the supplied output folder. It contains notes on every sequence type processed from the full profile. 
 If a profile is a duplicate of a previous profile, the <code>ReducedSequenceType</code> will be <code>0</code>, and the <code>Notes</code> column will note that the profile is a <code>duplicate</code></p>
@@ -172,6 +182,7 @@ If a profile is a duplicate of a previous profile, the <code>ReducedSequenceType
 
   <div role="contentinfo">
     <!-- Copyright etc -->
+      <p>Copyright © 2024, Government of Canada</p>
   </div>
 
   Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
@@ -188,7 +199,7 @@ If a profile is a duplicate of a previous profile, the <code>ReducedSequenceType
   <span class="rst-current-version" data-toggle="rst-current-version">
     
         <span>
-          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/" class="fa fa-code-fork" style="color: #fcfcfc"> AlleleFinder</a>
         </span>
     
     
@@ -199,14 +210,15 @@ If a profile is a duplicate of a previous profile, the <code>ReducedSequenceType
     
   </span>
 </div>
-    <script>var base_url = '..';</script>
-    <script src="../js/theme_extra.js" defer></script>
-    <script src="../js/theme.js" defer></script>
-      <script src="../search/main.js" defer></script>
-    <script defer>
-        window.onload = function () {
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
             SphinxRtdTheme.Navigation.enable(true);
-        };
+        });
     </script>
 
 </body>

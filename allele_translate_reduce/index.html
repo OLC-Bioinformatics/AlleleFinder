@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/allele_translate_reduce/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Adam Koziol" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/allele_translate_reduce/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
     <title>Allele Translation/Reduction - OLC Bioinformatics AlleleFinder</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
@@ -17,12 +17,11 @@
         var mkdocs_page_url = "/AlleleFinder/allele_translate_reduce/";
       </script>
     
-    <script src="../js/jquery-3.6.0.min.js" defer></script>
     <!--[if lt IE 9]>
       <script src="../js/html5shiv.min.js"></script>
     <![endif]-->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
-      <script>hljs.initHighlightingOnLoad();</script> 
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
 </head>
 
 <body class="wy-body-for-nav" role="document">
@@ -34,7 +33,7 @@
           <a href=".." class="icon icon-home"> OLC Bioinformatics AlleleFinder
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -57,21 +56,17 @@
                 </li>
               </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">Allele Translation/Reduction</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Allele Translation/Reduction</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#inputs">Inputs</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#running-the-script">Running the script</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#outputs">Outputs</a>
-    </li>
     </ul>
                 </li>
               </ul>
               <ul>
                 <li class="toctree-l1"><a class="reference internal" href="../allele_find/">Allele Finding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_translate_find/">Allele Translate/Finding</a>
                 </li>
               </ul>
               <ul>
@@ -99,54 +94,59 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Allele Translation/Reduction</li>
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Allele Translation/Reduction</li>
     <li class="wy-breadcrumbs-aside">
-        <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/allele_translate_reduce.md"
-          class="icon icon-github"> Edit on GitHub</a>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/allele_translate_reduce.md">Edit on AlleleFinder</a>
     </li>
   </ul>
   <hr/>
 </div>
-
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h2 id="translate-and-reduce-alleles">Translate and reduce alleles</h2>
+                <h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#translate-and-reduce-alleles">Translate and Reduce Alleles</a></li>
+<li><a href="#inputs">Inputs</a></li>
+<li><a href="#running-the-script">Running the Script</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#outputs">Outputs</a></li>
+</ol>
+<h2 id="translate-and-reduce-alleles">Translate and Reduce Alleles <a name="translate-and-reduce-alleles"></a></h2>
 <p>This script translates allele files from Enterobase in nucleotide format to amino acid, performs content and length checks, and removes duplicates.</p>
 <p>In order for a translated allele to pass content and length checks, it must:</p>
 <ol>
 <li>Start with a <code>Methionine</code> residue</li>
 <li>Pass a minimum length threshold after trimming:<ul>
 <li>The length thresholds are:<ul>
-<li>ECs2973: 90 amino acid residues</li>
-<li>ECs2974: 316 amino acid residues</li>
-<li>ECs1205: 320 amino acid residues</li>
-<li>ECs1206: 88 amino acid residues</li>
+<li>ECs2973 (stx2B): 90 amino acid residues</li>
+<li>ECs2974 (stx2A): 316 amino acid residues</li>
+<li>ECs1205 (stx1A): 320 amino acid residues</li>
+<li>ECs1206 (stx1B): 88 amino acid residues</li>
 </ul>
 </li>
 </ul>
 </li>
 <li>Not be a duplicate of an allele already in the reduced database</li>
 </ol>
-<h4 id="inputs">Inputs</h4>
+<h2 id="inputs">Inputs <a name="inputs"></a></h2>
 <ol>
-<li>nucleotide allele files from Enterobase in FASTA format. <a href="../downloads/#download-alleles">Download instructions.</a></li>
-<li>reduced profile file prepared by <a href="https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce"><code>profile_reduce</code></a>. Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:<ul>
+<li>Nucleotide allele files from Enterobase in FASTA format. <a href="../downloads/#download-alleles">Download instructions.</a></li>
+<li>Reduced profile file prepared by <a href="https://olc-bioinformatics.github.io/AlleleFinder/profile_reduce"><code>profile_reduce</code></a>. Note that the allele files must contain sequence for the same genes that were used for the reduction of the profile, e.g.:<ul>
 <li>ECs2973</li>
 <li>ECs2974</li>
 </ul>
 </li>
 </ol>
-<h4 id="running-the-script">Running the script</h4>
-<pre><code>stec.py allele_translate_reduce -a /path/to/allele_folder -p /path/to/profile_file -r /path/to/output/folder/aa_profile -t /path/to/output/folder/aa_alleles
+<h2 id="running-the-script">Running the Script <a name="running-the-script"></a></h2>
+<pre><code class="language-bash">stec.py allele_translate_reduce -a /path/to/allele_folder -p /path/to/profile_file -r /path/to/output/folder/aa_profile -t /path/to/output/folder/aa_alleles
 </code></pre>
-
 <p>An example with the nucleotide allele folder <code>nt_alleles</code>, the profile file <code>profiles.txt</code> in the <code>nt_profile</code> folder, the desired amino acid profile output folder <code>aa_profile</code>, and the desired amino acid allele output folder <code>aa_alleles</code> all in the current working directory: </p>
-<pre><code>stec.py allele_translate_reduce -a nt_alleles -p nt_profile/profile.txt -r aa_profile -t aa_alleles
+<pre><code class="language-bash">stec.py allele_translate_reduce -a nt_alleles -p nt_profile/profile.txt -r aa_profile -t aa_alleles
 </code></pre>
-
-<h4 id="usage">Usage</h4>
-<pre><code>usage: stec.py allele_translate_reduce [-h] [-version] [-v verbosity]
+<h2 id="usage">Usage <a name="usage"></a></h2>
+<pre><code class="language-bash">usage: stec.py allele_translate_reduce [-h] [-version] [-v verbosity]
                                        [-a allele_path] [-p profile_file]
                                        [-r report_path] [-t translated_path]
 
@@ -166,8 +166,7 @@ optional arguments:
   -t translated_path, --translated_path translated_path
                         Specify the name and path of the folder into which alleles are to be placed. If not provided, the aa_alleles folder in the current working directory will be used
 </code></pre>
-
-<h4 id="outputs">Outputs</h4>
+<h2 id="outputs">Outputs <a name="outputs"></a></h2>
 <p>These represent the folder structure of the directory containing the outputs</p>
 <ul>
 <li><code>aa_alleles</code><ul>
@@ -213,6 +212,7 @@ optional arguments:
 
   <div role="contentinfo">
     <!-- Copyright etc -->
+      <p>Copyright © 2024, Government of Canada</p>
   </div>
 
   Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
@@ -229,7 +229,7 @@ optional arguments:
   <span class="rst-current-version" data-toggle="rst-current-version">
     
         <span>
-          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/" class="fa fa-code-fork" style="color: #fcfcfc"> AlleleFinder</a>
         </span>
     
     
@@ -240,14 +240,15 @@ optional arguments:
     
   </span>
 </div>
-    <script>var base_url = '..';</script>
-    <script src="../js/theme_extra.js" defer></script>
-    <script src="../js/theme.js" defer></script>
-      <script src="../search/main.js" defer></script>
-    <script defer>
-        window.onload = function () {
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
             SphinxRtdTheme.Navigation.enable(true);
-        };
+        });
     </script>
 
 </body>
