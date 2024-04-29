@@ -18,10 +18,11 @@ jobs:
       # Checkout the code from the repository
       - checkout
       - run:
-          name: Setup Environment
+          name: Setup Environment and Run Tests
           command: |
             # Install curl
-            apt-get update && apt-get install -y curl
+            # Install curl and gnupg
+            apt-get update && apt-get install -y curl gnupg
             # Add necessary channels for conda
             conda config --add channels olcbioinformatics
             conda config --add channels bioconda
