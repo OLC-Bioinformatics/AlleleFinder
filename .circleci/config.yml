@@ -18,7 +18,7 @@ jobs:
       # Checkout the code from the repository
       - checkout
       - restore_cache:
-        key: deps-{{ checksum "requirements.txt" }}-{{ .Environment.PYTHON_VERSION }}
+          key: deps-{{ checksum "requirements.txt" }}-{{ .Environment.PYTHON_VERSION }}
       - run:
           name: Check if dependencies are cached
           command: |
