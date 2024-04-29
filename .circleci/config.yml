@@ -30,11 +30,15 @@ jobs:
       - run:
           name: Setup Environment
           command: |
+            # Install curl
+            apt-get update && apt-get install -y curl
             # Add necessary channels for conda
             conda config --add channels olcbioinformatics
             conda config --add channels bioconda
             # Set conda configuration options
             conda config --set always_yes yes --set changeps1 no
+            # Initialize conda for bash
+            conda init bash
             # Install mamba
             conda install mamba -c conda-forge
             # Create a new conda environment with a specific version of Python
