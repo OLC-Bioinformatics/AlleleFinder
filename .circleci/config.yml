@@ -17,16 +17,6 @@ jobs:
     steps:
       # Checkout the code from the repository
       - checkout
-      - restore_cache:
-          key: deps-{{ checksum "requirements.txt" }}-{{ .Environment.PYTHON_VERSION }}
-      - run:
-          name: Check if dependencies are cached
-          command: |
-            if [ -d ~/conda/envs/allelefinder ] && [ -d ~/.cache/pip ]; then
-              echo 'Dependencies are cached, skipping installation'
-              echo "conda activate allelefinder" >> $BASH_ENV
-              exit 0
-            fi
       - run:
           name: Setup Environment
           command: |
@@ -43,16 +33,11 @@ jobs:
             conda install mamba -c conda-forge
             # Create a new conda environment with a specific version of Python
             mamba create -n allelefinder python=${PYTHON_VERSION}
-            # Activate the newly created conda environment
-            echo "conda activate allelefinder" >> $BASH_ENV
-      - save_cache:
-          key: deps-{{ checksum "requirements.txt" }}-{{ .Environment.PYTHON_VERSION }}
-          paths:
-            - ~/conda
-            - ~/.cache/pip
       - run:
           name: Install Dependencies
           command: |
+            # Initialize conda for bash
+            conda init bash
             # Activate the environment
             conda activate allelefinder
             # Install necessary Python packages using pip
