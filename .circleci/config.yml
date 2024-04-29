@@ -27,26 +27,16 @@ jobs:
             conda config --add channels bioconda
             # Set conda configuration options
             conda config --set always_yes yes --set changeps1 no
-            # Initialize conda for bash
-            conda init bash
+            # Activate the environment
+            source activate allelefinder
             # Install mamba
             conda install mamba -c conda-forge
             # Create a new conda environment with a specific version of Python
             mamba create -n allelefinder python=${PYTHON_VERSION}
-      - run:
-          name: Install Dependencies
-          command: |
-            # Initialize conda for bash
-            conda init bash
-            # Activate the environment
-            conda activate allelefinder
             # Install necessary Python packages using pip
             pip install -r requirements.txt
             # Install the current project (in editable mode) using pip
             pip install -e .
-      - run:
-          name: Run Tests
-          command: |
             # Run pytest with coverage options
             pytest tests/ --cov=allele_tools/ --cov-config=.coveragerc --cov-report=xml:test_reports/allele_finder.xml -s
       - run:
