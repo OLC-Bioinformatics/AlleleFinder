@@ -29,6 +29,14 @@ with open('requirements.txt') as f:
 setup(
     name="AlleleFinder",
     version=version['__version__'],
+    author="Adam Koziol",
+    author_email="adam.koziol@inspection.gc.ca",
+    url="https://github.com/OLC-Bioinformatics/AlleleFinder",
+    long_description=long_description,
+    # The content type of the long description. Necessary for PyPI
+    long_description_content_type='text/markdown',
+    packages=find_packages(),
+    include_package_data=True,
     scripts=[
         os.path.join('allele_tools', 'allele_profiler.py'),
         os.path.join('allele_tools', 'allele_updater.py'),
@@ -36,12 +44,6 @@ setup(
         os.path.join('allele_tools', 'profile_reduce.py'),
         os.path.join('allele_tools', 'stec.py')
     ],
-    packages=find_packages(),
-    include_package_data=True,
-    author="Adam Koziol",
-    author_email="adam.koziol@inspection.gc.ca",
-    url="https://github.com/OLC-Bioinformatics/AlleleFinder",
-    # The requirements from requirements.txt
     install_requires=requirements,
     # Classifiers categorize the project for users.
     classifiers=[
