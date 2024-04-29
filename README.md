@@ -3,7 +3,8 @@
 [![CircleCI](https://circleci.com/gh/OLC-Bioinformatics/AlleleFinder/tree/main.svg?style=shield)](https://circleci.com/gh/OLC-LOC-Bioinformatics/AlleleFinder/tree/main)
 [![codecov](https://codecov.io/gh/OLC-Bioinformatics/AlleleFinder/branch/main/graph/badge.svg?token=Z6SSEJV9GU)](https://codecov.io/gh/OLC-Bioinformatics/AlleleFinder)
 [![Anaconda-Server Badge](https://img.shields.io/badge/install%20with-conda-brightgreen)](https://anaconda.org/olcbioinformatics/allelefinder)
-[![GitHub version](https://badge.fury.io/gh/olc-bioinformatics%2Fallelefinder.svg)](https://badge.fury.io/gh/olc-bioinformatics%2Fallelefinder)
+[![GitHub Release](https://img.shields.io/github/v/release/OLC-Bioinformatics/AlleleFinder?display_name=release&label=version&color=%20dark%20green
+)](https://github.com/OLC-Bioinformatics/AlleleFinder/releases)
 [![GitHub issues](https://img.shields.io/github/issues/OLC-Bioinformatics/AlleleFinder)](https://github.com/OLC-LOC-Bioinformatics/AlleleFinder/issues)
 [![Documentation Status](https://readthedocs.org/projects/pip/badge/?version=stable)](https://OLC-Bioinformatics.github.io/AlleleFinder/?badge=stable)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen)](https://github.com/OLC-Bioinformatics/AlleleFinder/blob/main/LICENSE)
