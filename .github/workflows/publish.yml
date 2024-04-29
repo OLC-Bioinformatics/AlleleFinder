@@ -19,6 +19,11 @@ jobs:
         pip install setuptools wheel twine
     - name: Build package
       run: python setup.py sdist bdist_wheel
+    - name: Get file names
+      id: get_filenames
+      run: |
+        echo "::set-output name=tar_file::$(ls dist/*.tar.gz)"
+        echo "::set-output name=whl_file::$(ls dist/*.whl)"
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -35,8 +40,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: ./dist/allelefinder-${{ steps.get_release.outputs.tag_name }}.tar.gz
-        asset_name: allelefinder-${{ steps.get_release.outputs.tag_name }}.tar.gz
+        asset_path: ${{ steps.get_filenames.outputs.tar_file }}
+        asset_name: ${{ steps.get_filenames.outputs.tar_file }}
         asset_content_type: application/gzip
     - name: Upload Release Asset (.whl)
       uses: actions/upload-release-asset@v1
@@ -44,6 +49,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: ./dist/AlleleFinder-${{ steps.get_release.outputs.tag_name }}-py3-none-any.whl
-        asset_name: AlleleFinder-${{ steps.get_release.outputs.tag_name }}-py3-none-any.whl
+        asset_path: ${{ steps.get_filenames.outputs.whl_file }}
+        asset_name: ${{ steps.get_filenames.outputs.whl_file }}
         asset_content_type: application/zip
