@@ -22,8 +22,8 @@ jobs:
     - name: Get file names
       id: get_filenames
       run: |
-        echo "::set-output name=tar_file::$(ls dist/*.tar.gz)"
-        echo "::set-output name=whl_file::$(ls dist/*.whl)"
+        echo "tar_file=$(ls dist/*.tar.gz)" >> $GITHUB_ENV
+        echo "whl_file=$(ls dist/*.whl)" >> $GITHUB_ENV
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -40,8 +40,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: ${{ steps.get_filenames.outputs.tar_file }}
-        asset_name: ${{ steps.get_filenames.outputs.tar_file }}
+        asset_path: ${{ env.tar_file }}
+        asset_name: ${{ env.tar_file }}
         asset_content_type: application/gzip
     - name: Upload Release Asset (.whl)
       uses: actions/upload-release-asset@v1
@@ -49,6 +49,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: ${{ steps.get_filenames.outputs.whl_file }}
-        asset_name: ${{ steps.get_filenames.outputs.whl_file }}
+        asset_path: ${{ env.whl_file }}
+        asset_name: ${{ env.whl_file }}
         asset_content_type: application/zip
