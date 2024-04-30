@@ -29,6 +29,9 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Publish to GitHub Packages
+      run: |
+        python -m twine upload --repository-url https://upload.pypi.org/legacy/ --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} dist/*
     - name: Get Release
       id: get_release
       uses: bruceadams/get-release@v1.2.2
