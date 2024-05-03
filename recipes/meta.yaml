@@ -1,0 +1,46 @@
+{% set name = "AlleleFinder" %}
+{% set version = "{{ version }}" %}
+
+package:
+  name: '{{ name|lower }}'
+  version: '{{ version }}'
+
+source:
+  url: '{{ url }}'
+
+build:
+  number: 0
+  noarch: python
+  script: python -m pip install --no-deps --ignore-installed .
+
+requirements:
+  host:
+    - python=3.9.12=h9a8a25e_1_cpython
+  run:
+    - python=3.9.12=h9a8a25e_1_cpython
+    - coloredlogs=15.0.1=pyhd8ed1ab_3
+    - geneseekr=0.5.0=py_12
+    - pytest=7.2.1=pyhd8ed1ab_0
+    - pytest-cov=4.0.0=pyhd8ed1ab_0
+
+test:
+  imports:
+    - allele_tools
+  commands:
+    - stec.py -h
+
+about:
+  home: https://github.com/OLC-Bioinformatics/AlleleFinder
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: Allele Tools
+  description: |
+    AlleleFinder is a Python-based suite of tools designed for the discovery, sequence typing, 
+    and profiling of stx alleles in Shiga toxin-producing Escherichia coli (STEC). It provides 
+    a comprehensive solution for researchers and professionals working in the field of bacterial genomics.
+  doc_url: https://github.com/OLC-Bioinformatics/AlleleFinder
+  dev_url: https://github.com/OLC-Bioinformatics/AlleleFinder
+
+extra:
+  recipe-maintainers: 'adamkoziol'
