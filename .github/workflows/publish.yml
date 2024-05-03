@@ -55,7 +55,7 @@ jobs:
     - name: Setup Conda
       run: |
         echo "deb [arch=amd64] http://repo.anaconda.com/pkgs/misc/deb stable main" | sudo tee /etc/apt/sources.list.d/conda.list
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 34161F5BF5EB1D4BFBBB8F0A8AEB4F7F63F9B278
+        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 34161F5BF5EB1D4BFBBB8F0A8AEB4F7F63F9B278
         sudo apt-get update
         sudo apt-get install conda
     - name: Install Conda dependencies
