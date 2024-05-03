@@ -38,12 +38,19 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     scripts=[
-        os.path.join('allele_tools', 'allele_profiler.py'),
         os.path.join('allele_tools', 'allele_updater.py'),
         os.path.join('allele_tools', 'allele_translate_reduce.py'),
         os.path.join('allele_tools', 'profile_reduce.py'),
         os.path.join('allele_tools', 'stec.py')
     ],
+    entry_points={
+        'console_scripts': [
+            'allele_updater=allele_tools.allele_updater:cli',
+            'allele_translate_reduce=allele_tools.allele_translate_reduce:cli',
+            'profile_reduce=allele_tools.profile_reduce:cli',
+            'stec=allele_tools.stec:cli'
+        ]
+    },
     install_requires=requirements,
     # Classifiers categorize the project for users.
     classifiers=[
