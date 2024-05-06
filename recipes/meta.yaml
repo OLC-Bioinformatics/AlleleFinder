@@ -7,6 +7,7 @@ package:
 
 source:
   url: '{{ url }}'
+  sha256: '{{ sha256 }}'
 
 build:
   number: 0
