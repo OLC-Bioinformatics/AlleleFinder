@@ -67,6 +67,10 @@ jobs:
         activate-environment: allelefinder_env
         python-version: 3.9.12
         auto-activate-base: false
+        channels: 
+          - olcbioinformatics
+          - bioconda
+          - conda-forge
     - name: Install Conda build
       run: conda install -y conda-build
     - name: Read hash
