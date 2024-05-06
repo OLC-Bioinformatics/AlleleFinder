@@ -35,5 +35,5 @@ jobs:
     - name: Upload Conda package
       uses: actions/upload-artifact@v2
       with:
-        name: my_package
-        path: $CONDA_BLD_PATH/noarch/my_package-*.tar.bz2
+        name: allelefinder
+        path: $CONDA_BLD_PATH/noarch/allelefinder-*.tar.bz2
