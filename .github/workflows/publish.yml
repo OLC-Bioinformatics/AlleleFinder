@@ -26,6 +26,11 @@ jobs:
     - name: Calculate hash
       run: |
         echo "$(shasum -a 256 dist/*.tar.gz | cut -d ' ' -f 1)" > hash.txt
+    - name: Upload hash as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: hash
+        path: hash.txt
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -70,6 +75,10 @@ jobs:
         channels: olcbioinformatics,bioconda,conda-forge
     - name: Install Conda build
       run: conda install -y conda-build
+    - name: Download hash artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: hash
     - name: Read hash
       id: read_hash
       run: |
