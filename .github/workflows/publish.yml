@@ -85,8 +85,9 @@ jobs:
         echo "HASH=$(cat hash.txt)" >> $GITHUB_ENV
     - name: Update meta.yaml
       run: |
-        sed -i "s/{{ version }}/$(echo ${GITHUB_REF#refs/tags/})/g" recipes/meta.yaml
-        sed -i "s|{{ url }}|https://pypi.org/packages/source/a/allelefinder/allelefinder-$(echo ${GITHUB_REF#refs/tags/}).tar.gz|g" recipes/meta.yaml
+        VERSION=$(python -c "from allele_tools import version; print(version.__version__)")
+        sed -i "s/{{ version }}/${VERSION}/g" recipes/meta.yaml
+        sed -i "s|{{ url }}|https://files.pythonhosted.org/packages/source/a/allelefinder/allelefinder-${VERSION}.tar.gz|g" recipes/meta.yaml
         sed -i "s/{{ sha256 }}/${{ env.HASH }}/g" recipes/meta.yaml
     - name: Build Conda package
       run: |
