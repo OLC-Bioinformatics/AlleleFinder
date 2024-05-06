@@ -69,7 +69,7 @@ jobs:
       run: conda install -y conda-build
     - name: Get version and download source code
       run: |
-        echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV  # Extract the version from the GitHub tag
+        echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
         wget https://github.com/OLC-Bioinformatics/AlleleFinder/archive/$VERSION.tar.gz
     - name: Calculate hash
       run: |
