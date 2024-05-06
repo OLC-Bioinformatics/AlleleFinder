@@ -23,14 +23,6 @@ jobs:
       run: |
         echo "tar_file=$(ls dist/*.tar.gz)" >> $GITHUB_ENV
         echo "whl_file=$(ls dist/*.whl)" >> $GITHUB_ENV
-    - name: Calculate hash
-      run: |
-        echo "$(shasum -a 256 dist/*.tar.gz | cut -d ' ' -f 1)" > hash.txt
-    - name: Upload hash as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: hash
-        path: hash.txt
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -75,20 +67,18 @@ jobs:
         channels: olcbioinformatics,bioconda,conda-forge
     - name: Install Conda build
       run: conda install -y conda-build
-    - name: Download hash artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: hash
-    - name: Read hash
-      id: read_hash
+    - name: Get version and download source code
       run: |
-        echo "HASH=$(cat hash.txt)" >> $GITHUB_ENV
+        echo "VERSION=$(python -c "from allele_tools import version; print(version.__version__)")" >> $GITHUB_ENV
+        wget https://github.com/OLC-Bioinformatics/AlleleFinder/archive/${VERSION}.tar.gz
+    - name: Calculate hash
+      run: |
+        echo "HASH=$(sha256sum AlleleFinder-${VERSION}.tar.gz | awk '{ print $1 }')" >> $GITHUB_ENV
     - name: Update meta.yaml
       run: |
-        VERSION=$(python -c "from allele_tools import version; print(version.__version__)")
         sed -i "s/{{ version }}/${VERSION}/g" recipes/meta.yaml
-        sed -i "s|{{ url }}|https://files.pythonhosted.org/packages/source/a/allelefinder/allelefinder-${VERSION}.tar.gz|g" recipes/meta.yaml
-        sed -i "s/{{ sha256 }}/${{ env.HASH }}/g" recipes/meta.yaml
+        sed -i "s|{{ url }}|https://github.com/OLC-Bioinformatics/AlleleFinder/archive/${VERSION}.tar.gz|g" recipes/meta.yaml
+        sed -i "s/{{ sha256 }}/$HASH/g" recipes/meta.yaml
     - name: Build Conda package
       run: |
         conda build .
@@ -101,7 +91,7 @@ jobs:
       run: conda install -y anaconda-client
     - name: Upload package to olcbioinformatics
       run: |
-        anaconda -t ${{ secrets.OLCBIOINFORMAT_ANACONDA_API_TOKEN }} upload -u olcbioinformatics $CONDA_BLD_PATH/noarch/allelefinder-*.tar.bz2
+        anaconda -t ${{ secrets.OLCBIOINFORMATICS_ANACONDA_API_TOKEN }} upload -u olcbioinformatics $CONDA_BLD_PATH/noarch/allelefinder-*.tar.bz2
     - name: Upload package to adamkoziol
       run: |
         anaconda -t ${{ secrets.ADAMKOZIOL_ANACONDA_API_TOKEN }} upload -u adamkoziol $CONDA_BLD_PATH/noarch/allelefinder-*.tar.bz2
