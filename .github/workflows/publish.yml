@@ -13,10 +13,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
     - name: Build package
       run: python setup.py sdist bdist_wheel
     - name: Set environment variables
@@ -40,7 +36,7 @@ jobs:
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
         asset_path: ${{ env.tar_file }}
-        asset_name: package.tar.gz
+        asset_name: $(basename ${{ env.tar_file }})
         asset_content_type: application/gzip
     - name: Upload Release Asset (.whl)
       uses: actions/upload-release-asset@v1
@@ -49,7 +45,7 @@ jobs:
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
         asset_path: ${{ env.whl_file }}
-        asset_name: package.whl
+        asset_name: $(basename ${{ env.whl_file }})
         asset_content_type: application/zip
 
   build:
@@ -69,15 +65,15 @@ jobs:
       run: conda install -y conda-build
     - name: Get version and download source code
       run: |
-        echo "VERSION=$(python -c "from allele_tools import version; print(version.__version__)")" >> $GITHUB_ENV
-        wget https://github.com/OLC-Bioinformatics/AlleleFinder/archive/${VERSION}.tar.gz
+        echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV  # Extract the version from the GitHub tag
+        wget https://github.com/OLC-Bioinformatics/AlleleFinder/archive/$VERSION.tar.gz
     - name: Calculate hash
       run: |
-        echo "HASH=$(sha256sum AlleleFinder-${VERSION}.tar.gz | awk '{ print $1 }')" >> $GITHUB_ENV
+        echo "HASH=$(sha256sum $VERSION.tar.gz | awk '{ print $1 }')" >> $GITHUB_ENV
     - name: Update meta.yaml
       run: |
-        sed -i "s/{{ version }}/${VERSION}/g" recipes/meta.yaml
-        sed -i "s|{{ url }}|https://github.com/OLC-Bioinformatics/AlleleFinder/archive/${VERSION}.tar.gz|g" recipes/meta.yaml
+        sed -i "s/{{ version }}/$VERSION/g" recipes/meta.yaml
+        sed -i "s|{{ url }}|https://github.com/OLC-Bioinformatics/AlleleFinder/archive/$VERSION.tar.gz|g" recipes/meta.yaml
         sed -i "s/{{ sha256 }}/$HASH/g" recipes/meta.yaml
     - name: Build Conda package
       run: |
