@@ -19,11 +19,14 @@ jobs:
         pip install setuptools wheel twine
     - name: Build package
       run: python setup.py sdist bdist_wheel
-    - name: Get file names
-      id: get_filenames
+    - name: Calculate hash
       run: |
-        echo "tar_file=$(ls dist/*.tar.gz)" >> $GITHUB_ENV
-        echo "whl_file=$(ls dist/*.whl)" >> $GITHUB_ENV
+        echo "$(shasum -a 256 dist/*.tar.gz | cut -d ' ' -f 1)" > hash.txt
+    - name: Upload hash as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: hash
+        path: hash.txt
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -40,8 +43,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: ${{ env.tar_file }}
-        asset_name: ${{ env.tar_file }}
+        asset_path: ./dist/*.tar.gz
+        asset_name: package.tar.gz
         asset_content_type: application/gzip
     - name: Upload Release Asset (.whl)
       uses: actions/upload-release-asset@v1
@@ -49,28 +52,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: ${{ env.whl_file }}
-        asset_name: ${{ env.whl_file }}
+        asset_path: ./dist/*.whl
+        asset_name: package.whl
         asset_content_type: application/zip
-    - name: Setup Conda
-      run: |
-        echo "deb [arch=amd64] http://repo.anaconda.com/pkgs/misc/deb stable main" | sudo tee /etc/apt/sources.list.d/conda.list
-        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 34161F5BF5EB1D4BFBBB8F0A8AEB4F7F63F9B278
-        sudo apt-get update
-        sudo apt-get install conda
-    - name: Install Conda dependencies
-      run: |
-        conda install conda-build anaconda-client
-    - name: Update meta.yaml
-      run: |
-        sed -i "s/{{ version }}/$(echo ${GITHUB_REF#refs/tags/})/g" recipe/meta.yaml
-        sed -i "s|{{ url }}|https://github.com/${{ github.repository }}/archive/${{ github.ref }}.tar.gz|g" recipe/meta.yaml
-    - name: Build Conda package
-      run: |
-        conda build recipe
-    - name: Convert Conda package
-      run: |
-        conda convert --platform all $CONDA_PREFIX/conda-bld/linux-64/*.tar.bz2 --output-dir recipe/conda-bld/
-    - name: Upload Conda package
-      run: |
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload conda-bld/**/*.tar.bz2
