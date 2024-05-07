@@ -56,7 +56,7 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     env: 
-      CONDA_BLD_PATH: /usr/share/miniconda/conda-bld/noarch
+      CONDA_PKG_PATH: /usr/share/miniconda/conda-bld/noarch
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -90,14 +90,14 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: allelefinder
-        path: $CONDA_BLD_PATH/noarch/allelefinder-*.tar.bz2
+        path: $CONDA_PKG_PATH/allelefinder-*.tar.bz2
     - name: Install anaconda-client
       run: |
         conda install -y anaconda-client
         echo "$(conda info --base)/bin" >> $GITHUB_PATH
     - name: Upload package to olcbioinformatics
       run: |
-        anaconda -t ${{ secrets.OLCBIOINFORMATICS_ANACONDA_API_TOKEN }} upload -u olcbioinformatics $CONDA_BLD_PATH/allelefinder-*.tar.bz2
+        anaconda -t ${{ secrets.OLCBIOINFORMATICS_ANACONDA_API_TOKEN }} upload -u olcbioinformatics $CONDA_PKG_PATH/allelefinder-*.tar.bz2
     - name: Upload package to adamkoziol
       run: |
-        anaconda -t ${{ secrets.ADAMKOZIOL_ANACONDA_API_TOKEN }} upload -u adamkoziol $CONDA_BLD_PATH/allelefinder-*.tar.bz2
+        anaconda -t ${{ secrets.ADAMKOZIOL_ANACONDA_API_TOKEN }} upload -u adamkoziol $CONDA_PKG_PATH/allelefinder-*.tar.bz2
