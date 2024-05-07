@@ -320,90 +320,91 @@ class STECTranslate:
                     cpus=self.cpus,
                     outfmt=self.outfmt
                 )
-                # Add headers to the BLAST outputs, and filter based on
-                # cutoff value
-                parseable_blast_outputs(
-                    runmetadata=sample,
-                    fieldnames=self.fieldnames,
-                    extended_fieldnames=self.extended_fieldnames,
-                    records=records,
-                    cutoff=95
+            # Add headers to the BLAST outputs, and filter based on
+            # cutoff value
+            parseable_blast_outputs(
+                runmetadata=sample,
+                fieldnames=self.fieldnames,
+                extended_fieldnames=self.extended_fieldnames,
+                records=records,
+                cutoff=95
+            )
+            # Parse the amino acid BLAST results
+            sample, filtered, notes = parse_aa_blast(
+                runmetadata=sample,
+                extended_fieldnames=self.extended_fieldnames,
+                fieldnames=self.fieldnames,
+                gene_names=gene_names,
+                notes=notes,
+                aa_allele_path=self.aa_allele_path,
+                report_path=self.report_path,
+                cutoff=95
+            )
+            # Update the nucleotide database as required
+            sample, notes = translated_update_nucleotide(
+                runmetadata=sample,
+                nt_allele_path=self.nt_allele_path,
+                report_path=self.report_path,
+                notes=notes,
+                gene_names=self.gene_names,
+                filtered=filtered
+            )
+            # Create nucleotide allele comprehensions from the
+            # BLAST outputs
+            nt_allele_comprehension = create_nt_allele_comprehension(
+                runmetadata=sample,
+                gene_names=gene_names,
+                translated=True
+            )
+            # Create an amino acid allele comprehensions from the
+            # translated BLAST outputs
+            aa_allele_comprehension = create_aa_allele_comprehension(
+                runmetadata=sample,
+                gene_names=gene_names,
+            )
+            # Freeze the nucleotide allele comprehension
+            nt_frozen_allele_comprehension = \
+                create_frozen_allele_comprehension(
+                    allele_comprehension=nt_allele_comprehension
                 )
-                # Parse the amino acid BLAST results
-                sample, filtered, notes = parse_aa_blast(
-                    runmetadata=sample,
-                    extended_fieldnames=self.extended_fieldnames,
-                    fieldnames=self.fieldnames,
-                    gene_names=gene_names,
-                    notes=notes,
-                    aa_allele_path=self.aa_allele_path,
-                    report_path=self.report_path,
-                    cutoff=95
+            # Freeze the amino acid allele comprehension
+            aa_frozen_allele_comprehension = \
+                create_frozen_allele_comprehension(
+                    allele_comprehension=aa_allele_comprehension
                 )
-                # Update the nucleotide database as required
-                sample, notes = translated_update_nucleotide(
-                    runmetadata=sample,
-                    nt_allele_path=self.nt_allele_path,
-                    report_path=self.report_path,
-                    notes=notes,
-                    gene_names=self.gene_names,
-                    filtered=filtered
-                )
-                # Create nucleotide allele comprehensions from the
-                # BLAST outputs
-                nt_allele_comprehension = create_nt_allele_comprehension(
-                    runmetadata=sample,
-                    gene_names=gene_names,
-                    translated=True
-                )
-                # Create an amino acid allele comprehensions from the
-                # translated BLAST outputs
-                aa_allele_comprehension = create_aa_allele_comprehension(
-                    runmetadata=sample,
-                    gene_names=gene_names,
-                )
-                # Freeze the nucleotide allele comprehension
-                nt_frozen_allele_comprehension = \
-                    create_frozen_allele_comprehension(
-                        allele_comprehension=nt_allele_comprehension
-                    )
-                # Freeze the amino acid allele comprehension
-                aa_frozen_allele_comprehension = \
-                    create_frozen_allele_comprehension(
-                        allele_comprehension=aa_allele_comprehension
-                    )
-                # Find nucleotide profile matches
-                nt_profile_matches, nt_frozen_profiles = match_profile(
-                    profile_data=nt_profile_data,
-                    frozen_allele_comprehension=nt_frozen_allele_comprehension,
-                    report_path=self.report_path,
-                    profile_file=self.nt_profile_file,
-                    genes=gene_names,
-                    allele_comprehension=nt_allele_comprehension,
-                    molecule='nt'
-                )
-                # Find amino acid profile matches
-                aa_profile_matches, aa_frozen_profiles = match_profile(
-                    profile_data=aa_profile_data,
-                    frozen_allele_comprehension=aa_frozen_allele_comprehension,
-                    report_path=self.report_path,
-                    profile_file=self.aa_profile_file,
-                    genes=gene_names,
-                    allele_comprehension=aa_allele_comprehension,
-                    molecule='aa'
-                )
-                # Create the STEC-specific report
-                create_stec_report(
-                    runmetadata=sample,
-                    nt_profile_matches=nt_profile_matches,
-                    nt_alleles=nt_allele_comprehension,
-                    aa_profile_matches=aa_profile_matches,
-                    aa_alleles=aa_allele_comprehension,
-                    report_file=self.report_file,
-                    gene_names=gene_names,
-                    aa_profile_path=self.aa_profile_path,
-                    notes=notes
-                )
+            # Find nucleotide profile matches
+            nt_profile_matches, _ = match_profile(
+                profile_data=nt_profile_data,
+                frozen_allele_comprehension=nt_frozen_allele_comprehension,
+                report_path=self.report_path,
+                profile_file=self.nt_profile_file,
+                genes=gene_names,
+                allele_comprehension=nt_allele_comprehension,
+                molecule='nt'
+            )
+            # Find amino acid profile matches
+            aa_profile_matches, _ = match_profile(
+                profile_data=aa_profile_data,
+                frozen_allele_comprehension=aa_frozen_allele_comprehension,
+                report_path=self.report_path,
+                profile_file=self.aa_profile_file,
+                genes=gene_names,
+                allele_comprehension=aa_allele_comprehension,
+                molecule='aa'
+            )
+            # Create the STEC-specific report
+            create_stec_report(
+                runmetadata=sample,
+                nt_profile_matches=nt_profile_matches,
+                nt_alleles=nt_allele_comprehension,
+                aa_profile_matches=aa_profile_matches,
+                aa_alleles=aa_allele_comprehension,
+                report_file=self.report_file,
+                gene_names=gene_names,
+                aa_profile_path=self.aa_profile_path,
+                notes=notes,
+                molecule='aa'
+            )
 
     def __init__(
             self,
@@ -848,9 +849,17 @@ def translate_reduce(args):
     logging.info(log_str)
     length_dict = {
         'stx1B': 82,
+        'Stx1B': 82,
+        'stx1b': 82,
         'stx1A': 313,
+        'Stx1A': 313,
+        'stx1a': 313,
         'stx2A': 313,
-        'stx2B': 84
+        'Stx2A': 313,
+        'stx2a': 313,
+        'stx2B': 84,
+        'Stx2B': 84,
+        'stx2b': 84,
     }
     allele_translate_reduce = Translate(
         path=args.allele_path,
