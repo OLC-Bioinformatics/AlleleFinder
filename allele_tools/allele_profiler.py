@@ -134,10 +134,7 @@ def read_profile(profile_file):
             # Populate the profile dictionary with profile number:
             # {gene: allele}.
             allele_comprehension = {
-                gene[0].lower() +
-                gene[1:-1] +
-                gene[-1].upper():
-                    allele for gene, allele in row.items() if gene != 'ST'
+                gene: allele for gene, allele in row.items() if gene != 'ST'
             }
             # Extract the sequence type number from the first field name
             seq_type = row[profile.fieldnames[0]]
@@ -169,8 +166,8 @@ def parseable_blast_outputs(
         data = []
         # Load the first line of the report
         with open(
-            sample.alleles.blast_report,
-            'r',
+                sample.alleles.blast_report,
+                'r',
                 encoding='utf-8') as report:
             header_line = report.readline().strip()
         # Split the header on tabs
