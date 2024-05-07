@@ -195,10 +195,10 @@ def test_report_contents(variables):
 
     # Check the contents of the allele report file
     assert variables.report_contents[1] == \
-        '2013-SEQ-0039\t6\t9\t259156\t868\t137\t259156\tNovel nt_seq_type ' \
-        '259156, and aa_seq_type 259156\n'
+        '2013-SEQ-0039\t6\t9\t241\t868\t137\t259156\tNovel nt_seq_type ' \
+        '241, and novel aa_seq_type 259156\n'
     assert variables.report_contents[16] == \
-        '2017-SEQ-0617	0	2	N/A	0		N/A	stx2B amino acid ' \
+        '2017-SEQ-0617	0	2	116	0		N/A	stx2B amino acid ' \
         'sequence does not start with M; ' \
         'stx2B amino acid sequence was 13 amino acid residues. ' \
         'Minimum allowed length is 84 amino acid residues\n'
