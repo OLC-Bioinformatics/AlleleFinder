@@ -106,7 +106,7 @@ def test_report_contents(variables):
     # Check the contents of the allele report file
     assert variables.report_contents[3] == 'stx2A_1388\t\t\n'
     assert variables.report_contents[12] == \
-           'stx2A_9\tStx2a_868|319aa\tAmino acid allele Stx2a_868|319aa ' \
+           'stx2A_9\tStx2A_868|319aa\tAmino acid allele Stx2A_868|319aa ' \
            'is novel\n'
 
 
