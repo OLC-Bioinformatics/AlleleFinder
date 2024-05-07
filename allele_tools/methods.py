@@ -617,9 +617,16 @@ def parse_colocated_results(
                         gene=base_gene,
                         allele_path=nt_allele_path
                     )
+
+                    # Ensure that the first letter of the gene name isn't
+                    # capitalized
+                    lower_first = base_gene[0].lower() + base_gene[1:]
+
                     # Add the base gene name to the allele identifier
                     nt_allele = \
-                        f'{base_gene}_{nt_allele_id}|{len(nt_querysequence)}nt'
+                        f'{lower_first}_{nt_allele_id}|' \
+                        f'{len(nt_querysequence)}nt'
+
                     # Update the allele database with the new allele
                     notes[contig][query_range_tuple], nt_allele = \
                         update_allele_databases(
@@ -775,9 +782,17 @@ def evaluate_translated_allele(
     # Dictionary of minimum acceptable lengths for each of the STEC genes
     length_dict = {
         'stx1B': 82,
+        'Stx1B': 82,
+        'stx1b': 82,
         'stx1A': 313,
+        'Stx1A': 313,
+        'stx1a': 313,
         'stx2A': 313,
-        'stx2B': 84
+        'Stx2A': 313,
+        'stx2a': 313,
+        'stx2B': 84,
+        'Stx2B': 84,
+        'stx2b': 84,
     }
     filtered = False
     # Remove stop codons and all sequence following it
@@ -827,24 +842,29 @@ def update_allele_databases(
     )
     # Create a string to prepend to allele file names
     molecule_str = 'nt' if molecule == 'Nucleotide' else 'aa'
+
+    # Set the capitalization correctly for the gene/protein name
+    gene_case = gene[0].upper() + gene[1:-1] + gene[-1].upper() \
+        if molecule_str == 'aa' else gene[0].lower() + gene[1:]
+
     # Set the correct files depending on the filtering status
     if not filtered:
         new_alleles = os.path.join(
             report_path,
-            f'{molecule_str}_{gene}_novel_alleles.fasta'
+            f'{molecule_str}_{gene_case}_novel_alleles.fasta'
         )
         allele_file = os.path.join(
             allele_path,
-            f'{gene}.fasta'
+            f'{gene_case}.fasta'
         )
     else:
         new_alleles = os.path.join(
             report_path,
-            f'{molecule_str}_{gene}_filtered_alleles.fasta'
+            f'{molecule_str}_{gene_case}_filtered_alleles.fasta'
         )
         allele_file = os.path.join(
             allele_path,
-            f'{gene}_filtered.txt'
+            f'{gene_case}_filtered.txt'
         )
     records = []
     # Iterate through all the records in the allele database
@@ -1160,6 +1180,12 @@ def find_next_allele(
     """
     # Find the allele database file
     allele_file = os.path.join(allele_path, f'{gene}{extension}')
+
+    # Check if the file exists; it might have a protein naming scheme
+    if not os.path.isfile(allele_file):
+        first_lower = gene[0].lower() + gene[1:]
+        allele_file = os.path.join(allele_path, f'{first_lower}{extension}')
+
     # Initialise a variable to store the name of the last allele in the
     # database file
     last_id = int()
@@ -1360,7 +1386,6 @@ def create_aa_allele_comprehension(
             if contig not in sample.alleles.overlap_dict:
                 # Iterate over every gene in the analysis
                 for gene in gene_names:
-                    gene = gene[0].lower() + gene[1:-1] + gene[-1].upper()
                     # Set the 'empty' value to (0, 0)
                     full_range = (0, 0)
                     # Update the dictionary with the negative values
@@ -1412,7 +1437,6 @@ def create_aa_allele_comprehension(
                     # Add any missing genes to the dictionary with negative
                     # values
                     for gene in missing_genes:
-                        gene = gene[0].lower() + gene[1:-1] + gene[-1].upper()
                         # Ensure that the gene isn't already present in the
                         # dictionary
                         if gene not in \
@@ -1732,13 +1756,13 @@ def freeze_profiles(profile_data: dict):
     for seq_type, allele_comprehension in profile_data.items():
         if allele_comprehension is None:
             continue
-        # Convert the gene allele dictionary to lower case
-        lower_comprehension = {}
-        for gene, allele in allele_comprehension.items():
-            lower_comprehension[gene.lower()] = allele
+        # # Convert the gene allele dictionary to lower case
+        # lower_comprehension = {}
+        # for gene, allele in allele_comprehension.items():
+        #     lower_comprehension[gene.lower()] = allele
         # Freeze the allele comprehension
         frozen_allele_comprehension = json.dumps(
-            lower_comprehension,
+            allele_comprehension,
             sort_keys=True
         )
         # Populate the dictionary with frozen_allele_comprehension: seq_type
@@ -1841,7 +1865,12 @@ def update_profile_file(
     # Iterate over all the genes in the analysis
     for gene in genes:
         # Extract the allele ID for each gene in the analysis
-        allele = allele_dict[gene]
+        try:
+            allele = allele_dict[gene]
+        # Allow for conversion between protein names and gene names
+        except KeyError:
+            first_lower = gene[0].lower() + gene[1:]
+            allele = allele_dict[first_lower]
         # If the allele has been filtered return False, as a sequence type
         # should not exist for filtered alleles
         if not allele:
@@ -1937,7 +1966,8 @@ def create_stec_report(
         report_file: str,
         gene_names: list,
         aa_profile_path: str,
-        notes: list):
+        notes: list,
+        molecule='nt'):
     """
     Create a STEC-specific report including the allele matches for each gene
     and sequence type for both nucleotide and amino acid sequence information
@@ -1955,6 +1985,8 @@ def create_stec_report(
     :param aa_profile_path: String of the absolute path of the folder in which
     the amino acid profile file is located
     :param notes: List of notes on the alleles
+    :param molecule: String of the current molecule being processed. Default
+    is "nt"
     """
     logging.info('Creating report')
     # Set the appropriate order for the genes in the report
@@ -1962,21 +1994,40 @@ def create_stec_report(
         'stx1': ['stx1A', 'stx1B'],
         'stx2': ['stx2A', 'stx2B']
     }
-    # Create a list to store the ordered genes
-    ordered_genes = []
+
+    # Create a variable to store which gene is being processed
+    current_gene = str()
+
     # Set the ordered genes according to the genes used in the current
     # analysis (stx1 or stx2)
-    for _, gene_list in gene_order.items():
+    for gene_of_interest, gene_list in gene_order.items():
+
+        # Convert the lists to lowercase to ensure compatibility between
+        # protein and gene names
+        lower_gene_list = [gene.lower() for gene in gene_list]
+        lower_gene_names = [gene.lower() for gene in gene_names]
+
         # If the sorted list matches the list of genes in the analysis, use
         # the unsorted list as the gene order
-        if sorted(gene_list) == gene_names:
-            ordered_genes = gene_list
+        if sorted(lower_gene_list) == lower_gene_names:
+            current_gene = gene_of_interest
+
+    # Set the protein name order
+    protein_order = {
+        'stx1': ['Stx1A', 'Stx1B'],
+        'stx2': ['Stx2A', 'Stx2B']
+    }
+
+    # Determine the appropriate order of the gene and protein names
+    ordered_nt = gene_order[current_gene]
+    ordered_aa = protein_order[current_gene]
+
     # Create a header for the report. Includes which alleles are present and
     # the sequence type for both the nucleotide
     # and amino acid sequences of the query and notes
     header = \
-        f'Sample\tnt_{ordered_genes[0]}\tnt_{ordered_genes[1]}\t' \
-        f'nt_seq_type\taa_{ordered_genes[0]}\taa_{ordered_genes[1]}\t' \
+        f'Sample\tnt_{ordered_nt[0]}\tnt_{ordered_nt[1]}\t' \
+        f'nt_seq_type\taa_{ordered_aa[0]}\taa_{ordered_aa[1]}\t' \
         f'aa_seq_type\tnotes\n'
     # Create a string to store the query information
     data = str()
@@ -1998,16 +2049,21 @@ def create_stec_report(
                 aa_allele_dict = aa_alleles[contig][query_range]
                 # Iterate over the genes in the analysis to extract their
                 # corresponding nucleotide alleles
-                for gene in ordered_genes:
+                for gene in ordered_nt:
                     # Update the string with the nucleotide allele ID
                     data += f'{nt_allele_dict[gene]}\t'
                 # Update the string with the nucleotide sequence type
                 data += f'{nt_profile}\t'
                 # Iterate over the genes in the analysis to extract their
                 # corresponding amino acid alleles
-                for gene in ordered_genes:
+                for gene in ordered_aa:
                     # Update the string with the amino acid allele ID
-                    data += f'{aa_allele_dict[gene]}\t'
+                    try:
+                        data += f'{aa_allele_dict[gene]}\t'
+                    except KeyError:
+                        # Allow gene names rather than protein names
+                        gene_name = gene[0].lower() + gene[1:]
+                        data += f'{aa_allele_dict[gene_name]}\t'
                 # Update the string with the amino acid sequence type
                 data += f'{aa_profile}\t'
                 # Create a list to store sample:contig:query_range-specific
@@ -2152,7 +2208,8 @@ def update_profile_link_file(
         records.append(aa_seq_type)
         # Update the notes
         note.append(
-            f'Novel nt_seq_type {nt_seq_type}, and aa_seq_type {aa_seq_type}'
+            f'Novel nt_seq_type {nt_seq_type}, and '
+            f'novel aa_seq_type {aa_seq_type}'
         )
     # Overwrite the profile link file with the updated links
     with open(link_file, 'w', encoding='utf-8') as profile_link:
@@ -2312,12 +2369,14 @@ def parse_aa_blast(
                 )
                 # Set the name of the allele depending on whether it was
                 # filtered
+                protein_name = gene[0].upper() + gene[1:-1] + \
+                    gene[-1].upper()
                 if not filtered:
                     # Set the name of the allele as gene_alleleID
-                    aa_allele = f'{gene.capitalize()}_{aa_allele_id}|' \
+                    aa_allele = f'{protein_name}_{aa_allele_id}|' \
                         f'{len(query_seq)}aa'
                 else:
-                    aa_allele = f'Filtered_{gene.capitalize()}_' \
+                    aa_allele = f'Filtered_{protein_name}_' \
                         f'{aa_allele_id}|{len(query_seq)}aa'
                 # Populate the notes dictionary
                 if contig not in notes:
@@ -2526,16 +2585,17 @@ def translated_update_nucleotide(
                         nt_allele_path=nt_allele_path
                     )
 
-                    # Find the next allele ID
-                    nt_allele_id = find_next_allele(
-                        gene=gene,
-                        allele_path=nt_allele_path
-                    )
+                    # If there was no match find the next allele ID
+                    if nt_allele_id is None:
+                        nt_allele_id = find_next_allele(
+                            gene=gene,
+                            allele_path=nt_allele_path
+                        )
 
                     # Construct the allele name
-                    nt_allele = f'{gene.capitalize()}_{nt_allele_id}|' \
+                    lower_fist = gene[0].lower() + gene[1:]
+                    nt_allele = f'{lower_fist}_{nt_allele_id}|' \
                         f'{len(nt_sequence)}nt'
-
                     # Update the allele databases and get the updated notes
                     # and allele
                     notes[contig][query_range_tuple], nt_allele = \
@@ -2594,6 +2654,18 @@ def nt_allele_lookup(
     # Set the name of the amino acid allele file by joining the allele folder
     # path to the gene name
     nt_allele_file = os.path.join(nt_allele_path, f'{gene}.fasta')
+
+    # Check to see if the file exists; for the allele_translate_find
+    # functionality, the gene name is derived from the protein sequence, so it
+    # will be sentence case
+    if not os.path.isfile(nt_allele_file):
+        # Convert the first letter of the gene name to lowercase
+        first_lower = gene[0].lower() + gene[1:]
+        nt_allele_file = os.path.join(
+            nt_allele_path,
+            f'{first_lower}.fasta'
+        )
+
     # Iterate through all the alleles in the file
     for record in SeqIO.parse(nt_allele_file, 'fasta'):
         # If the sequence in the file matches the current sequence, return the
