@@ -53,6 +53,7 @@ from allele_tools.methods import (
     setup_arguments,
     split_alleles,
     translated_update_nucleotide,
+    update_notes,
     write_concatenated_sequences
 )
 
@@ -137,7 +138,7 @@ class STEC:
                     allele_comprehension=aa_allele_comprehension
                 )
             # Find nucleotide profile matches
-            nt_profile_matches, nt_frozen_profiles = match_profile(
+            nt_profile_matches, _, _ = match_profile(
                 profile_data=nt_profile_data,
                 frozen_allele_comprehension=nt_frozen_allele_comprehension,
                 report_path=self.report_path,
@@ -147,7 +148,7 @@ class STEC:
                 molecule='nt'
             )
             # Find amino acid profile matches
-            aa_profile_matches, aa_frozen_profiles = match_profile(
+            aa_profile_matches, _, _ = match_profile(
                 profile_data=aa_profile_data,
                 frozen_allele_comprehension=aa_frozen_allele_comprehension,
                 report_path=self.report_path,
@@ -330,7 +331,7 @@ class STECTranslate:
                 cutoff=95
             )
             # Parse the amino acid BLAST results
-            sample, filtered, notes = parse_aa_blast(
+            sample, _, notes = parse_aa_blast(
                 runmetadata=sample,
                 extended_fieldnames=self.extended_fieldnames,
                 fieldnames=self.fieldnames,
@@ -347,7 +348,6 @@ class STECTranslate:
                 report_path=self.report_path,
                 notes=notes,
                 gene_names=self.gene_names,
-                filtered=filtered
             )
             # Create nucleotide allele comprehensions from the
             # BLAST outputs
@@ -373,7 +373,7 @@ class STECTranslate:
                     allele_comprehension=aa_allele_comprehension
                 )
             # Find nucleotide profile matches
-            nt_profile_matches, _ = match_profile(
+            nt_profile_matches, _, nt_novel = match_profile(
                 profile_data=nt_profile_data,
                 frozen_allele_comprehension=nt_frozen_allele_comprehension,
                 report_path=self.report_path,
@@ -383,7 +383,7 @@ class STECTranslate:
                 molecule='nt'
             )
             # Find amino acid profile matches
-            aa_profile_matches, _ = match_profile(
+            aa_profile_matches, _, aa_novel = match_profile(
                 profile_data=aa_profile_data,
                 frozen_allele_comprehension=aa_frozen_allele_comprehension,
                 report_path=self.report_path,
@@ -391,6 +391,14 @@ class STECTranslate:
                 genes=gene_names,
                 allele_comprehension=aa_allele_comprehension,
                 molecule='aa'
+            )
+            # Update the notes with the profile information
+            notes, note_update = update_notes(
+                aa_novel=aa_novel,
+                aa_profile_matches=aa_profile_matches,
+                notes=notes,
+                nt_novel=nt_novel,
+                nt_profile_matches=nt_profile_matches
             )
             # Create the STEC-specific report
             create_stec_report(
@@ -403,7 +411,8 @@ class STECTranslate:
                 gene_names=gene_names,
                 aa_profile_path=self.aa_profile_path,
                 notes=notes,
-                molecule='aa'
+                molecule='aa',
+                note_update=note_update
             )
 
     def __init__(
@@ -857,9 +866,9 @@ def translate_reduce(args):
         'stx2A': 313,
         'Stx2A': 313,
         'stx2a': 313,
-        'stx2B': 84,
-        'Stx2B': 84,
-        'stx2b': 84,
+        'stx2B': 82,
+        'Stx2B': 82,
+        'stx2b': 82,
     }
     allele_translate_reduce = Translate(
         path=args.allele_path,
