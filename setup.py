@@ -41,14 +41,16 @@ setup(
         os.path.join('allele_tools', 'allele_updater.py'),
         os.path.join('allele_tools', 'allele_translate_reduce.py'),
         os.path.join('allele_tools', 'profile_reduce.py'),
-        os.path.join('allele_tools', 'stec.py')
+        os.path.join('allele_tools', 'stec.py'),
+        os.path.join('allele_tools', 'split_db.py'),
     ],
     entry_points={
         'console_scripts': [
             'allele_updater=allele_tools.allele_updater:cli',
             'allele_translate_reduce=allele_tools.allele_translate_reduce:cli',
             'profile_reduce=allele_tools.profile_reduce:cli',
-            'stec=allele_tools.stec:cli'
+            'stec=allele_tools.stec:cli',
+            'split_db=allele_tools.split_db:cli'
         ]
     },
     install_requires=requirements,
