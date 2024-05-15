@@ -73,7 +73,7 @@ def setup():
                 'stx1B': 82,
                 'stx1A': 313,
                 'stx2A': 313,
-                'stx2B': 84
+                'stx2B': 82
             }
 
             # Define a fake path for testing

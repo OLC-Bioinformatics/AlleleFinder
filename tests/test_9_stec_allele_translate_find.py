@@ -110,7 +110,7 @@ def setup():
                 'stx1B': 82,
                 'stx1A': 313,
                 'stx2A': 313,
-                'stx2B': 84
+                'stx2B': 82
             }
             # Define a fake path for testing
             self.fake_path = os.path.join('~', 'completely_fake_path')
@@ -189,11 +189,18 @@ def test_report_contents(variables):
         'r',
         encoding='utf-8'
     ).readlines()
+    print('\n')
+    for line in variables.report_contents:
+        print(line.rstrip())
+    print('\n')
     # Check that the contents of the report are as expected
     assert variables.report_contents[1] == \
-        '2013-SEQ-0039\t875\t137\t259156\t6\t2\t68\tNovel nt_seq_type ' \
-        '259156 links to aa_seq type 68\n'
-    assert variables.report_contents[10] == '2017-SEQ-0617\t0\t0\t1\t0\t0\t1\n'
+        '2013-SEQ-0039\t875\t137\t259156\t6\t2\t68\tNovel nt seq_type ' \
+        '259156 links to aa seq_type 68\n'
+    assert variables.report_contents[16] == \
+        '2017-SEQ-0617\t0\t0\t1\t0\t0\t1\tContig_91_205.85: location ' \
+        '(2, 262): notes: stx2B amino acid sequence does not start with M; ' \
+        'Amino acid allele Filtered_Stx2B_137|87aa is novel\n'
 
 
 def test_clean(variables):

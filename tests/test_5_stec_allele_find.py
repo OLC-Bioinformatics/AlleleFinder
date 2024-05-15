@@ -106,7 +106,7 @@ def setup():
                 'stx1B': 82,
                 'stx1A': 313,
                 'stx2A': 313,
-                'stx2B': 84
+                'stx2B': 82
             }
 
             # Define a fake path for testing
@@ -192,16 +192,14 @@ def test_report_contents(variables):
         'r',
         encoding='utf-8'
     ).readlines()
-
     # Check the contents of the allele report file
     assert variables.report_contents[1] == \
-        '2013-SEQ-0039\t6\t9\t241\t868\t137\t259156\tNovel nt_seq_type ' \
-        '241, and novel aa_seq_type 259156\n'
+        '2013-SEQ-0039\t6\t9\t241\t868\t137\t259156\tNovel nt seq_type ' \
+        '241, and novel aa seq_type 259156\n'
     assert variables.report_contents[16] == \
-        '2017-SEQ-0617	0	2	116	0		N/A	stx2B amino acid ' \
-        'sequence does not start with M; ' \
-        'stx2B amino acid sequence was 13 amino acid residues. ' \
-        'Minimum allowed length is 84 amino acid residues\n'
+        '2017-SEQ-0617\t0\t2\t116\t0\t\tN/A\tstx2B amino acid sequence does ' \
+        'not start with M; stx2B amino acid sequence was 13 amino acid ' \
+        'residues. Minimum allowed length is 82 amino acid residues\n'
 
 
 def test_clean(variables):
