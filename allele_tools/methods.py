@@ -1172,24 +1172,43 @@ def generic_evaluate_translated_length(
 
 
 def find_next_allele(
-        gene: str,
         allele_path: str,
-        extension='.fasta'):
+        gene: str,
+        extension: str = '.fasta',
+        filtered: bool = False,
+        molecule: str = 'nt'):
     """
     Update the allele database with the novel allele extracted above
     :param gene: Name of the current gene being examined
     :param allele_path: Name and absolute path to folder containing
     allele files
     :param extension: String of the file extension. Default is .fasta
+    :param filtered: Boolean of whether the allele is filtered or not.
+    Default is False
     :return: last_id: Number of the last alleles in the current database
     """
-    # Find the allele database file
-    allele_file = os.path.join(allele_path, f'{gene}{extension}')
+    # Check for the regular file
+    if not filtered:
+        # Find the allele database file
+        allele_file = os.path.join(allele_path, f'{gene}{extension}')
 
-    # Check if the file exists; it might have a protein naming scheme
-    if not os.path.isfile(allele_file):
-        first_lower = gene[0].lower() + gene[1:]
-        allele_file = os.path.join(allele_path, f'{first_lower}{extension}')
+        # Check if the file exists; it might have a protein naming scheme
+        if not os.path.isfile(allele_file):
+            first_lower = gene[0].lower() + gene[1:]
+            allele_file = os.path.join(
+                allele_path,
+                f'{first_lower}{extension}'
+            )
+    else:
+        # Set the capitalization correctly for the gene/protein name
+        gene_case = gene[0].upper() + gene[1:-1] + gene[-1].upper() \
+            if molecule == 'aa' else gene[0].lower() + gene[1:]
+
+        # Set the name and path of the filtered allele file
+        allele_file = os.path.join(
+            allele_path,
+            f'{gene_case}_filtered.txt'
+        )
 
     # Initialise a variable to store the name of the last allele in the
     # database file
@@ -2509,8 +2528,10 @@ def parse_aa_blast(
                 )
                 # Find the next available allele identifier in the database
                 aa_allele_id = find_next_allele(
+                    allele_path=aa_allele_path,
                     gene=gene,
-                    allele_path=aa_allele_path
+                    filtered=filtered,
+                    molecule='aa'
                 )
                 # Set the name of the allele depending on whether it was
                 # filtered
