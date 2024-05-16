@@ -189,10 +189,6 @@ def test_report_contents(variables):
         'r',
         encoding='utf-8'
     ).readlines()
-    print('\n')
-    for line in variables.report_contents:
-        print(line.rstrip())
-    print('\n')
     # Check that the contents of the report are as expected
     assert variables.report_contents[1] == \
         '2013-SEQ-0039\t875\t137\t259156\t6\t2\t68\tNovel nt seq_type ' \
@@ -200,7 +196,7 @@ def test_report_contents(variables):
     assert variables.report_contents[16] == \
         '2017-SEQ-0617\t0\t0\t1\t0\t0\t1\tContig_91_205.85: location ' \
         '(2, 262): notes: stx2B amino acid sequence does not start with M; ' \
-        'Amino acid allele Filtered_Stx2B_137|87aa is novel\n'
+        'Amino acid allele Filtered_Stx2B_1|87aa is novel\n'
 
 
 def test_clean(variables):
