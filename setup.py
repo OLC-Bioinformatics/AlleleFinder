@@ -42,6 +42,7 @@ setup(
         os.path.join('allele_tools', 'allele_translate_reduce.py'),
         os.path.join('allele_tools', 'profile_reduce.py'),
         os.path.join('allele_tools', 'stec.py'),
+        os.path.join('allele_tools', 'stec_combined_subunits.py'),
         os.path.join('allele_tools', 'split_db.py'),
     ],
     entry_points={
