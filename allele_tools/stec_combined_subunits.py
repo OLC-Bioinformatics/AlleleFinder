@@ -1729,7 +1729,7 @@ class CombinedSubunits:
                         "nt_query_ids", {}
                     ).get(stx, {}).get(allele, "")
                     body += (
-                        f"{name}\t{contig}\t{allele_clean}\t{perc_ident}\t"
+                        f"{name}\t{contig}\t{allele_clean}\t{perc_ident}"
                     )
 
                     # Get allele profile and subunit percent identities
