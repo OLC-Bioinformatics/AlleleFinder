@@ -15,6 +15,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 from typing import (
     Dict,
     Optional,
@@ -97,6 +98,9 @@ class CombinedSubunits:
             self.molecule = 'aa'
         else:
             self.molecule = ['nt', 'aa']
+
+        # Store the preliminary boolean
+        self.preliminary = args.preliminary
 
         # Create a list to store error messages
         errors = []
@@ -491,41 +495,42 @@ class CombinedSubunits:
         # For nucleotide analyses, proceed to find the amino acid alleles for
         # each novel hit
         if molecule == 'nt' and not isinstance(self.molecule, list):
-            self.metadata = self._export_novel_alleles(
-                blastx=blastx,
-                metadata=self.metadata,
-                molecule="nt",
-                report_path=self.report_path
-            )
-            self.metadata = self._find_aa_hits_novel_alleles(
-                cpus=self.cpus,
-                metadata=self.metadata,
-                molecule="aa",
-                outfmt=self.outfmt,
-                split_aa_dbs=self.split_aa_dbs
-            )
-            self._add_headers_novel_aa_reports(
-                blastx=False,
-                extended_fieldnames=self.extended_fieldnames,
-                fieldnames=self.fieldnames,
-                metadata=self.metadata,
-            )
+            if not self.preliminary:
+                self.metadata = self._export_novel_alleles(
+                    blastx=blastx,
+                    metadata=self.metadata,
+                    molecule="nt",
+                    report_path=self.report_path
+                )
+                self.metadata = self._find_aa_hits_novel_alleles(
+                    cpus=self.cpus,
+                    metadata=self.metadata,
+                    molecule="aa",
+                    outfmt=self.outfmt,
+                    split_aa_dbs=self.split_aa_dbs
+                )
+                self._add_headers_novel_aa_reports(
+                    blastx=False,
+                    extended_fieldnames=self.extended_fieldnames,
+                    fieldnames=self.fieldnames,
+                    metadata=self.metadata,
+                )
 
-            self.metadata = self._extract_novel_aa_best_hits(
-                metadata=self.metadata,
-            )
-            self.metadata = self._assign_aa_allele_profiles_and_operons(
-                metadata=self.metadata,
-            )
-            self._export_aa_novel_operons(
-                metadata=self.metadata,
-                report_path=self.report_path
-            )
-            self._export_aa_novel_alleles(
-                metadata=self.metadata,
-                molecule='aa',
-                report_path=self.report_path
-            )
+                self.metadata = self._extract_novel_aa_best_hits(
+                    metadata=self.metadata,
+                )
+                self.metadata = self._assign_aa_allele_profiles_and_operons(
+                    metadata=self.metadata,
+                )
+                self._export_aa_novel_operons(
+                    metadata=self.metadata,
+                    report_path=self.report_path
+                )
+                self._export_aa_novel_alleles(
+                    metadata=self.metadata,
+                    molecule='aa',
+                    report_path=self.report_path
+                )
 
             # Print the report
             self._nt_report(
@@ -802,8 +807,6 @@ class CombinedSubunits:
                     / subject_length
                     * 100
                 )
-                print(row['query_id'], subject_length, percent_identity)
-
             except (KeyError, ValueError, ZeroDivisionError):
                 continue
 
@@ -1706,10 +1709,9 @@ class CombinedSubunits:
             CombinedSubunits._has_novel_aa_best_hits(info) for
             info in metadata.values()
         ):
-            header += "\n"
             novel = True
         else:
-            header += "\tAA_Allele\tA_PercentIdentity\tB_PercentIdentity"
+            header += "\tAA_Alleles\tA_PercentIdentity\tB_PercentIdentity"
 
         # Add the notes to the end of the header
         header += "\tNotes\n"
@@ -2004,6 +2006,12 @@ def main():
         "blastn on all samples and tblastx on any novel alleles",
     )
     parser.add_argument(
+        '--preliminary',
+        action='store_true',
+        help='Run a preliminary screen on genomes using blastn (do not run '
+        'additional downstream analyses)'
+    )
+    parser.add_argument(
         "--split_aa_db_dir",
         metavar="split_aa_db_dir",
         help=(
@@ -2028,9 +2036,16 @@ def main():
     # Set up logging
     setup_logging(arguments=arguments)
 
+    # Start timing
+    start_time = time.time()
+
     # Create a CombinedSubunits instance and process the alleles
     combined_subunits = CombinedSubunits(arguments)
     combined_subunits.process()
+
+    # Print elapsed time
+    elapsed = time.time() - start_time
+    logging.info("Pipeline completed in %.2f seconds.", elapsed)
 
 
 if __name__ == "__main__":
