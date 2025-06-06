@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 from collections import defaultdict
 from csv import DictReader
 from glob import glob
+import hashlib
 import logging
 import multiprocessing
 import os
@@ -75,6 +76,10 @@ class CombinedSubunits:
     """
     Class to handle combined subunits for STEC alleles.
     """
+
+    # Use class variables for the registry and counter
+    _novel_registry = {}
+    _novel_counter = 1
 
     def __init__(self, args):
         self.args = args
@@ -487,10 +492,17 @@ class CombinedSubunits:
             molecule=molecule
         )
         for name, info in self.metadata.items():
+            novel = info.get(f"{molecule}_novel_hits", [])
             logging.debug(
-                "Best BLAST hits for %s: %s",
-                name, info[f"{molecule}_best_hits"]
+                "Best BLAST hits for %s: %s. Novel hits: %s",
+                name, info[f"{molecule}_best_hits"],
+                novel
             )
+
+        self._write_novel_alleles_to_db(
+            db_fasta_file=self.allele_file,
+            report_path=self.report_path
+        )
 
         # For nucleotide analyses, proceed to find the amino acid alleles for
         # each novel hit
@@ -856,11 +868,12 @@ class CombinedSubunits:
                 info[f"{molecule}_best_hits"] = best_hits
                 info[f"{molecule}_query_sequences"] = query_sequences
             else:
-                best_hits, query_sequences, query_ids = \
+                best_hits, novel_hits, query_sequences, query_ids = \
                     CombinedSubunits._extract_best_hits(
                         blast_output=blast_output
                     )
                 info[f"{molecule}_best_hits"] = best_hits
+                info[f"{molecule}_novel_hits"] = novel_hits
                 info[f"{molecule}_query_sequences"] = query_sequences
                 info[f"{molecule}_query_ids"] = query_ids
 
@@ -870,14 +883,19 @@ class CombinedSubunits:
     def _extract_best_hits(
         *,  # Enforce keyword arguments
         blast_output: str,
-    ) -> tuple[dict, dict, dict]:
+    ) -> tuple[dict, dict, dict, dict]:
         """
         Extract the best BLAST hits from the BLAST output file.
-        :return: A tuple containing the best hits, query sequences, and
-        query IDs
+        Returns:
+            - best_hits: closest allele match in the database (by name)
+            - novel_hits: novel allele name (if <100% identity), else same as
+            best_hits
+            - query_sequences: dict of query sequences for novel alleles
+            - query_ids: dict of query ids
         """
         best_hits = {"stx1": [], "stx2": []}
-        max_identity = {"stx1": 0.0, "stx2": 0.0}
+        novel_hits = {"stx1": [], "stx2": []}
+        all_hits = {"stx1": [], "stx2": []}
         query_sequences = {"stx1": {}, "stx2": {}}
         query_ids = {"stx1": {}, "stx2": {}}
 
@@ -892,20 +910,84 @@ class CombinedSubunits:
                 for stx in ("stx1", "stx2"):
                     if stx not in subject_id:
                         continue
+                    all_hits[stx].append(
+                        (
+                            subject_id,
+                            percent_identity,
+                            query_sequence,
+                            query_id
+                        )
+                    )
 
-                    if percent_identity > max_identity[stx]:
-                        max_identity[stx] = percent_identity
-                        best_hits[stx] = [(subject_id, percent_identity)]
-                    elif percent_identity == max_identity[stx]:
-                        best_hits[stx].append((subject_id, percent_identity))
+        for stx in ("stx1", "stx2"):
+            if not all_hits[stx]:
+                continue
 
-                    if percent_identity < 100:
-                        query_sequences[stx][subject_id] = query_sequence
+            # Extract the maximum percent identity
+            max_perc = max(hit[1] for hit in all_hits[stx])
 
-                    # Store query_id for each subject_id
+            # Iterate over all hits to find the best one
+            for subject_id, percent_identity, query_sequence, query_id in \
+                    all_hits[stx]:
+
+                # Check if this hit is the best one
+                if percent_identity == max_perc:
+
+                    # best_hits always points to the closest database match
+                    best_hits[stx].append((subject_id, percent_identity))
                     query_ids[stx][subject_id] = query_id
 
-        return best_hits, query_sequences, query_ids
+                    # Novel_hits points to the novel allele name if <100%
+                    # identity, else same as best_hits
+                    if (
+                        percent_identity < 100
+                        and percent_identity >= 90
+                        and query_sequence
+                    ):
+                        novel_name = CombinedSubunits._register_novel_allele(
+                            sequence=query_sequence, stx_type=stx
+                        )
+
+                        # Add the novel hit to the dictionary with a 100%
+                        # identity
+                        novel_hits[stx].append((novel_name, 100))
+                        query_sequences[stx][novel_name] = query_sequence
+                        query_ids[stx][novel_name] = query_id
+                    else:
+                        novel_hits[stx].append((subject_id, 100))
+
+        return best_hits, novel_hits, query_sequences, query_ids
+
+    @staticmethod
+    def _novel_allele_registry():
+        """
+        Singleton-style static registry for novel alleles.
+        Returns a dict: {hash: {"name": ..., "sequence": ...}}
+        """
+        return CombinedSubunits._novel_registry
+
+    @staticmethod
+    def _register_novel_allele(
+        *,  # Enforce keyword arguments
+        sequence: str,
+        stx_type: str,
+    ) -> str:
+        """
+        Register or retrieve a unique name for a novel allele sequence.
+        Returns the unique allele name (existing or new).
+
+        :param sequence: The nucleotide or protein sequence
+        :param stx_type: The type of Shiga toxin (e.g., "stx1" or "stx2")
+        """
+        registry = CombinedSubunits._novel_allele_registry()
+        seq_hash = hashlib.sha256(sequence.encode()).hexdigest()
+        if seq_hash in registry:
+            return registry[seq_hash]["name"]
+        else:
+            name = f"novel_{stx_type}_{CombinedSubunits._novel_counter}"
+            registry[seq_hash] = {"name": name, "sequence": sequence}
+            CombinedSubunits._novel_counter += 1
+            return name
 
     @staticmethod
     def _extract_best_hits_gene_subunits(
@@ -1109,6 +1191,70 @@ class CombinedSubunits:
                     best_hits[stx_type].append((base_id, percent_identity))
 
         return best_hits, query_sequences
+
+    @staticmethod
+    def _write_novel_alleles_to_db(
+        *,  # Enforce keyword arguments
+        db_fasta_file: str,
+        report_path: str,
+    ):
+        """
+        Write all unique novel alleles to a FASTA file using SeqIO.
+
+        :param db_fasta_file: Path to the output FASTA file
+        :param report_path: Path to the report folder
+        """
+        # Pull novel alleles from the registry
+        registry = CombinedSubunits._novel_allele_registry()
+
+        # Read all existing records from the db_fasta_file (if it exists)
+        existing_records = []
+        if os.path.isfile(db_fasta_file):
+            with open(db_fasta_file, "r", encoding="utf-8") as handle:
+                existing_records = list(SeqIO.parse(handle, "fasta"))
+
+        # Prepare new novel records
+        novel_records = []
+        for entry in registry.values():
+            seq_length = len(entry["sequence"])
+            record = SeqRecord(
+                Seq(entry["sequence"]),
+                id=f"{entry['name']}|{seq_length}nt",
+                description="",
+            )
+            novel_records.append(record)
+
+        # Combine all records and overwrite the db_fasta_file
+        all_records = existing_records + novel_records
+        if all_records:
+            # Check if the existing file ends with a newline
+            needs_newline = False
+            if os.path.isfile(db_fasta_file):
+                with open(db_fasta_file, "rb") as f:
+                    f.seek(-1, os.SEEK_END)
+                    last_char = f.read(1)
+                    if last_char not in [b"\n", b"\r"]:
+                        needs_newline = True
+
+            with open(db_fasta_file, "w", encoding="utf-8") as handle:
+                # Write all records using SeqIO (this will always start each
+                # record on a new line)
+                SeqIO.write(all_records, handle, "fasta")
+
+                # If the original file did not end with a newline, add one
+                if needs_newline:
+                    handle.write("\n")
+            logging.info(f"Novel alleles written to {db_fasta_file}")
+
+            # Write the records to the report path as well
+            novel_allele_file = os.path.join(report_path, "novel_alleles.fasta")
+            with open(novel_allele_file, "w", encoding="utf-8") as handle:
+                SeqIO.write(novel_records, handle, "fasta")
+
+            # Delete all the previous blast database files
+            db_path = os.path.dirname(db_fasta_file)
+            for database_file in glob(os.path.join(db_path, "*.n*")):
+                os.remove(database_file)
 
     @staticmethod
     def _export_novel_alleles(
@@ -1691,16 +1837,13 @@ class CombinedSubunits:
         report_path: str,
     ):
         """
-        Generate a report from the metadata.
-
-        :param metadata: Metadata dictionary containing information about the
-        strains
-        :param report_path: Path to the report directory
+        Generate a report from the metadata with DB_Allele and NovelAllele
+        columns.
         """
         logging.info("Generating report")
 
-        # Initialise the header and body strings
-        header = "Strain\tContig\tAllele\tPercentIdentity"
+        # Update header
+        header = "Strain\tContig\tDB_Allele\tPercentIdentity\tNovelAllele"
         body = str()
 
         novel = False
@@ -1713,7 +1856,6 @@ class CombinedSubunits:
         else:
             header += "\tAA_Alleles\tA_PercentIdentity\tB_PercentIdentity"
 
-        # Add the notes to the end of the header
         header += "\tNotes\n"
 
         for name, info in metadata.items():
@@ -1722,19 +1864,28 @@ class CombinedSubunits:
                 if not info["nt_best_hits"][stx]:
                     continue
                 data = True
-                for allele, perc_ident in info["nt_best_hits"][stx]:
+                # Get the corresponding novel hits for this stx
+                novel_hits = info.get("nt_novel_hits", {}).get(stx, [])
+                for idx, (allele, perc_ident) in enumerate(
+                    info["nt_best_hits"][stx]
+                ):
                     note = "Partial Match" if perc_ident < 90 else ""
                     allele_clean = allele.split("|")[0]
-
-                    # Get contig name
                     contig = info.get(
                         "nt_query_ids", {}
                     ).get(stx, {}).get(allele, "")
+
+                    # Get the novel allele name if present, else empty string
+                    novel_allele = ""
+                    if idx < len(novel_hits):
+                        novel_allele = novel_hits[idx][0]
+
                     body += (
-                        f"{name}\t{contig}\t{allele_clean}\t{perc_ident}"
+                        f"{name}\t{contig}\t{allele_clean}\t{perc_ident}\t"
+                        f"{novel_allele}"
                     )
 
-                    # Get allele profile and subunit percent identities
+                    # Existing AA/notes logic unchanged
                     allele_profile = info.get(f"{stx}_aa_allele_profile", "")
                     a_perc = ""
                     b_perc = ""
@@ -1743,42 +1894,23 @@ class CombinedSubunits:
                             a_allele, b_allele = allele_profile.split("_")
                         except ValueError:
                             a_allele, b_allele = "", ""
-
-                        # Find percent identities for each subunit
                         for _, stx_dict in info.get(
                             "novel_aa_best_hits", {}
                         ).items():
-                            # stx_dict format: {'Stx1A': [('Stx1A_22', 100.0)]}
                             if f"{stx.capitalize()}A" in stx_dict:
-
-                                # Check if A subunit hits exist
                                 hits = stx_dict[f"{stx.capitalize()}A"]
-
-                                # Create a variable to store hits[0][0]
                                 hit = hits[0][0]
-
-                                # Check if the hit ends with the A allele
                                 if hits and hit.endswith(f"_{a_allele}"):
                                     a_perc = f"{hits[0][1]:.2f}"
-
-                                # Update the note if the percent identity is
-                                # less than 100%
                                 if a_perc and float(a_perc) < 100:
                                     if note:
                                         note += ";"
                                     note += "Novel Subunit A Match"
-
-                            # Check if B subunit hits exist
                             if f"{stx.capitalize()}B" in stx_dict:
                                 hits = stx_dict[f"{stx.capitalize()}B"]
-
-                                # Create a variable to store hits[0][0]
                                 hit = hits[0][0]
                                 if hits and hit.endswith(f"_{b_allele}"):
                                     b_perc = f"{hits[0][1]:.2f}"
-
-                                # Update the note if the percent identity is
-                                # less than 100%
                                 if b_perc and float(b_perc) < 100:
                                     if note:
                                         note += ";"
@@ -1789,19 +1921,16 @@ class CombinedSubunits:
                     else:
                         body += f"\t{note}\n"
 
-            # If no data was found for this strain, add an empty row
             if not data:
                 if novel:
                     body += f"{name}\t\t\t\t\t\t\n"
                 else:
                     body += f"{name}\t\t\n"
 
-        # Set the name and path of the report
         report_path = os.path.join(
             report_path, "stec_combined_nt_report.tsv"
         )
 
-        # Write the report
         with open(report_path, "w", encoding="utf-8") as report_file:
             report_file.write(header)
             report_file.write(body)
