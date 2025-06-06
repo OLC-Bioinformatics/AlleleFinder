@@ -1878,7 +1878,10 @@ class CombinedSubunits:
                     # Get the novel allele name if present, else empty string
                     novel_allele = ""
                     if idx < len(novel_hits):
-                        novel_allele = novel_hits[idx][0]
+                        # Only include a novel allele if the word "novel" is
+                        # present in the name
+                        novel_allele = novel_hits[idx][0] if "novel" in \
+                            novel_hits[idx][0] else ""
 
                     body += (
                         f"{name}\t{contig}\t{allele_clean}\t{perc_ident}\t"
