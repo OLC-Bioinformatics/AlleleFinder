@@ -107,6 +107,12 @@ class CombinedSubunits:
         # Store the preliminary boolean
         self.preliminary = args.preliminary
 
+        # Set the number of alignments
+        self.num_alignments = args.num_alignments
+
+        # Set the percent identity cutoff
+        self.cutoff = args.cutoff
+
         # Create a list to store error messages
         errors = []
 
@@ -478,16 +484,17 @@ class CombinedSubunits:
         # Format the BLAST output
         self._parseable_blast_outputs(
             blastx=blastx,
+            cutoff=self.cutoff,
             fieldnames=self.fieldnames,
             extended_fieldnames=self.extended_fieldnames,
             metadata=self.metadata,
             molecule=molecule,
-            cutoff=90,
         )
 
         # Find the best BLAST hit
         self.metadata = self._find_best_blast_hits(
             blastx=blastx,
+            cutoff=self.cutoff,
             metadata=self.metadata,
             molecule=molecule
         )
@@ -507,9 +514,12 @@ class CombinedSubunits:
         # For nucleotide analyses, proceed to find the amino acid alleles for
         # each novel hit
         if molecule == 'nt' and not isinstance(self.molecule, list):
+
             if not self.preliminary:
+
                 self.metadata = self._export_novel_alleles(
                     blastx=blastx,
+                    cutoff=self.cutoff,
                     metadata=self.metadata,
                     molecule="nt",
                     report_path=self.report_path
@@ -517,12 +527,13 @@ class CombinedSubunits:
                 self.metadata = self._find_aa_hits_novel_alleles(
                     cpus=self.cpus,
                     metadata=self.metadata,
-                    molecule="aa",
+                    num_alignments=self.num_alignments,
                     outfmt=self.outfmt,
                     split_aa_dbs=self.split_aa_dbs
                 )
                 self._add_headers_novel_aa_reports(
                     blastx=False,
+                    cutoff=self.cutoff,
                     extended_fieldnames=self.extended_fieldnames,
                     fieldnames=self.fieldnames,
                     metadata=self.metadata,
@@ -539,6 +550,7 @@ class CombinedSubunits:
                     report_path=self.report_path
                 )
                 self._export_aa_novel_alleles(
+                    cutoff=self.cutoff,
                     metadata=self.metadata,
                     molecule='aa',
                     report_path=self.report_path
@@ -553,6 +565,7 @@ class CombinedSubunits:
             # Export novel alleles
             self._export_novel_alleles(
                 blastx=blastx,
+                cutoff=self.cutoff,
                 metadata=self.metadata,
                 molecule=molecule,
                 report_path=self.report_path
@@ -659,7 +672,8 @@ class CombinedSubunits:
         blast_output: str,
         cpus: int,
         outfmt: str,
-        query: str
+        query: str,
+        num_alignments: int = 10
     ) -> str:
         """
         Run a BLAST command and handle errors.
@@ -670,12 +684,13 @@ class CombinedSubunits:
         :param cpus: Number of CPUs to use for BLAST
         :param outfmt: Output format for BLAST
         :param query: Query sequence or file
+        :param num_alignments: Number of alignments to return
         """
         if blast_mode == 'blastn':
             blast_cmd = NcbiblastnCommandline(
                 db=allele_file,
                 evalue=1e-5,
-                num_alignments=100000000,
+                num_alignments=num_alignments,
                 num_threads=cpus,
                 outfmt=outfmt,
                 out=blast_output,
@@ -686,7 +701,7 @@ class CombinedSubunits:
             blast_cmd = NcbitblastxCommandline(
                 db=allele_file,
                 evalue=1e-5,
-                num_alignments=100000000,
+                num_alignments=num_alignments,
                 num_threads=cpus,
                 outfmt=outfmt,
                 out=blast_output,
@@ -696,7 +711,7 @@ class CombinedSubunits:
             blast_cmd = NcbiblastxCommandline(
                 db=allele_file,
                 evalue=1e-5,
-                num_alignments=100000000,
+                num_alignments=num_alignments,
                 num_threads=cpus,
                 outfmt=outfmt,
                 out=blast_output,
@@ -723,11 +738,11 @@ class CombinedSubunits:
     def _parseable_blast_outputs(
         *,  # Enforce keyword arguments
         blastx: bool,
+        cutoff: float,
         fieldnames: list[str],
         extended_fieldnames: list[str],
         metadata: dict[str, dict[str, str]],
-        molecule: str,
-        cutoff: int = 90
+        molecule: str
     ):
         """
         Add a header to the BLAST report, so that it is easier to figure out
@@ -737,8 +752,8 @@ class CombinedSubunits:
         :param extended_fieldnames: String of the BLAST field names plus the
         calculated percent identity
         :param molecule: Molecule type (e.g., "nt" or "aa")
-        :param cutoff: Integer of the minimum percent identity between query
-        and subject sequence. Default is 90
+        :param cutoff: Float of the minimum percent identity between query
+        and subject sequence.
         """
 
         logging.info("Adding headers to BLAST outputs")
@@ -762,21 +777,21 @@ class CombinedSubunits:
         *,  # Enforce keyword arguments
         blast_output: str,
         blastx: bool,
+        cutoff: float,
         extended_fieldnames: list[str],
         fieldnames: list[str],
-        cutoff: int = 90,
-        molecule: str = 'nt'
+        molecule: str = "nt",
     ):
         """
         Add headers to the BLAST output file.
 
         :param blast_output: Path to the BLAST output file
         :param blastx: Boolean indicating if this is a BLASTx report
+        :param cutoff: Float of the minimum percent identity between query
+        and subject sequence.
         :param extended_fieldnames: List of extended field names for the
         BLAST report
         :param fieldnames: List of field names for the BLAST report
-        :param cutoff: Integer of the minimum percent identity between query
-        and subject sequence. Default is 90
         :param molecule: Molecule type (e.g., "nt" or "aa")
         """
         # Read all rows, skipping if already has header
@@ -843,6 +858,7 @@ class CombinedSubunits:
     def _find_best_blast_hits(
         *,
         blastx: bool,
+        cutoff: float,
         metadata: dict,
         molecule: str
     ):
@@ -850,6 +866,7 @@ class CombinedSubunits:
         Find the best BLAST hits for each query sequence based on percent
         identity. Look for stx1 and stx2 separately
         :param blastx: Boolean indicating if this is a BLASTx report
+        :param cutoff: Float of the minimum percent identity between query
         :param metadata: Dictionary of strain metadata
         :param molecule: Molecule type (e.g., "nt" or "aa")
         """
@@ -863,14 +880,16 @@ class CombinedSubunits:
             if blastx:
                 best_hits, query_sequences = \
                     CombinedSubunits._extract_best_hits_subunits(
-                        blast_output=blast_output
+                        blast_output=blast_output,
+                        cutoff=cutoff
                     )
                 info[f"{molecule}_best_hits"] = best_hits
                 info[f"{molecule}_query_sequences"] = query_sequences
             else:
                 best_hits, novel_hits, query_sequences, query_ids = \
                     CombinedSubunits._extract_best_hits(
-                        blast_output=blast_output
+                        blast_output=blast_output,
+                        cutoff=cutoff
                     )
                 info[f"{molecule}_best_hits"] = best_hits
                 info[f"{molecule}_novel_hits"] = novel_hits
@@ -883,9 +902,13 @@ class CombinedSubunits:
     def _extract_best_hits(
         *,  # Enforce keyword arguments
         blast_output: str,
+        cutoff: float
     ) -> tuple[dict, dict, dict, dict]:
         """
         Extract the best BLAST hits from the BLAST output file.
+
+        :param blast_output: Path to the BLAST output file
+        :param cutoff: Minimum percent identity for a hit to be considered
         Returns:
             - best_hits: closest allele match in the database (by name)
             - novel_hits: novel allele name (if <100% identity), else same as
@@ -941,7 +964,7 @@ class CombinedSubunits:
                     # identity, else same as best_hits
                     if (
                         percent_identity < 100
-                        and percent_identity >= 90
+                        and percent_identity >= cutoff
                         and query_sequence
                     ):
                         novel_name = CombinedSubunits._register_novel_allele(
@@ -951,7 +974,7 @@ class CombinedSubunits:
                         # Add the novel hit to the dictionary with a 100%
                         # identity
                         novel_hits[stx].append((novel_name, 100))
-                        query_sequences[stx][novel_name] = query_sequence
+                        query_sequences[stx][subject_id] = query_sequence
                         query_ids[stx][novel_name] = query_id
                     else:
                         novel_hits[stx].append((subject_id, 100))
@@ -1059,7 +1082,7 @@ class CombinedSubunits:
     def _extract_best_hits_subunits(
         *,  # Enforce keyword arguments
         blast_output: str,
-        cutoff: float = 90.0,
+        cutoff: float,
     ) -> tuple[dict, dict]:
         """
         Find the best combined A+B subunit hit for each allele.
@@ -1262,12 +1285,13 @@ class CombinedSubunits:
     def _export_novel_alleles(
         *,  # Enforce keyword arguments
         blastx: bool,
+        cutoff: float,
         metadata: dict,
         molecule: str,
         report_path: str,
     ) -> dict:
         """
-        Export the FASTA sequence of any best hits that are >90% and <100%
+        Export the FASTA sequence of any best hits that are >cutoff% and <100%
         percent identity to strain-specific files in the report folder.
 
         :param blastx: Boolean indicating if BLASTX is being used
@@ -1290,9 +1314,10 @@ class CombinedSubunits:
                 f"{molecule}_best_hits", {}
             ).items():
                 for allele_id, percent_identity in best_hits:
-                    if percent_identity < 90 or percent_identity == 100:
+                    if percent_identity < cutoff or percent_identity == 100:
                         continue
 
+                    # Get the query sequence for the novel allele
                     query_sequence = (
                         info.get(f"{molecule}_query_sequences", {})
                         .get(stx_type, {})
@@ -1473,7 +1498,7 @@ class CombinedSubunits:
         *,  # Enforce keyword arguments
         cpus: int,
         metadata: dict,
-        molecule: str,
+        num_alignments: int,
         outfmt: str,
         split_aa_dbs: dict
     ) -> dict:
@@ -1483,7 +1508,7 @@ class CombinedSubunits:
         :param cpus: Number of CPUs to use for BLAST
         :param metadata: Metadata dictionary containing information about the
         strains
-        :param molecule: Molecule type (e.g., "nt" or "aa")
+        :param num_alignments: Number of alignments to return
         :param outfmt: Output format for BLAST
         :param split_aa_dbs: Dictionary of paths to the split AA databases
         :return: Updated metadata dictionary.
@@ -1513,7 +1538,8 @@ class CombinedSubunits:
                         blast_output=blast_output,
                         cpus=cpus,
                         outfmt=outfmt,
-                        query=fasta_path
+                        query=fasta_path,
+                        num_alignments=num_alignments
                     )
                     allele_subunit = f"{allele_id}_{subunit}"
                     if allele_subunit not in info["novel_aa_blastx_outputs"]:
@@ -1531,7 +1557,7 @@ class CombinedSubunits:
         extended_fieldnames: list[str],
         fieldnames: list[str],
         metadata: dict,
-        cutoff: int = 90
+        cutoff: float
     ):
         """
         Add headers to the novel reports.
@@ -1770,6 +1796,7 @@ class CombinedSubunits:
     @staticmethod
     def _export_aa_novel_alleles(
         *,  # Enforce keyword arguments
+        cutoff: float,
         metadata: dict,
         molecule: str,
         report_path: str,
@@ -1777,6 +1804,7 @@ class CombinedSubunits:
         """
         Export novel alleles to FASTA files.
 
+        :param cutoff: Percent identity cutoff for considering novel alleles
         :param metadata: Metadata dictionary containing information about the
         strains
         :param molecule: Molecule type (e.g., "nt" or "aa")
@@ -1800,9 +1828,12 @@ class CombinedSubunits:
                         # Iterate over the hits for this STX type
                         hit_allele_id, percent_identity = best_hit
 
-                        # Only export alleles with percent identity >90 and
+                        # Only export alleles with percent identity >cutoff and
                         # <100
-                        if percent_identity < 90 or percent_identity == 100:
+                        if (
+                            percent_identity < cutoff
+                            or percent_identity == 100
+                        ):
                             continue
 
                         # Retrieve the query sequence for this allele
@@ -2153,6 +2184,22 @@ def main():
             "(Stx1A_aa_*.fasta, Stx1B_aa_*.fasta, Stx2A_aa_*.fasta, "
             "Stx2B_aa_*.fasta)"
         ),
+    )
+    parser.add_argument(
+        "-n",
+        "--num_alignments",
+        metavar="num_alignments",
+        type=int,
+        default=10,
+        help="Specify the number of alignments to return. Default is 10."
+    )
+    parser.add_argument(
+        '-c',
+        "--cutoff",
+        metavar="cutoff",
+        type=float,
+        default=99.0,
+        help="Specify the percent identity cutoff. Default is 99.0."
     )
     parser.add_argument(
         "-v",
