@@ -1247,7 +1247,9 @@ class CombinedSubunits:
             logging.info(f"Novel alleles written to {db_fasta_file}")
 
             # Write the records to the report path as well
-            novel_allele_file = os.path.join(report_path, "novel_alleles.fasta")
+            novel_allele_file = os.path.join(
+                report_path, "novel_alleles.fasta"
+            )
             with open(novel_allele_file, "w", encoding="utf-8") as handle:
                 SeqIO.write(novel_records, handle, "fasta")
 
