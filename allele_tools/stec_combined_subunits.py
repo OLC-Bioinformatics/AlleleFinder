@@ -2217,6 +2217,32 @@ def main():
     # Set up logging
     setup_logging(arguments=arguments)
 
+    # 1. If blast_mode is blastn and --preliminary is NOT set,
+    #    then --split_aa_db_dir must be provided and must be a valid directory.
+    if arguments.blast_mode == "blastn" and not arguments.preliminary:
+        if not arguments.split_aa_db_dir or not os.path.isdir(
+            arguments.split_aa_db_dir
+        ):
+            parser.error(
+                "--split_aa_db_dir must be provided and must be a valid "
+                "directory when --blast_mode is 'blastn' and --preliminary "
+                "is not set."
+            )
+
+    # 2. If --blast_mode is not 'blastn', --preliminary should not be set.
+    if arguments.blast_mode != "blastn" and arguments.preliminary:
+        parser.error(
+            "--preliminary is only valid with --blast_mode 'blastn'. "
+            "Remove --preliminary or set --blast_mode to 'blastn'."
+        )
+
+    # 3. Optionally, warn if --split_aa_db_dir is provided but not needed
+    if arguments.blast_mode != "blastn" and arguments.split_aa_db_dir:
+        logging.warning(
+            "--split_aa_db_dir is only used with --blast_mode 'blastn'. "
+            "It will be ignored."
+        )
+
     # Start timing
     start_time = time.time()
 
