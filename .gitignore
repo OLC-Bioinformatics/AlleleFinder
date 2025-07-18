@@ -31,3 +31,7 @@ codecov
 # mkdocs files #
 ################
 site/
+
+# testing files #
+combined/
+novel_test/
