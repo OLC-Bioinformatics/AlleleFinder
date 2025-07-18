@@ -24,6 +24,9 @@ class FindDuplicateAlleles:
         self.allele_path = os.path.dirname(self.allele_file)
 
     def main(self):
+        """
+        Main method to find and report duplicate alleles.
+        """
         records, full_records = self._extract_records(
             allele_file=self.allele_file
         )
@@ -101,6 +104,9 @@ class FindDuplicateAlleles:
 
 
 def main():
+    """
+    Main entry point for the script.
+    """
     parser = ArgumentParser(
         description="Find duplicate alleles in FASTA files."
     )
