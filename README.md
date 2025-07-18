@@ -24,6 +24,8 @@ AlleleFinder offers seven main functionalities, each represented by a separate s
 5. [`aa_allele_find`](https://olc-bioinformatics.github.io/AlleleFinder/aa_allele_find): Performs BLAST analyses on an amino acid database against amino acid query sequences to find matching alleles.
 6. [`allele_split`](https://olc-bioinformatics.github.io/AlleleFinder/allele_split): Splits a single allele database file into multiple files; one sequence per file.
 7. [`allele_concatenate`](https://olc-bioinformatics.github.io/AlleleFinder/allele_concatenate): Concatenates alleles of the _stx_ A and B subunits into a single sequence with a linker.
+8. [`stec_combined_subunits`](https://olc-bioinformatics.github.io/AlleleFinder/stec_combined_subunits): Processes STEC alleles with both A and B subunits, performing subunit-level BLAST analyses and reporting.
+
 
 ## Documentation
 
@@ -52,7 +54,7 @@ Each script has specific input requirements and usage instructions. Please refer
 - [`aa_allele_find`](https://olc-bioinformatics.github.io/AlleleFinder/aa_allele_find)
 - [`allele_split`](https://olc-bioinformatics.github.io/AlleleFinder/allele_split)
 - [`allele_concatenate`](https://olc-bioinformatics.github.io/AlleleFinder/allele_concatenate)
-
+- [`stec_combined_subunits`](https://olc-bioinformatics.github.io/AlleleFinder/stec_combined_subunits)
 ## Feedback
 
 We welcome your feedback. If you encounter any issues installing or running AlleleFinder, have feature requests, or need assistance, please [open an issue on GitHub](https://github.com/OLC-Bioinformatics/AlleleFinder/issues/new/choose).

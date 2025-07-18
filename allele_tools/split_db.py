@@ -24,7 +24,6 @@ __author__ = 'adamkoziol'
 # Standard imports
 import argparse
 import os
-from typing import NoReturn
 
 # Third party imports
 from Bio import SeqIO
@@ -32,15 +31,22 @@ from Bio import SeqIO
 
 class FastaProcessor:
     'Class to process a fasta file and output records into separate files'
-    def __init__(self, filename: str) -> None:
+    def __init__(
+        self,
+        *,  # Enforce keyword-only arguments
+        filename: str,
+        split_stx: bool
+    ) -> None:
         """
         Initialize FastaProcessor with a filename.
 
         :param filename: The name of the fasta file to process.
+        :param split_stx: If True, split records into 'stx1' and 'stx2'
         """
         self.filename = filename
+        self.split_stx = split_stx
 
-    def process(self) -> NoReturn:
+    def process(self) -> None:
         """
         Reads the file and writes each record to a separate file.
         Records with headers starting with 'stx1' or 'stx2' are written to
@@ -52,11 +58,21 @@ class FastaProcessor:
             for record in SeqIO.parse(file, 'fasta'):
                 # Get the description of the record, which serves as the header
                 header = record.description
-
+                # If split_stx is False, write the record to a file in the
+                # base_dir folder with the header as the filename
+                if not self.split_stx:
+                    # Write the record to a file in the "split" directory
+                    self._write_record(
+                        folder='split',
+                        header=header,
+                        record=record
+                    )
+                    continue
                 # Check if the header starts with 'stx1' (case insensitive)
                 if header.lower().startswith('stx1'):
-                    # If it does, write the record to a file in the 'stx1' subfolder
-                    # The header is passed to the _write_record method to be used as the filename
+                    # If it does, write the record to a file in the 'stx1'
+                    # subfolder. The header is passed to the _write_record
+                    # method to be used as the filename
                     self._write_record(
                         folder='stx1',
                         header=header,
@@ -64,15 +80,22 @@ class FastaProcessor:
                     )
                 # Check if the header starts with 'stx2' (case insensitive)
                 elif header.lower().startswith('stx2'):
-                    # If it does, write the record to a file in the 'stx2' subfolder
-                    # The header is passed to the _write_record method to be used as the filename
+                    # If it does, write the record to a file in the 'stx2'
+                    # subfolder. The header is passed to the _write_record
+                    # method to be used as the filename
                     self._write_record(
                         folder='stx2',
                         header=header,
                         record=record
                     )
 
-    def _write_record(self, folder: str, header: str, record) -> NoReturn:
+    def _write_record(
+        self,
+        *,  # Enforce keyword arguments
+        folder: str,
+        header: str,
+        record: SeqIO.SeqRecord
+    ) -> None:
         """
         Writes a record to a file in specified folder.
 
@@ -105,7 +128,7 @@ class FastaProcessor:
             SeqIO.write(record, output_file, 'fasta')
 
 
-def cli() -> NoReturn:
+def cli() -> None:
     'Main function to process command line arguments and run the processor'
     parser = argparse.ArgumentParser(description='Process a fasta file.')
     parser.add_argument(
@@ -113,9 +136,17 @@ def cli() -> NoReturn:
         type=str,
         help='The name of the fasta file to process.'
     )
+    parser.add_argument(
+        '--stx',
+        action='store_true',
+        help='Split the fasta file into stx1 and stx2 subfolders.'
+    )
     args = parser.parse_args()
 
-    processor = FastaProcessor(args.filename)
+    processor = FastaProcessor(
+        filename=args.filename,
+        split_stx=args.stx
+    )
     processor.process()
 
 

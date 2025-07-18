@@ -12,16 +12,24 @@ from setuptools import setup, find_packages
 
 # Find the version
 version = {}
-with open(convert_path(
-        os.path.join('allele_tools', 'version.py')), 'r') as version_file:
-    exec(version_file.read(), version)
+version_file_path = convert_path(
+    os.path.join(
+        'allele_tools', 'version.py'
+    )
+)
+with open(version_file_path, 'r', encoding='utf-8') as version_file:
+    for line in version_file:
+        if line.startswith('__version__'):
+            DELIMITER = '"' if '"' in line else "'"
+            version['__version__'] = line.split(DELIMITER)[1]
+            break
 
 # Read the contents of your README file
-with open('README.md', 'r') as f:
+with open('README.md', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 # Open the requirements.txt file
-with open('requirements.txt') as f:
+with open('requirements.txt', 'r', encoding='utf-8') as f:
     # Read the file and split it into lines
     # Each line should be a separate requirement
     requirements = f.read().splitlines()
@@ -42,6 +50,7 @@ setup(
         os.path.join('allele_tools', 'allele_translate_reduce.py'),
         os.path.join('allele_tools', 'profile_reduce.py'),
         os.path.join('allele_tools', 'stec.py'),
+        os.path.join('allele_tools', 'stec_combined_subunits.py'),
         os.path.join('allele_tools', 'split_db.py'),
     ],
     entry_points={
