@@ -382,8 +382,8 @@ class CombinedSubunits:
         Splits concatenated subunit FASTA records into separate subunits.
         Each subunit is written as a new FASTA entry, omitting the linker.
         """
-        with open(input_fasta, "r") as infile, open(
-            output_fasta, "w"
+        with open(input_fasta, "r", encoding='utf-8') as infile, open(
+            output_fasta, "w", encoding='utf-8'
         ) as outfile:
             for record in SeqIO.parse(infile, "fasta"):
                 seq = str(record.seq)
@@ -476,10 +476,7 @@ class CombinedSubunits:
         )
 
         # Set the blastx variable
-        if blast_mode == 'blastx':
-            blastx = True
-        else:
-            blastx = False
+        blastx = True if blast_mode == 'blastx' else False
 
         # Format the BLAST output
         self._parseable_blast_outputs(
@@ -686,6 +683,7 @@ class CombinedSubunits:
         :param query: Query sequence or file
         :param num_alignments: Number of alignments to return
         """
+
         if blast_mode == 'blastn':
             blast_cmd = NcbiblastnCommandline(
                 db=allele_file,
@@ -718,6 +716,8 @@ class CombinedSubunits:
                 query=query,
                 seg='no'
             )
+        else:
+            return ''
 
         # Skip BLAST if output already exists
         if os.path.isfile(blast_output):
@@ -886,15 +886,19 @@ class CombinedSubunits:
                 info[f"{molecule}_best_hits"] = best_hits
                 info[f"{molecule}_query_sequences"] = query_sequences
             else:
-                best_hits, novel_hits, query_sequences, query_ids = \
+                best_hits, novel_hits, query_sequences, query_ids, \
+                    gap_events_dict, ambiguous_dict = \
                     CombinedSubunits._extract_best_hits(
                         blast_output=blast_output,
-                        cutoff=cutoff
+                        cutoff=cutoff,
+                        molecule=molecule
                     )
                 info[f"{molecule}_best_hits"] = best_hits
                 info[f"{molecule}_novel_hits"] = novel_hits
                 info[f"{molecule}_query_sequences"] = query_sequences
                 info[f"{molecule}_query_ids"] = query_ids
+                info[f"{molecule}_gap_events"] = gap_events_dict
+                info[f"{molecule}_ambiguous"] = ambiguous_dict
 
         return metadata
 
@@ -902,13 +906,16 @@ class CombinedSubunits:
     def _extract_best_hits(
         *,  # Enforce keyword arguments
         blast_output: str,
-        cutoff: float
-    ) -> tuple[dict, dict, dict, dict]:
+        cutoff: float,
+        molecule: str,
+    ) -> tuple[dict, dict, dict, dict, dict, dict]:
         """
         Extract the best BLAST hits from the BLAST output file.
 
         :param blast_output: Path to the BLAST output file
         :param cutoff: Minimum percent identity for a hit to be considered
+        :param molecule: Molecule type (e.g., "nt" or "aa")
+
         Returns:
             - best_hits: closest allele match in the database (by name)
             - novel_hits: novel allele name (if <100% identity), else same as
@@ -916,11 +923,15 @@ class CombinedSubunits:
             - query_sequences: dict of query sequences for novel alleles
             - query_ids: dict of query ids
         """
+
+        # Initialize dictionaries to hold BLAST hit information
         best_hits = {"stx1": [], "stx2": []}
         novel_hits = {"stx1": [], "stx2": []}
         all_hits = {"stx1": [], "stx2": []}
         query_sequences = {"stx1": {}, "stx2": {}}
         query_ids = {"stx1": {}, "stx2": {}}
+        gap_events_dict = {}
+        ambiguous_dict = {}
 
         with open(blast_output, "r", encoding="utf-8") as report:
             reader = DictReader(report, dialect="excel-tab")
@@ -946,40 +957,58 @@ class CombinedSubunits:
             if not all_hits[stx]:
                 continue
 
-            # Extract the maximum percent identity
+            # Find the maximum percent identity
             max_perc = max(hit[1] for hit in all_hits[stx])
 
-            # Iterate over all hits to find the best one
+            # Find all hits that match the maximum percent identity
             for subject_id, percent_identity, query_sequence, query_id in \
                     all_hits[stx]:
-
-                # Check if this hit is the best one
                 if percent_identity == max_perc:
-
-                    # best_hits always points to the closest database match
                     best_hits[stx].append((subject_id, percent_identity))
                     query_ids[stx][subject_id] = query_id
 
-                    # Novel_hits points to the novel allele name if <100%
-                    # identity, else same as best_hits
                     if (
                         percent_identity < 100
                         and percent_identity >= cutoff
                         and query_sequence
                     ):
-                        novel_name = CombinedSubunits._register_novel_allele(
-                            sequence=query_sequence, stx_type=stx
+                        # Analyze sequence for gaps/ambiguity
+                        cleaned_seq, gap_events, ambiguous = (
+                            CombinedSubunits.
+                            _analyze_sequence_for_gaps_and_ambiguity(
+                                molecule=molecule,
+                                seq=query_sequence
+                            )
                         )
 
-                        # Add the novel hit to the dictionary with a 100%
-                        # identity
+                        # Skip if ambiguous bases are present
+                        if ambiguous:
+                            gap_events_dict[subject_id] = gap_events
+                            ambiguous_dict[subject_id] = ambiguous
+                            continue  # Do not register or add to novel_hits
+
+                        # Register novel allele
+                        novel_name = CombinedSubunits._register_novel_allele(
+                            sequence=cleaned_seq, stx_type=stx
+                        )
+                        gap_events_dict[novel_name] = gap_events
+                        ambiguous_dict[novel_name] = ambiguous
+
+                        # Only keep the cleaned sequence for downstream
                         novel_hits[stx].append((novel_name, 100))
-                        query_sequences[stx][subject_id] = query_sequence
+                        query_sequences[stx][subject_id] = cleaned_seq
                         query_ids[stx][novel_name] = query_id
                     else:
                         novel_hits[stx].append((subject_id, 100))
 
-        return best_hits, novel_hits, query_sequences, query_ids
+        return (
+            best_hits,
+            novel_hits,
+            query_sequences,
+            query_ids,
+            gap_events_dict,
+            ambiguous_dict,
+        )
 
     @staticmethod
     def _novel_allele_registry():
@@ -1267,7 +1296,7 @@ class CombinedSubunits:
                 # If the original file did not end with a newline, add one
                 if needs_newline:
                     handle.write("\n")
-            logging.info(f"Novel alleles written to {db_fasta_file}")
+            logging.info("Novel alleles written to %s", db_fasta_file)
 
             # Write the records to the report path as well
             novel_allele_file = os.path.join(
@@ -1282,6 +1311,53 @@ class CombinedSubunits:
                 os.remove(database_file)
 
     @staticmethod
+    def _analyze_sequence_for_gaps_and_ambiguity(
+        *,  # Enforce keyword arguments
+        seq: str,
+        molecule: str,
+    ) -> tuple:
+        """
+        Returns cleaned_seq, gap_events, ambiguous_events.
+
+        :param seq: The input sequence to analyze
+        :param molecule: The type of molecule ("nt" or "aa")
+
+        :return: A tuple containing:
+            - cleaned_seq: The input sequence with gaps removed
+            - gap_events: A list of (start, end) tuples for each gap (1-based)
+            - ambiguous_events: A list of (position, character) tuples for each
+            ambiguous base (1-based)
+        """
+        # Define ambiguous characters
+        ambiguous_nt = set("NRYWSKMBDHV")
+        ambiguous_aa = set("BXZJUO*")
+
+        # Convert the sequence to a string for processing
+        seq_str = str(seq)
+
+        # Find gap events (convert to 1-based)
+        gap_events = [
+            (m.start() + 1, m.end()) for m in re.finditer(r"-+", seq_str)
+        ]
+
+        # Remove gaps from the sequence
+        cleaned_seq = seq_str.replace("-", "")
+
+        # Identify ambiguous characters (convert to 1-based)
+        if molecule == "nt":
+            ambiguous = [
+                (i + 1, c) for i, c in enumerate(cleaned_seq)
+                if c in ambiguous_nt
+            ]
+        else:
+            ambiguous = [
+                (i + 1, c) for i, c in enumerate(cleaned_seq)
+                if c in ambiguous_aa
+            ]
+
+        return cleaned_seq, gap_events, ambiguous
+
+    @staticmethod
     def _export_novel_alleles(
         *,  # Enforce keyword arguments
         blastx: bool,
@@ -1293,21 +1369,12 @@ class CombinedSubunits:
         """
         Export the FASTA sequence of any best hits that are >cutoff% and <100%
         percent identity to strain-specific files in the report folder.
-
-        :param blastx: Boolean indicating if BLASTX is being used
-        :param metadata: Dictionary containing BLAST hit metadata for each
-        strain.
-        :param molecule: Molecule type (e.g., "nt" or "aa")
-        :param report_path: Path to the folder where novel allele FASTA files
-        will be saved.
-        :return: Updated metadata dictionary.
         """
         logging.info("Exporting novel alleles")
 
         for strain_name, info in metadata.items():
-
-            # Initialise a dictionary to store novel allele paths
             info[f"novel_{molecule}_allele_paths"] = {}
+            info["novel_subunit_notes"] = {}
             novel_allele_paths = {}
 
             for stx_type, best_hits in info.get(
@@ -1317,7 +1384,6 @@ class CombinedSubunits:
                     if percent_identity < cutoff or percent_identity == 100:
                         continue
 
-                    # Get the query sequence for the novel allele
                     query_sequence = (
                         info.get(f"{molecule}_query_sequences", {})
                         .get(stx_type, {})
@@ -1330,7 +1396,6 @@ class CombinedSubunits:
                     novel_allele_name = f"{strain_name}_{allele_subtype}"
 
                     if blastx:
-                        # Extract A and B subunit sequences from the query
                         subunit_a_seq = (
                             info.get(f"{molecule}_query_sequences", {})
                             .get(stx_type, {})
@@ -1344,9 +1409,8 @@ class CombinedSubunits:
 
                         if not (subunit_a_seq and subunit_b_seq):
                             continue
-                        novel_allele_paths = \
+                        novel_allele_paths, notes = (
                             CombinedSubunits._write_novel_allele_subunit_files(
-                                allele_id=allele_id,
                                 molecule=molecule,
                                 novel_allele_name=novel_allele_name,
                                 path=info["path"],
@@ -1354,6 +1418,10 @@ class CombinedSubunits:
                                 subunit_b_seq=subunit_b_seq,
                                 report_path=report_path,
                             )
+                        )
+
+                        info["novel_subunit_notes"][novel_allele_name] = notes
+
                     else:
                         novel_allele_paths = \
                             CombinedSubunits._write_novel_allele_files(
@@ -1364,8 +1432,6 @@ class CombinedSubunits:
                                 query_sequence=query_sequence,
                                 report_path=report_path,
                             )
-
-            # Store the novel allele paths in the info dictionary
             info[f"novel_{molecule}_allele_paths"] = novel_allele_paths
 
         return metadata
@@ -1426,7 +1492,6 @@ class CombinedSubunits:
     @staticmethod
     def _write_novel_allele_subunit_files(
         *,
-        allele_id: str,
         molecule: str,
         novel_allele_name: str,
         path: str,
@@ -1434,64 +1499,114 @@ class CombinedSubunits:
         subunit_b_seq: str,
         report_path: str,
         linker: str = "XXXX",
-    ) -> dict:
+    ) -> tuple[dict, dict]:
         """
-        Write FASTA files for the A subunit, B subunit, and combined
-        A+linker+B sequence.
+        Write FASTA files for the A subunit, B subunit, and
+        combined A+linker+B sequence, but only if both subunits pass length
+        and stop codon checks.
+        Updates info dict with notes on failures.
 
-        :param allele_id: ID of the allele
-        :param molecule: Molecule type (e.g., "nt" or "aa")
-        :param novel_allele_name: Name of the novel allele
-        :param path: Path to the strain-specific output folder
-        :param subunit_a_seq: Query sequence for the A subunit
-        :param subunit_b_seq: Query sequence for the B subunit
-        :param report_path: Path to the reports folder
-        :param linker: Linker sequence to use between A and B (default: "XXXX")
-        :return: Dictionary containing the paths to the novel allele files
+        :return: (file_paths, notes)
         """
-        # Initialise a dictionary to store the paths to the novel allele files
         file_paths = {}
+        notes = {}
 
-        # Write A subunit
-        a_filename = f"{novel_allele_name}_A_{molecule}.fasta"
-        a_path = os.path.join(path, a_filename)
-        a_record = SeqRecord(
-            Seq(subunit_a_seq), id=f"{novel_allele_name}_A", description=""
+        # Subunit A
+        a_filename = f"{novel_allele_name}_A_subunit_aa.fasta"
+        a_path = os.path.join(report_path, a_filename)
+        a_seq, a_pass, a_note = CombinedSubunits._save_and_validate_subunit(
+            subunit_seq=subunit_a_seq,
+            expected_length=313,
+            fasta_path=a_path,
+            subunit_name="A",
+            novel_allele_name=novel_allele_name,
         )
-        with open(a_path, "w") as f:
-            SeqIO.write(a_record, f, "fasta")
-        file_paths["A"] = a_path
+        if not a_pass:
+            notes["A"] = a_note
 
-        # Write B subunit
-        b_filename = f"{novel_allele_name}_B_{molecule}.fasta"
-        b_path = os.path.join(path, b_filename)
-        b_record = SeqRecord(
-            Seq(subunit_b_seq), id=f"{novel_allele_name}_B", description=""
+        # Subunit B
+        b_filename = f"{novel_allele_name}_B_subunit_aa.fasta"
+        b_path = os.path.join(report_path, b_filename)
+        b_seq, b_pass, b_note = CombinedSubunits._save_and_validate_subunit(
+            subunit_seq=subunit_b_seq,
+            expected_length=82,
+            fasta_path=b_path,
+            subunit_name="B",
+            novel_allele_name=novel_allele_name,
         )
-        with open(b_path, "w") as f:
-            SeqIO.write(b_record, f, "fasta")
-        file_paths["B"] = b_path
+        if not b_pass:
+            notes["B"] = b_note
 
-        # Write combined A+linker+B
-        combined_seq = subunit_a_seq + linker + subunit_b_seq
-        combined_filename = f"{novel_allele_name}_combined_{molecule}.fasta"
-        combined_path = os.path.join(path, combined_filename)
-        combined_record = SeqRecord(
-            Seq(combined_seq),
-            id=f"{novel_allele_name}_combined",
-            description=f"A+{linker}+B",
+        # Only write files if both subunits pass
+        if a_pass and b_pass:
+            file_paths["A"] = a_path
+            dst_a = os.path.join(report_path, os.path.basename(a_path))
+            file_paths["A_report"] = dst_a
+
+            file_paths["B"] = b_path
+            dst_b = os.path.join(report_path, os.path.basename(b_path))
+            file_paths["B_report"] = dst_b
+
+            combined_seq = a_seq + linker + b_seq
+            combined_filename = (
+                f"{novel_allele_name}_combined_{molecule}.fasta"
+            )
+            combined_path = os.path.join(path, combined_filename)
+            combined_record = SeqRecord(
+                Seq(combined_seq),
+                id=f"{novel_allele_name}_combined",
+                description=f"A+{linker}+B",
+            )
+            with open(combined_path, "w", encoding="utf-8") as f:
+                SeqIO.write(combined_record, f, "fasta")
+            file_paths["combined"] = combined_path
+            dst_combined = os.path.join(
+                report_path, os.path.basename(combined_path)
+            )
+            if os.path.abspath(combined_path) != os.path.abspath(dst_combined):
+                shutil.copy(combined_path, dst_combined)
+            file_paths["combined_report"] = dst_combined
+
+        return file_paths, notes
+
+    @staticmethod
+    def _save_and_validate_subunit(
+        *,
+        expected_length: int,
+        fasta_path: str,
+        novel_allele_name: str,
+        subunit_name: str,
+        subunit_seq: str,
+    ) -> tuple[str, bool, str]:
+        """
+        Trim at first stop codon, check length, save if valid.
+
+        :param expected_length: Expected length of the subunit
+        :param fasta_path: Path to the FASTA file to save
+        :param novel_allele_name: Name of the novel allele
+        :param subunit_name: Name of the subunit (A or B)
+        :param subunit_seq: Amino acid sequence of the subunit
+
+        :return: Tuple of (trimmed sequence, pass status, note)
+        """
+        # Trim at first stop codon
+        trimmed_seq = subunit_seq.split("*", 1)[0]
+        length = len(trimmed_seq)
+        if length < expected_length:
+            note = (
+                f"{subunit_name} subunit for {novel_allele_name} too short: "
+                f"{length} aa (expected {expected_length})"
+            )
+            return trimmed_seq, False, note
+        # Save FASTA
+        record = SeqRecord(
+            Seq(trimmed_seq),
+            id=f"{novel_allele_name}_{subunit_name}",
+            description=""
         )
-        with open(combined_path, "w") as f:
-            SeqIO.write(combined_record, f, "fasta")
-        file_paths["combined"] = combined_path
-
-        # Also copy to report_path
-        for key, src in list(file_paths.items()):
-            dst = os.path.join(report_path, os.path.basename(src))
-            shutil.copy(src, dst)
-            file_paths[key + "_report"] = dst
-
-        return file_paths
+        with open(fasta_path, "w", encoding="utf-8") as f:
+            SeqIO.write(record, f, "fasta")
+        return trimmed_seq, True, ""
 
     @staticmethod
     def _find_aa_hits_novel_alleles(
@@ -1600,6 +1715,7 @@ class CombinedSubunits:
         """
         logging.info("Extracting novel best hits and query sequences")
         for name, info in metadata.items():
+
             # Initialise the necessary keys in the metadata
             info["novel_aa_best_hits"] = {}
             info["novel_aa_query_sequences"] = {}
@@ -1609,6 +1725,7 @@ class CombinedSubunits:
             for allele_id, blast_outputs in info.get(
                 "novel_aa_blastx_outputs", {}
             ).items():
+
                 # Ensure nested dicts are initialized
                 if allele_id not in info["novel_aa_best_hits"]:
                     info["novel_aa_best_hits"][allele_id] = {}
@@ -1629,7 +1746,6 @@ class CombinedSubunits:
                             blast_output=blast_output,
                             gene_subunit=gene_subunit
                         )
-
                     # Store the best hits in the metadata
                     info["novel_aa_best_hits"][allele_id] = best_hits
                     info["novel_aa_query_sequences"][allele_id] = query_seq
@@ -1641,6 +1757,7 @@ class CombinedSubunits:
                 logging.debug(
                     "%s novel %s best hits: %s ", name, "aa", best_hits
                 )
+
         return metadata
 
     @staticmethod
@@ -1714,6 +1831,7 @@ class CombinedSubunits:
                             )
                             if b_seq_dict:
                                 b_seq = next(iter(b_seq_dict.values()), "")
+
                 # Only assign if both alleles found
                 profile = ""
                 operon_seq = ""
@@ -1722,7 +1840,8 @@ class CombinedSubunits:
                     operon_seq = a_seq + linker + b_seq
                 info[f"{stx.lower()}_aa_allele_profile"] = profile
                 info[f"{stx.lower()}_aa_operon_sequence"] = operon_seq
-
+                info[f"{stx.lower()}_aa_subunit_a_sequence"] = a_seq
+                info[f"{stx.lower()}_aa_subunit_b_sequence"] = b_seq
                 # Debug statement
                 if info.get(f"{stx.lower()}_aa_allele_profile"):
                     logging.info(
@@ -1731,6 +1850,7 @@ class CombinedSubunits:
                         stx.lower(),
                         info.get(f"{stx.lower()}_aa_allele_profile", ""),
                     )
+
         return metadata
 
     @staticmethod
@@ -1741,18 +1861,25 @@ class CombinedSubunits:
     ):
         """
         Export the operon sequence (A + linker + B) to a FASTA file for
-        each strain/stx if either subunit is <100% identity.
-
-        :param metadata: Metadata dictionary containing allele profiles and
-        operon sequences.
-        :param report_path: Path to the report directory.
+        each strain/stx if either subunit is <100% identity, but only if both
+        subunits pass stop codon and length checks. Also save individual
+        subunits and update the info dictionary with notes.
         """
         logging.info("Exporting novel operon sequences")
         for strain_name, info in metadata.items():
             for stx in ["stx1", "stx2"]:
                 profile = info.get(f"{stx}_aa_allele_profile", "")
                 operon_seq = info.get(f"{stx}_aa_operon_sequence", "")
-                if not profile or not operon_seq:
+                subunit_a_seq = info.get(f"{stx}_aa_subunit_a_sequence", "")
+                subunit_b_seq = info.get(f"{stx}_aa_subunit_b_sequence", "")
+
+                # Skip if any of these are missing
+                if (
+                    not profile
+                    or not operon_seq
+                    or not subunit_a_seq
+                    or not subunit_b_seq
+                ):
                     continue
 
                 # Parse the alleles from the profile string
@@ -1779,17 +1906,76 @@ class CombinedSubunits:
                 # Only export if either subunit is <100%
                 if a_perc == 100.0 and b_perc == 100.0:
                     continue
+                if a_perc < 100.0:
+                    # Validate and save subunit A
+                    a_filename = (
+                        f"{strain_name}_{stx.upper()}_subunit_A_aa.fasta"
+                    )
+                    a_path = os.path.join(report_path, a_filename)
+                    novel_allele_name = (
+                        f"{strain_name}_{stx.upper()}_{profile}"
+                    )
+                    a_seq, a_pass, a_note = \
+                        CombinedSubunits._save_and_validate_subunit(
+                            expected_length=313,
+                            fasta_path=a_path,
+                            novel_allele_name=novel_allele_name,
+                            subunit_name="A",
+                            subunit_seq=subunit_a_seq,
+                        )
 
-                # Write the operon sequence to a FASTA file
+                else:
+                    a_seq = ''
+                    a_pass = None
+                    a_note = None
+                if b_perc < 100.0:
+                    # Validate and save subunit B
+                    b_filename = (
+                        f"{strain_name}_{stx.upper()}_subunit_B_aa.fasta"
+                    )
+                    b_path = os.path.join(report_path, b_filename)
+                    novel_allele_name = (
+                        f"{strain_name}_{stx.upper()}_{profile}"
+                    )
+                    b_seq, b_pass, b_note = \
+                        CombinedSubunits._save_and_validate_subunit(
+                            expected_length=82,
+                            fasta_path=b_path,
+                            novel_allele_name=novel_allele_name,
+                            subunit_name="B",
+                            subunit_seq=subunit_b_seq,
+                        )
+                else:
+                    b_seq = ''
+                    b_pass = None
+                    b_note = None
+
+                # Update info dict with notes
+                notes = {}
+                if not a_pass:
+                    notes["A"] = a_note
+                if not b_pass:
+                    notes["B"] = b_note
+                if notes:
+                    info.setdefault(
+                        "novel_subunit_notes", {}
+                    )[f"{strain_name}_{stx.upper()}_{profile}"] = notes
+
+                # Only export operon if both subunits pass
+                if not (a_pass and b_pass):
+                    continue
+
+                # Write the operon sequence to a FASTA file (using trimmed
+                # subunits)
                 fasta_name = (
                     f"{strain_name}_{stx.upper()}_operon_{profile}.fasta"
                 )
                 fasta_path = os.path.join(report_path, fasta_name)
                 record_id = f"{strain_name}_{stx.upper()}_operon_{profile}"
                 record = SeqRecord(
-                    Seq(operon_seq), id=record_id, description=''
+                    Seq(a_seq + "XXXX" + b_seq), id=record_id, description=''
                 )
-                with open(fasta_path, "w") as f:
+                with open(fasta_path, "w", encoding='utf-8') as f:
                     SeqIO.write(record, f, "fasta")
                 logging.info("Wrote novel operon FASTA: %s", fasta_path)
 
@@ -1871,7 +2057,7 @@ class CombinedSubunits:
     ):
         """
         Generate a report from the metadata with DB_Allele and NovelAllele
-        columns.
+        columns, including any novel_subunit_notes.
         """
         logging.info("Generating report")
 
@@ -1882,8 +2068,8 @@ class CombinedSubunits:
         novel = False
 
         if not any(
-            CombinedSubunits._has_novel_aa_best_hits(info) for
-            info in metadata.values()
+            CombinedSubunits._has_novel_aa_best_hits(info)
+            for info in metadata.values()
         ):
             novel = True
         else:
@@ -1913,8 +2099,59 @@ class CombinedSubunits:
                     if idx < len(novel_hits):
                         # Only include a novel allele if the word "novel" is
                         # present in the name
-                        novel_allele = novel_hits[idx][0] if "novel" in \
+                        novel_allele = (
+                            novel_hits[idx][0] if "novel" in
                             novel_hits[idx][0] else ""
+                        )
+
+                    # Try both allele_clean and novel_allele as keys for
+                    # gap/ambiguous
+                    gap_events = []
+                    ambiguous = []
+                    for key in (allele_clean, novel_allele):
+                        if key:
+                            gap_events = info.get(
+                                "nt_gap_events", {}
+                            ).get(key, [])
+                            ambiguous = info.get(
+                                "nt_ambiguous", {}
+                            ).get(key, [])
+                            if gap_events or ambiguous:
+                                break  # Prefer the first match
+                    # Update the notes if there are gaps or ambiguous bases
+                    if ambiguous:
+                        if note:
+                            note += ";"
+                        ambig_string = ", ".join(
+                            f"{pos}:{base}" for pos, base in ambiguous
+                        )
+                        note += f"Ambiguous bases at {ambig_string}"
+                    if gap_events:
+                        if note:
+                            note += ";"
+                        gap_string = ", ".join(
+                            f"{start}-{end}" for start, end in gap_events
+                        )
+                        note += f"{len(gap_events)} gap(s) at {gap_string}"
+
+                    # Add novel_subunit_notes if present for this novel_allele
+                    subunit_notes = ""
+                    if "novel_subunit_notes" in info:
+                        # Try to match by novel_allele name
+                        notes_dict = info["novel_subunit_notes"]
+                        # Try both novel_allele and allele_clean as keys
+                        for key in (novel_allele, allele_clean):
+                            if key and key in notes_dict:
+                                notes = notes_dict[key]
+                                # notes is a dict of subunit: note
+                                subunit_notes = "; ".join(
+                                    n for n in notes.values() if n
+                                )
+                                break
+                    if subunit_notes:
+                        if note:
+                            note += ";"
+                        note += subunit_notes
 
                     body += (
                         f"{name}\t{contig}\t{allele_clean}\t{perc_ident}\t"
@@ -1955,7 +2192,7 @@ class CombinedSubunits:
                             f"\t{allele_profile}\t{a_perc}\t{b_perc}\t{note}\n"
                         )
                     else:
-                        body += f"\t{note}\n"
+                        body += f"\t\t\t\t{note}\n"
 
             if not data:
                 if novel:
@@ -1963,9 +2200,7 @@ class CombinedSubunits:
                 else:
                     body += f"{name}\t\t\n"
 
-        report_path = os.path.join(
-            report_path, "stec_combined_nt_report.tsv"
-        )
+        report_path = os.path.join(report_path, "stec_combined_nt_report.tsv")
 
         with open(report_path, "w", encoding="utf-8") as report_file:
             report_file.write(header)
@@ -2033,9 +2268,9 @@ class CombinedSubunits:
                     # Add the row to the body
                     body += f"{name}\t{allele}\t{perc_ident:.2f}\t{note}\n"
 
-                # Check if the were outputs for this strain
-                if not data:
-                    body += f"{name}\t\t\n"
+            # Check if the were outputs for this strain
+            if not data:
+                body += f"{name}\t\t\n"
 
         # Set the name and path of the report
         report_path = os.path.join(
@@ -2073,7 +2308,6 @@ class CombinedSubunits:
             # Initialise data flag to False
             data = False
 
-            body += f"{name}\t"
             # Iterate over each stx type
             for stx in ["stx1", "stx2"]:
                 # Check if there are any best hits for this stx type
@@ -2101,7 +2335,7 @@ class CombinedSubunits:
                         allele = allele.split("|")[0]
 
                         # Add the row to the body
-                        body += f"{allele}\t{perc_ident}\t"
+                        body += f"{name}\t{allele}\t{perc_ident}\t"
 
                 # Check if there are any partial sequences
                 if partial:
@@ -2109,9 +2343,9 @@ class CombinedSubunits:
                 else:
                     body += '\n'
 
-                # Check if the were outputs for this strain
-                if not data:
-                    body += f"{name}\t\t\t\t\n"
+            # Check if the were outputs for this strain
+            if not data:
+                body += f"{name}\t\t\t\t\n"
 
         # Set the name and path of the report
         report_path = os.path.join(
