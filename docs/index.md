@@ -23,6 +23,7 @@ STEC AlleleFinder comprises a single script with six separate functionalities:
 5. [AA Allele Find](aa_allele_find.md)
 6. [Allele Split](allele_split.md)
 7. [Allele Concatenate](allele_concatenate.md)
+8. [STEC Combined Subunits](stec_combined_subunits.md)
 
 Each link will take you to a detailed description of each functionality.
 
