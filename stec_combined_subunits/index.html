@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Adam Koziol" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/allele_find/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Adam Koziol" /><link rel="canonical" href="https://OLC-Bioinformatics.github.io/AlleleFinder/stec_combined_subunits/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Allele Finding - OLC Bioinformatics AlleleFinder</title>
+    <title>Combined STEC subunits - OLC Bioinformatics AlleleFinder</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Allele Finding";
-        var mkdocs_page_input_path = "allele_find.md";
-        var mkdocs_page_url = "/AlleleFinder/allele_find/";
+        var mkdocs_page_name = "Combined STEC subunits";
+        var mkdocs_page_input_path = "stec_combined_subunits.md";
+        var mkdocs_page_url = "/AlleleFinder/stec_combined_subunits/";
       </script>
     
     <!--[if lt IE 9]>
@@ -59,10 +59,8 @@
                 <li class="toctree-l1"><a class="reference internal" href="../allele_translate_reduce/">Allele Translation/Reduction</a>
                 </li>
               </ul>
-              <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="#">Allele Finding</a>
-    <ul class="current">
-    </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../allele_find/">Allele Finding</a>
                 </li>
               </ul>
               <ul>
@@ -81,8 +79,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../allele_concatenate/">Allele Concatenating</a>
                 </li>
               </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../stec_combined_subunits/">Combined STEC subunits</a>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Combined STEC subunits</a>
+    <ul class="current">
+    </ul>
                 </li>
               </ul>
       </div>
@@ -99,9 +99,9 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">Allele Finding</li>
+      <li class="breadcrumb-item active">Combined STEC subunits</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/allele_find.md">Edit on AlleleFinder</a>
+          <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/edit/main/docs/stec_combined_subunits.md">Edit on AlleleFinder</a>
     </li>
   </ul>
   <hr/>
@@ -122,62 +122,65 @@
 <li><a href="#additional-resources">Additional Resources</a></li>
 </ol>
 <h2 id="introduction">Introduction <a name="introduction"></a></h2>
-<p>This script performs BLAST analyses on a nucleotide allele database to discover their sequence types. It updates nucleotide and amino acid profiles and allele databases, which is crucial for understanding the genetic diversity of your samples.</p>
+<p>This script processes STEC alleles with both A and B subunits. It performs BLAST analyses to identify the best matching alleles for each subunit, detects novel alleles, and generates reports summarizing the results. This is essential for accurate subunit-level typing and characterization of Shiga toxin-producing <em>Escherichia coli</em> (STEC).</p>
 <h2 id="prerequisites">Prerequisites <a name="prerequisites"></a></h2>
 <p>Before running the script, ensure you have the following:</p>
 <ol>
-<li>Nucleotide query files in FASTA format.</li>
-<li>All outputs from <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce"><code>allele_translate_reduce</code></a>.</li>
+<li>Query files in FASTA format containing nucleotide or amino acid sequences.</li>
+<li>Allele database files for the relevant subunits (A and B) in FASTA format.</li>
 </ol>
 <h2 id="inputs">Inputs <a name="inputs"></a></h2>
 <p>The script requires the following inputs:</p>
 <ol>
-<li>Nucleotide query files in FASTA format.</li>
-<li>All outputs from <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_translate_reduce"><code>allele_translate_reduce</code></a>.</li>
+<li>Query files in FASTA format.</li>
+<li>Allele database files for the A and B subunits (e.g., <code>Stx1A_aa_*.fasta</code>, <code>Stx1B_aa_*.fasta</code>, <code>Stx2A_aa_*.fasta</code>, <code>Stx2B_aa_*.fasta</code>).</li>
+<li>Optionally, a directory containing split AA allele databases for subunit-level BLAST analyses.</li>
 </ol>
 <h2 id="running-the-script">Running the Script <a name="running-the-script"></a></h2>
 <p>To run the script, use the following command:</p>
-<pre><code class="language-bash">stec.py allele_find --nt_profile /path/to/nt_profile_file --aa_profile /path/to_aa_profile_file --nt_alleles /path/to/nt_allele_folder --aa_alleles /path/to/aa_allele_folder -r /path/to/output_folder -q /path/to/query_folder
+<pre><code class="language-bash">stec.py stec_combined_subunits --allele_path /path/to/allele_folder --report_path /path/to/output_folder --query_path /path/to/query_folder --blast_mode blastn --split_aa_db_dir /path/to/split_aa_db_dir
 </code></pre>
 <h2 id="command-line-arguments">Command Line Arguments <a name="command-line-arguments"></a></h2>
 <p>The script accepts the following command line arguments:</p>
 <ul>
 <li><code>-h, --help</code>: Show this help message and exit.</li>
-<li><code>-version, --version</code>: Show program's version number and exit.</li>
-<li><code>-v verbosity, --verbosity verbosity</code>: Set the logging level. Options are debug, info, warning, error, and critical. Default is info.</li>
-<li><code>--nt_profile nt_profile</code>: Specify name and path of nucleotide profile file. If not provided, <code>profile.txt</code> in the <code>nt_profile</code> folder in the current working directory will be used by default.</li>
-<li><code>--aa_profile aa_profile</code>: Specify name and path of amino acid profile file. If not provided, <code>profile.txt</code> in the <code>aa_profile</code> folder in the current working directory will be used by default.</li>
-<li><code>--nt_alleles nt_alleles</code>: Specify name and path of folder containing nucleotide alleles. If not provided, the <code>nt_allele</code> folder in the current working directory will be used by default.</li>
-<li><code>--aa_alleles aa_alleles</code>: Specify name and path of folder containing amino acid alleles. If not provided, the <code>aa_allele</code> folder in the current working directory will be used by default.</li>
-<li><code>-r report_path, --report_path report_path</code>: Specify name and path of folder into which reports are to be placed. If not provided, the <code>reports</code> folder in the current working directory will be used.</li>
-<li><code>-q query_path, --query_path query_path</code>: Specify name and path of folder containing query files in FASTA format. If not provided, the <code>query</code> folder in the current working directory will be used.</li>
+<li><code>--version</code>: Show program's version number and exit.</li>
+<li><code>-a, --allele_path</code>: Specify the path to the folder containing allele files. Default: <code>alleles</code> in the current working directory.</li>
+<li><code>-r, --report_path</code>: Specify the path to the folder for output reports. Default: <code>reports</code> in the current working directory.</li>
+<li><code>-q, --query_path</code>: Specify the path to the folder containing query files in FASTA format. Default: <code>query</code> in the current working directory.</li>
+<li><code>--blast_mode</code>: Choose BLAST mode: <code>blastn</code>, <code>tblastx</code>, <code>blastx</code>, or <code>blastn+tblastx</code>. Default: <code>blastx</code>.</li>
+<li><code>--preliminary</code>: Run a preliminary screen using blastn (do not run additional downstream analyses).</li>
+<li><code>--split_aa_db_dir</code>: Path to directory containing split AA allele databases (required for full analysis).</li>
+<li><code>-n, --num_alignments</code>: Number of alignments to return. Default: 10.</li>
+<li><code>-c, --cutoff</code>: Percent identity cutoff. Default: 99.0.</li>
+<li><code>-v, --verbosity</code>: Set the logging level. Options: debug, info, warning, error, critical. Default: info.</li>
 </ul>
 <h2 id="outputs">Outputs <a name="outputs"></a></h2>
 <p>The script generates the following output files:</p>
 <ul>
-<li><code>aa_novel_profiles.txt</code>: A text file containing all novel amino acid profiles generated from query sequences.</li>
-<li><code>aa_gene_name_novel_alleles.fasta</code>: A FASTA-formatted text file containing all novel amino acid alleles from query sequences.</li>
-<li><code>nt_novel_profiles.txt</code>: A text file containing all novel nucleotide profiles generated from query sequences.</li>
-<li><code>nt_gene_name_novel_alleles.fasta</code>: A FASTA-formatted text file containing all novel nucleotide alleles from query sequences.</li>
-<li><code>stec_report.tsv</code>: A TSV file containing results for each query. Includes sample name, nucleotide allele identifiers, nucleotide sequence type, amino acid allele identifiers, amino acid sequence type, and notes.</li>
+<li><code>novel_alleles.fasta</code>: FASTA file containing all novel alleles discovered.</li>
+<li><code>stec_combined_nt_report.tsv</code>: TSV report summarizing nucleotide-level matches and novel alleles.</li>
+<li><code>stec_combined_aa_report.tsv</code>: TSV report summarizing amino acid-level matches and novel alleles.</li>
+<li><code>stec_combined_nt_aa_report.tsv</code>: Combined report for both nucleotide and amino acid analyses.</li>
+<li>Individual FASTA files for novel subunits and operons, as appropriate.</li>
 </ul>
 <h2 id="interpreting-the-results">Interpreting the Results <a name="interpreting-the-results"></a></h2>
-<p>The <code>stec_report.tsv</code> file contains the main results of the analysis. Each row corresponds to a query sequence, and the columns provide information about the identified nucleotide and amino acid alleles and their sequence types.</p>
+<p>The main reports (<code>stec_combined_nt_report.tsv</code>, <code>stec_combined_aa_report.tsv</code>, and <code>stec_combined_nt_aa_report.tsv</code>) summarize the best matches for each query, percent identity, and any novel alleles detected. Additional notes may indicate partial matches, ambiguous bases, or gap events.</p>
 <h2 id="troubleshooting">Troubleshooting <a name="troubleshooting"></a></h2>
-<p>If you encounter any issues while running the script, check the following:</p>
+<p>If you encounter issues:</p>
 <ul>
 <li>Ensure all input files are in the correct format and location.</li>
-<li>Make sure you have the necessary permissions to read the input files and write to the output directory.</li>
-<li>If the script fails with an error message, try to understand what the message is saying. Often, the error message provides clues about what went wrong.</li>
+<li>Confirm that BLAST+ is installed and accessible from your command line.</li>
+<li>Check that the split AA database directory contains the required subunit FASTA files.</li>
+<li>Review error messages for missing files or permission issues.</li>
 </ul>
 <h2 id="additional-resources">Additional Resources <a name="additional-resources"></a></h2>
-<p>For more information about the script and its functionality, refer to the <a href="https://olc-bioinformatics.github.io/AlleleFinder/allele_find"><code>allele_find</code></a> documentation.</p>
+<p>For more information, see the <a href="https://olc-bioinformatics.github.io/AlleleFinder/stec_combined_subunits"><code>stec_combined_subunits</code></a> documentation or open an issue on <a href="https://github.com/OLC-Bioinformatics/AlleleFinder/issues">GitHub</a>.</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../allele_translate_reduce/" class="btn btn-neutral float-left" title="Allele Translation/Reduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../allele_translate_find/" class="btn btn-neutral float-right" title="Allele Translate/Finding">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../allele_concatenate/" class="btn btn-neutral float-left" title="Allele Concatenating"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -205,10 +208,8 @@
         </span>
     
     
-      <span><a href="../allele_translate_reduce/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../allele_concatenate/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-    
-      <span><a href="../allele_translate_find/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

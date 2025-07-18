@@ -2,52 +2,46 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/aa_allele_find/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/allele_concatenate/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/allele_find/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/allele_split/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/allele_translate_find/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/allele_translate_reduce/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/downloads/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/installation/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
     </url>
     <url>
          <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/profile_reduce/</loc>
-         <lastmod>2024-04-29</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-07-18</lastmod>
+    </url>
+    <url>
+         <loc>https://OLC-Bioinformatics.github.io/AlleleFinder/stec_combined_subunits/</loc>
+         <lastmod>2025-07-18</lastmod>
     </url>
 </urlset>
