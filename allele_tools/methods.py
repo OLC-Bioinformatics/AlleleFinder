@@ -197,7 +197,8 @@ def profile_allele_check(
 
 
 def error_print(
-        errors: list):
+    errors: list
+):
     """
     Log grammatically correct error messages and exit
     :param errors: List of errors with supplied arguments
