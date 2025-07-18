@@ -8,9 +8,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -59,12 +59,12 @@ jobs:
       CONDA_PKG_PATH: /usr/share/miniconda/conda-bld/noarch
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: allelefinder_env
-        python-version: 3.9.12
+        python-version: 3.12.3
         auto-activate-base: false
         channels: olcbioinformatics,bioconda,conda-forge
     - name: Install Conda build
@@ -87,17 +87,17 @@ jobs:
       run: |
         conda build .
     - name: Upload Conda package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: allelefinder
-        path: $CONDA_PKG_PATH/allelefinder-*.tar.bz2
+        path: $CONDA_PKG_PATH/allelefinder-*.conda
     - name: Install anaconda-client
       run: |
         conda install -y anaconda-client
         echo "$(conda info --base)/bin" >> $GITHUB_PATH
     - name: Upload package to olcbioinformatics
       run: |
-        anaconda -t ${{ secrets.OLCBIOINFORMATICS_ANACONDA_API_TOKEN }} upload -u olcbioinformatics $CONDA_PKG_PATH/allelefinder-*.tar.bz2
+        anaconda -t ${{ secrets.OLCBIOINFORMATICS_ANACONDA_API_TOKEN }} upload -u olcbioinformatics $CONDA_PKG_PATH/allelefinder-*.conda
     - name: Upload package to adamkoziol
       run: |
-        anaconda -t ${{ secrets.ADAMKOZIOL_ANACONDA_API_TOKEN }} upload -u adamkoziol $CONDA_PKG_PATH/allelefinder-*.tar.bz2
+        anaconda -t ${{ secrets.ADAMKOZIOL_ANACONDA_API_TOKEN }} upload -u adamkoziol $CONDA_PKG_PATH/allelefinder-*.conda
