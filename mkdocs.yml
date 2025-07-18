@@ -6,7 +6,7 @@ repo_url:  https://github.com/OLC-Bioinformatics/AlleleFinder/
 edit_uri: edit/main/docs/
 theme: readthedocs
 site_author: Adam Koziol
-copyright: Copyright © 2024, Government of Canada
+copyright: Copyright © 2025, Government of Canada
 repo_name: AlleleFinder
 
 # Directory containing the documentation source files
@@ -24,3 +24,4 @@ nav:
   - Amino Acid Allele Finding: 'aa_allele_find.md'
   - Allele Splitting: 'allele_split.md'
   - Allele Concatenating: 'allele_concatenate.md'
+  - Combined STEC subunits: 'stec_combined_subunits.md'
